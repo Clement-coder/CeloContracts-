@@ -344,6 +344,14 @@ contract ERC1155Test is Test {
         token.safeBatchTransferFrom(alice, address(recv), _ids(ID1), _amts(50), "");
     }
 
+    function test_SafeBatchTransferFrom_ToSelf() public {
+        token.mintBatch(alice, _ids(ID1, ID2), _amts(50, 80), "");
+        vm.prank(alice);
+        token.safeBatchTransferFrom(alice, alice, _ids(ID1, ID2), _amts(50, 80), "");
+        assertEq(token.balanceOf(alice, ID1), 50);
+        assertEq(token.balanceOf(alice, ID2), 80);
+    }
+
     function test_SafeTransferFrom_ToSelf() public {
         token.mint(alice, ID1, AMT, "");
         vm.prank(alice);
