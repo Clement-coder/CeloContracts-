@@ -101,6 +101,7 @@ contract MerkleAirdrop is IMerkleAirdrop {
     }
 
     /// @dev Standard Merkle proof verification.
+    ///      Pairs are sorted before hashing so tree construction order is irrelevant.
     function _verify(bytes32[] calldata proof, bytes32 root, bytes32 leaf) internal pure returns (bool) {
         bytes32 computed = leaf;
         for (uint256 i; i < proof.length; ++i) {
