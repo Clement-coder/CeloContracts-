@@ -99,3 +99,6 @@ forge test -vvv
 - Pause / Unpause
 - Two-step ownership transfer
 - increaseAllowance / decreaseAllowance
+
+## Contract
+`ERC20Token`
