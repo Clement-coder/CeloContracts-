@@ -416,6 +416,10 @@ contract TimelockControllerTest is Test {
 
     // ─── GetTxHash ─────────────────────────────────────────────────────────────
 
+    function test_IsQueued_FalseForUnknownHash() public view {
+        assertFalse(timelock.isQueued(bytes32(uint256(999))));
+    }
+
     function test_IsQueued_FalseAfterExecution() public {
         bytes memory data = abi.encodeCall(savings.pause, ());
         (bytes32 txHash, uint256 eta) = _queue(data);
