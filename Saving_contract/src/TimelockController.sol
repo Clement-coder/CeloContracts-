@@ -89,7 +89,8 @@ contract TimelockController is ITimelockController {
 
         delay = _delay;
 
-        // Deployer and this contract are admins
+        // Deployer and this contract are admins.
+        // address(this) allows self-governance: setDelay can be called via executeTransaction.
         isAdmin[msg.sender] = true;
         isAdmin[address(this)] = true;
 
