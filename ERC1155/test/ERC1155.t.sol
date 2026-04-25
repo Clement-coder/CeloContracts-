@@ -540,6 +540,15 @@ contract ERC1155Test is Test {
 
     // ─── Fuzz ──────────────────────────────────────────────────────────────────
 
+    function test_Integration_RevokeApprovalPreventsTransfer() public {
+        token.mint(alice, ID1, AMT, "");
+        vm.prank(alice); token.setApprovalForAll(bob, true);
+        vm.prank(alice); token.setApprovalForAll(bob, false);
+        vm.prank(bob);
+        vm.expectRevert(IERC1155.NotOwnerOrApproved.selector);
+        token.safeTransferFrom(alice, carol, ID1, AMT, "");
+    }
+
     function test_Integration_MintTransferBurn() public {
         token.mint(alice, ID1, 100, "");
         vm.prank(alice); token.safeTransferFrom(alice, bob, ID1, 60, "");
