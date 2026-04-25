@@ -13,7 +13,6 @@ contract ERC20TokenScript is Script {
     function run() external {
         uint256 deployerKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerKey);
-        // 1 billion token cap
         new ERC20Token("CeloToken", "CTK", 1_000_000_000 ether);
         vm.stopBroadcast();
     }
