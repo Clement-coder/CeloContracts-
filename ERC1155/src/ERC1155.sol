@@ -165,6 +165,7 @@ contract ERC1155 is IERC1155 {
     // ─── ERC-165 ───────────────────────────────────────────────────────────────
 
     /// @notice Returns true for ERC-1155 and ERC-165 interface ids.
+    /// @dev    Interface ids: ERC1155=0xd9b67a26, MetadataURI=0x0e89341c, ERC165=0x01ffc9a7.
     function supportsInterface(bytes4 interfaceId) external pure returns (bool) {
         return interfaceId == 0xd9b67a26 // ERC-1155
             || interfaceId == 0x0e89341c // ERC-1155 Metadata URI
