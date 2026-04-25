@@ -40,7 +40,7 @@ interface ITimelockController {
     // ─── Functions ─────────────────────────────────────────────────────────────
     function queueTransaction(address target, uint256 value, bytes calldata data) external returns (bytes32 txHash, uint256 eta);
     function executeTransaction(address target, uint256 value, bytes calldata data, uint256 eta) external payable returns (bytes memory);
-    function cancelTransaction(bytes32 txHash) external;
+    function cancelTransaction(bytes32 txHash) external; // proposer only
     function setDelay(uint256 newDelay) external;
     function setProposer(address account, bool status) external; // grant/revoke proposer role
     function setExecutor(address account, bool status) external; // grant/revoke executor role
