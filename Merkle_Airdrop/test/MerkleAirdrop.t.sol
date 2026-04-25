@@ -38,6 +38,7 @@ contract MerkleAirdropTest is Test {
 
     // Mirror events
     event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
     event Claimed(address indexed account, uint256 amount);
     event MerkleRootUpdated(bytes32 oldRoot, bytes32 newRoot);
     event Swept(address indexed to, uint256 amount);
@@ -410,6 +411,13 @@ contract MerkleAirdropTest is Test {
     }
 
     // ─── Fuzz ──────────────────────────────────────────────────────────────────
+
+    function test_Token_Approve_EmitsApprovalEvent() public {
+        vm.expectEmit(true, true, false, true);
+        emit Approval(alice, bob, 500);
+        vm.prank(alice);
+        token.approve(bob, 500);
+    }
 
     function test_Claim_EmitsTokenTransferEvent() public {
         vm.expectEmit(true, true, false, true);
