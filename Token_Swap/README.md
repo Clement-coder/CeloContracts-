@@ -86,3 +86,7 @@ forge script script/TokenSwap.s.sol --rpc-url celo --broadcast
 `Token_Swap`
 
 ![Solidity](https://img.shields.io/badge/solidity-0.8.20-blue)
+
+## License
+
+MIT
