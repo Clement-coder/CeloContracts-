@@ -85,6 +85,7 @@ contract MerkleAirdrop is IMerkleAirdrop {
     }
 
     /// @notice Sweep remaining tokens to `to` (e.g. after airdrop ends).
+    /// @dev    Transfers the entire token balance of this contract.
     /// @param to Recipient of remaining tokens.
     function sweep(address to) external override onlyOwner {
         if (to == address(0)) revert ZeroAddress();
