@@ -24,7 +24,7 @@ contract TimelockController is ITimelockController {
 
     // ─── Constants ─────────────────────────────────────────────────────────────
 
-    /// @notice Minimum allowed delay: 1 day.
+    /// @notice Minimum allowed delay: 1 day (86400 seconds).
     uint256 public constant MIN_DELAY = 1 days;
 
     /// @notice Maximum allowed delay: 30 days.
