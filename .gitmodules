@@ -4,3 +4,12 @@
 [submodule "crowdfunding/lib/forge-std"]
 	path = crowdfunding/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "Vesting/lib/forge-std"]
+	path = Vesting/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "Multisig/lib/forge-std"]
+	path = Multisig/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "DAO_Governance/lib/forge-std"]
+	path = DAO_Governance/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
