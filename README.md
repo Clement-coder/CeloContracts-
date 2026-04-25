@@ -46,3 +46,7 @@ forge script script/<Name>.s.sol --rpc-url celo --broadcast
 | Chain ID | 42220 |
 | RPC | https://forno.celo.org |
 | Explorer | https://celoscan.io |
+
+## License
+
+MIT
