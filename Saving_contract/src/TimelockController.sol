@@ -30,7 +30,7 @@ contract TimelockController is ITimelockController {
     /// @notice Maximum allowed delay: 30 days (2592000 seconds).
     uint256 public constant MAX_DELAY = 30 days;
 
-    /// @notice Window after eta in which a tx must be executed before it expires.
+    /// @notice Window after eta in which a tx must be executed before it expires (14 days).
     uint256 public constant GRACE_PERIOD = 14 days;
 
     // ─── State ─────────────────────────────────────────────────────────────────
