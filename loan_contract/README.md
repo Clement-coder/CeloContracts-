@@ -82,3 +82,5 @@ forge script script/Loan.s.sol --rpc-url celo --broadcast
 
 ## Contract
 `loan_contract`
+
+![Solidity](https://img.shields.io/badge/solidity-0.8.20-blue)
