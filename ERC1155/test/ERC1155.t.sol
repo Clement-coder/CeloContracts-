@@ -540,6 +540,11 @@ contract ERC1155Test is Test {
 
     // ─── Fuzz ──────────────────────────────────────────────────────────────────
 
+    function testFuzz_SupportsInterface_UnknownId(bytes4 id) public view {
+        vm.assume(id != 0xd9b67a26 && id != 0x0e89341c && id != 0x01ffc9a7);
+        assertFalse(token.supportsInterface(id));
+    }
+
     function testFuzz_SetApprovalForAll(address op, bool approved) public {
         vm.assume(op != address(0));
         vm.prank(alice);
