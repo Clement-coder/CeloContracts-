@@ -209,7 +209,7 @@ contract ERC1155 is IERC1155 {
         }
     }
 
-    /// @dev Converts uint256 to decimal string.
+    /// @dev Converts uint256 to decimal string for URI construction.
     function _toString(uint256 value) internal pure returns (string memory) {
         if (value == 0) return "0";
         uint256 temp = value;
