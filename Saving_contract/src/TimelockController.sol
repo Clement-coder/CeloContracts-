@@ -67,6 +67,7 @@ contract TimelockController is ITimelockController {
         _;
     }
 
+    /// @dev Reverts with NotExecutor if caller is not in isExecutor mapping.
     modifier onlyExecutor() {
         if (!isExecutor[msg.sender]) revert NotExecutor();
         _;
