@@ -175,6 +175,7 @@ contract ERC1155 is IERC1155 {
     // ─── Internal ──────────────────────────────────────────────────────────────
 
     /// @dev Check ERC1155Receiver on single transfer if `to` is a contract.
+    ///      EOAs (code.length == 0) are skipped — no callback needed.
     function _checkOnERC1155Received(
         address operator,
         address from,
