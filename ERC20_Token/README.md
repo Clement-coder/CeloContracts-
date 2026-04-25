@@ -102,3 +102,5 @@ forge test -vvv
 
 ## Contract
 `ERC20Token`
+
+![Solidity](https://img.shields.io/badge/solidity-0.8.20-blue)
