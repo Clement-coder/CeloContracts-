@@ -540,6 +540,13 @@ contract ERC1155Test is Test {
 
     // ─── Fuzz ──────────────────────────────────────────────────────────────────
 
+    function testFuzz_SetApprovalForAll(address op, bool approved) public {
+        vm.assume(op != address(0));
+        vm.prank(alice);
+        token.setApprovalForAll(op, approved);
+        assertEq(token.isApprovedForAll(alice, op), approved);
+    }
+
     function testFuzz_BurnBatch(uint256 a, uint256 ba) public {
         a  = bound(a,  1, type(uint128).max);
         ba = bound(ba, 0, a);
