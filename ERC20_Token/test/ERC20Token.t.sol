@@ -330,6 +330,38 @@ contract ERC20TokenTest is Test {
         token.acceptOwnership();
     }
 
+    // ─── IncreaseAllowance / DecreaseAllowance ─────────────────────────────────
+
+    function test_IncreaseAllowance_Success() public {
+        vm.prank(alice);
+        token.approve(bob, AMOUNT);
+        vm.prank(alice);
+        token.increaseAllowance(bob, AMOUNT);
+        assertEq(token.allowance(alice, bob), AMOUNT * 2);
+    }
+
+    function test_IncreaseAllowance_RevertZeroAddress() public {
+        vm.prank(alice);
+        vm.expectRevert(IERC20Token.ZeroAddress.selector);
+        token.increaseAllowance(address(0), AMOUNT);
+    }
+
+    function test_DecreaseAllowance_Success() public {
+        vm.prank(alice);
+        token.approve(bob, AMOUNT);
+        vm.prank(alice);
+        token.decreaseAllowance(bob, AMOUNT / 2);
+        assertEq(token.allowance(alice, bob), AMOUNT / 2);
+    }
+
+    function test_DecreaseAllowance_RevertUnderflow() public {
+        vm.prank(alice);
+        token.approve(bob, AMOUNT / 2);
+        vm.prank(alice);
+        vm.expectRevert(IERC20Token.InsufficientAllowance.selector);
+        token.decreaseAllowance(bob, AMOUNT);
+    }
+
     // ─── Fuzz ──────────────────────────────────────────────────────────────────
 
     function testFuzz_MintAndBurn(uint256 amount) public {
