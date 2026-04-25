@@ -51,6 +51,7 @@ contract MerkleAirdrop is IMerkleAirdrop {
     // ─── Core ──────────────────────────────────────────────────────────────────
 
     /// @notice Claim tokens by providing a valid Merkle proof.
+    /// @dev    Follows Checks-Effects-Interactions: marks claimed before transfer.
     /// @param amount Amount of tokens to claim (must match the committed amount).
     /// @param proof  Merkle proof path from leaf to root.
     function claim(uint256 amount, bytes32[] calldata proof) external override {
