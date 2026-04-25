@@ -74,3 +74,8 @@ forge build
 ```shell
 forge test -vvv
 ```
+
+## Deploy
+```shell
+forge script script/ERC721NFT.s.sol --rpc-url celo --broadcast
+```
