@@ -9,7 +9,7 @@ interface IERC1155 {
     error ZeroAddress();
     error LengthMismatch();       // ids and amounts arrays have different lengths
     error InsufficientBalance();
-    error UnsafeRecipient();
+    error UnsafeRecipient();      // contract recipient did not return correct ERC1155Receiver selector
     error NotOwner();
 
     // ─── Events ────────────────────────────────────────────────────────────────
