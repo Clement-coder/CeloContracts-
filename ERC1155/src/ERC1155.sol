@@ -145,6 +145,7 @@ contract ERC1155 is IERC1155 {
     }
 
     /// @notice Batch burn multiple token ids from `from`. Caller must be owner or approved.
+    /// @dev    Emits TransferBatch with `to` = address(0).
     function burnBatch(address from, uint256[] calldata ids, uint256[] calldata amounts) external {
         if (from != msg.sender && !isApprovedForAll(from, msg.sender)) revert NotOwnerOrApproved();
         if (ids.length != amounts.length) revert LengthMismatch();
