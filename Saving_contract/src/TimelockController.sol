@@ -166,7 +166,7 @@ contract TimelockController is ITimelockController {
     /// @param txHash Hash of the transaction to cancel.
     function cancelTransaction(bytes32 txHash) external override onlyProposer {
         if (_queue[txHash] == 0) revert TxNotQueued();
-        delete _queue[txHash];
+        delete _queue[txHash]; // frees storage slot
         emit TransactionCancelled(txHash);
     }
 
