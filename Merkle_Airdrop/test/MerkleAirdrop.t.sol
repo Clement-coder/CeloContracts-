@@ -297,6 +297,17 @@ contract MerkleAirdropTest is Test {
         airdrop.sweep(address(0));
     }
 
+    function test_Sweep_ZeroBalanceAfterAllClaims() public {
+        vm.prank(alice); airdrop.claim(ALICE_AMT, _proofAlice());
+        vm.prank(bob);   airdrop.claim(BOB_AMT,   _proofBob());
+        vm.prank(carol); airdrop.claim(CAROL_AMT, _proofCarol());
+        vm.prank(dave);  airdrop.claim(DAVE_AMT,  _proofDave());
+        address treasury = makeAddr("treasury");
+        vm.expectEmit(true, false, false, true);
+        emit Swept(treasury, 0);
+        airdrop.sweep(treasury);
+    }
+
     // ─── AirdropToken ──────────────────────────────────────────────────────────
 
     function test_Token_Name() public view {
