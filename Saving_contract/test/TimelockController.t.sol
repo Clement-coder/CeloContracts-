@@ -416,6 +416,15 @@ contract TimelockControllerTest is Test {
 
     // ─── GetTxHash ─────────────────────────────────────────────────────────────
 
+    function test_IsQueued_FalseAfterExecution() public {
+        bytes memory data = abi.encodeCall(savings.pause, ());
+        (bytes32 txHash, uint256 eta) = _queue(data);
+        skip(DELAY + 1);
+        vm.prank(executor);
+        timelock.executeTransaction(address(savings), 0, data, eta);
+        assertFalse(timelock.isQueued(txHash));
+    }
+
     function test_GetEta_ReturnsCorrectEta() public {
         bytes memory data = abi.encodeCall(savings.pause, ());
         vm.prank(proposer);
