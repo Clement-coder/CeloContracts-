@@ -178,6 +178,13 @@ contract ERC1155Test is Test {
         token.burn(alice, ID1, AMT);
     }
 
+    function test_Mint_DifferentRecipients() public {
+        token.mint(alice, ID1, 10, "");
+        token.mint(bob,   ID1, 20, "");
+        assertEq(token.balanceOf(alice, ID1), 10);
+        assertEq(token.balanceOf(bob,   ID1), 20);
+    }
+
     function test_BalanceOf_ZeroForUnminted() public view {
         assertEq(token.balanceOf(alice, 999), 0);
     }
