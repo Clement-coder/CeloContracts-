@@ -10,7 +10,7 @@ interface IMerkleAirdrop {
     error ZeroAddress();
     error AirdropEnded();     // airdrop window has closed
     error NotOwner();
-    error TransferFailed();
+    error TransferFailed();   // ERC20 transfer returned false
 
     // ─── Events ────────────────────────────────────────────────────────────────
     event Claimed(address indexed account, uint256 amount);
