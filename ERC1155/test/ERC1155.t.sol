@@ -178,6 +178,10 @@ contract ERC1155Test is Test {
         token.burn(alice, ID1, AMT);
     }
 
+    function test_IsApprovedForAll_FalseByDefault() public view {
+        assertFalse(token.isApprovedForAll(alice, bob));
+    }
+
     function test_SafeBatchTransferFrom_RevertWrongSelectorReceiver() public {
         WrongSelectorReceiver recv = new WrongSelectorReceiver();
         token.mintBatch(alice, _ids(ID1), _amts(50), "");
