@@ -178,6 +178,16 @@ contract ERC1155Test is Test {
         token.burn(alice, ID1, AMT);
     }
 
+    function test_BurnBatch_ByApprovedOperator() public {
+        token.mintBatch(alice, _ids(ID1, ID2), _amts(50, 80), "");
+        vm.prank(alice);
+        token.setApprovalForAll(bob, true);
+        vm.prank(bob);
+        token.burnBatch(alice, _ids(ID1, ID2), _amts(50, 80));
+        assertEq(token.balanceOf(alice, ID1), 0);
+        assertEq(token.balanceOf(alice, ID2), 0);
+    }
+
     function test_Mint_DifferentRecipients() public {
         token.mint(alice, ID1, 10, "");
         token.mint(bob,   ID1, 20, "");
