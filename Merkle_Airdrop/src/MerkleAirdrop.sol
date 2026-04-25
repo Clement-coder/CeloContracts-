@@ -95,6 +95,7 @@ contract MerkleAirdrop is IMerkleAirdrop {
     // ─── Internal ──────────────────────────────────────────────────────────────
 
     /// @dev Double-hash the leaf to prevent second-preimage attacks.
+    ///      Encoding: keccak256(bytes.concat(keccak256(abi.encode(account, amount))))
     function _leaf(address account, uint256 amount) internal pure returns (bytes32) {
         return keccak256(bytes.concat(keccak256(abi.encode(account, amount))));
     }
