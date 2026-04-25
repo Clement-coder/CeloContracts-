@@ -568,6 +568,16 @@ contract TimelockControllerTest is Test {
         assertTrue(savings.paused());
     }
 
+    function test_Integration_AdminCanGrantSelfProposerAndExecute() public {
+        timelock.setProposer(admin, true);
+        timelock.setExecutor(admin, true);
+        bytes memory data = abi.encodeCall(savings.pause, ());
+        (, uint256 eta) = timelock.queueTransaction(address(savings), 0, data);
+        skip(DELAY + 1);
+        timelock.executeTransaction(address(savings), 0, data, eta);
+        assertTrue(savings.paused());
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_AcceptsETH() public {
