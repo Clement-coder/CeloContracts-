@@ -192,6 +192,7 @@ contract TimelockController is ITimelockController {
     }
 
     /// @notice Grant or revoke executor role.
+    /// @dev    Emits {ExecutorSet}. Reverts on zero address.
     function setExecutor(address account, bool status) external override onlyAdmin {
         if (account == address(0)) revert ZeroAddress();
         isExecutor[account] = status;
