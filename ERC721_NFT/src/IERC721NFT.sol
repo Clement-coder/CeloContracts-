@@ -44,6 +44,7 @@ interface IERC721NFT {
     function burn(uint256 tokenId) external;
     function totalSupply() external view returns (uint256);
     function CAP() external view returns (uint256);
+    function nextTokenId() external view returns (uint256);
 
     // ─── Admin ─────────────────────────────────────────────────────────────────
     function pause() external;
