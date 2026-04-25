@@ -202,6 +202,7 @@ contract TimelockController is ITimelockController {
     // ─── Views ─────────────────────────────────────────────────────────────────
 
     /// @notice Compute the unique hash for a transaction.
+    /// @dev    Uses abi.encode (not encodePacked) to avoid hash collisions between different param types.
     /// @param target Contract to call.
     /// @param value  ETH value.
     /// @param data   Calldata.
