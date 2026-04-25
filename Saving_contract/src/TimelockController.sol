@@ -145,6 +145,7 @@ contract TimelockController is ITimelockController {
     ) external payable override onlyExecutor returns (bytes memory returnData) {
         bytes32 txHash = getTxHash(target, value, data, eta);
 
+        // Validate: queued, not yet executed, within time window
         if (_queue[txHash] == 0) revert TxNotQueued();
         if (_executed[txHash]) revert TxAlreadyExecuted();
         if (block.timestamp < eta) revert TimelockNotExpired(eta);
