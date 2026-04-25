@@ -41,4 +41,9 @@ interface IERC20Token {
     function unpause() external;
     function transferOwnership(address newOwner) external;
     function acceptOwnership() external;
+    function totalSupply() external view returns (uint256);
+    function CAP() external view returns (uint256);
+    function decimals() external view returns (uint8);
+    function name() external view returns (string memory);
+    function symbol() external view returns (string memory);
 }
