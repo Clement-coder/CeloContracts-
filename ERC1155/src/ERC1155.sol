@@ -82,7 +82,8 @@ contract ERC1155 is IERC1155 {
         if (to == address(0)) revert ZeroAddress();
         if (from != msg.sender && !isApprovedForAll(from, msg.sender)) revert NotOwnerOrApproved();
 
-        _balances[from][id] -= amount; // reverts on underflow (insufficient balance)
+        // Underflow reverts automatically — no explicit balance check needed
+        _balances[from][id] -= amount;
         _balances[to][id]   += amount;
 
         emit TransferSingle(msg.sender, from, to, id, amount);
