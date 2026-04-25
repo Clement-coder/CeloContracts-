@@ -79,3 +79,6 @@ forge test -vvv
 ```shell
 forge script script/Escrow.s.sol --rpc-url celo --broadcast
 ```
+
+## Contract
+`Escrow`
