@@ -86,3 +86,8 @@ forge script script/ERC20Token.s.sol --rpc-url celo --broadcast
 ```shell
 forge script script/ERC20Token.s.sol --rpc-url celo --broadcast
 ```
+
+## Test
+```shell
+forge test -vvv
+```
