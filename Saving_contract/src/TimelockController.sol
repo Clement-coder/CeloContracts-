@@ -50,7 +50,7 @@ contract TimelockController is ITimelockController {
     /// @notice txHash => eta. 0 means not queued or already executed/cancelled.
     mapping(bytes32 => uint256) private _queue;
 
-    /// @notice txHash => executed flag.
+    /// @notice txHash => executed flag. Prevents replay of executed transactions.
     mapping(bytes32 => bool) private _executed;
 
     // ─── Modifiers ─────────────────────────────────────────────────────────────
