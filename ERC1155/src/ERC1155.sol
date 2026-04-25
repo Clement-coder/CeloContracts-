@@ -15,7 +15,7 @@ contract ERC1155 is IERC1155 {
     /// @notice Contract owner — can mint tokens and update the base URI.
     address public owner;
 
-    /// @notice Base URI for token metadata. Append `{id}.json` to get full URI.
+    /// @notice Base URI for token metadata. Full URI = baseURI + id + ".json".
     string public baseURI;
 
     /// @notice account => id => balance
