@@ -540,6 +540,14 @@ contract ERC1155Test is Test {
 
     // ─── Fuzz ──────────────────────────────────────────────────────────────────
 
+    function test_SafeTransferFrom_WrongSelectorReceiver() public {
+        WrongSelectorReceiver recv = new WrongSelectorReceiver();
+        token.mint(alice, ID1, AMT, "");
+        vm.prank(alice);
+        vm.expectRevert(IERC1155.UnsafeRecipient.selector);
+        token.safeTransferFrom(alice, address(recv), ID1, AMT, "");
+    }
+
     function test_BalanceOfBatch_AllZeroForFreshAccount() public {
         address[] memory accs = new address[](3);
         accs[0] = alice; accs[1] = bob; accs[2] = carol;
