@@ -178,6 +178,11 @@ contract ERC1155Test is Test {
         token.burn(alice, ID1, AMT);
     }
 
+    function test_SetBaseURI_EmptyString() public {
+        token.setBaseURI("");
+        assertEq(token.uri(1), "1.json");
+    }
+
     function test_URI_LargeId() public view {
         string memory u = token.uri(type(uint256).max);
         assertTrue(bytes(u).length > 0);
