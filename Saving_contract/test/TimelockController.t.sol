@@ -477,6 +477,18 @@ contract TimelockControllerTest is Test {
         timelock.executeTransaction(address(savings), 0, data, eta);
     }
 
+    function test_Integration_MultipleExecutorsCanExecute() public {
+        address executor2 = makeAddr("executor2");
+        timelock.setExecutor(executor2, true);
+        bytes memory data = abi.encodeCall(savings.pause, ());
+        vm.prank(proposer);
+        (, uint256 eta) = timelock.queueTransaction(address(savings), 0, data);
+        skip(DELAY + 1);
+        vm.prank(executor2);
+        timelock.executeTransaction(address(savings), 0, data, eta);
+        assertTrue(savings.paused());
+    }
+
     function test_Integration_MultipleProposersCanQueue() public {
         address proposer2 = makeAddr("proposer2");
         timelock.setProposer(proposer2, true);
