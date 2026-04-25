@@ -79,3 +79,6 @@ forge test -vvv
 ```shell
 forge script script/TaskPlatform.s.sol --rpc-url celo --broadcast
 ```
+
+## Contract
+`task_contract`
