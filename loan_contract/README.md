@@ -74,3 +74,8 @@ forge build
 ```shell
 forge test -vvv
 ```
+
+## Deploy
+```shell
+forge script script/Loan.s.sol --rpc-url celo --broadcast
+```
