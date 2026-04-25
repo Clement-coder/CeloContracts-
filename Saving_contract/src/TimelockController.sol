@@ -184,6 +184,7 @@ contract TimelockController is ITimelockController {
     }
 
     /// @notice Grant or revoke proposer role.
+    /// @dev    Emits {ProposerSet}. Reverts on zero address to prevent accidental lockout.
     function setProposer(address account, bool status) external override onlyAdmin {
         if (account == address(0)) revert ZeroAddress();
         isProposer[account] = status;
