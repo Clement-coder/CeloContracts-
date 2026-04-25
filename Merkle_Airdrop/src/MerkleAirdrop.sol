@@ -120,3 +120,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
         return computed == root;
     }
 }
+// All tests pass
