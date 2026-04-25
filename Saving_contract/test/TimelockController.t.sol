@@ -477,6 +477,17 @@ contract TimelockControllerTest is Test {
         timelock.executeTransaction(address(savings), 0, data, eta);
     }
 
+    function test_Integration_RevokedExecutorCannotExecute() public {
+        bytes memory data = abi.encodeCall(savings.pause, ());
+        vm.prank(proposer);
+        (, uint256 eta) = timelock.queueTransaction(address(savings), 0, data);
+        skip(DELAY + 1);
+        timelock.setExecutor(executor, false);
+        vm.prank(executor);
+        vm.expectRevert(ITimelockController.NotExecutor.selector);
+        timelock.executeTransaction(address(savings), 0, data, eta);
+    }
+
     function test_Integration_RevokedProposerCannotQueue() public {
         timelock.setProposer(proposer, false);
         bytes memory data = abi.encodeCall(savings.pause, ());
