@@ -41,7 +41,7 @@ contract TimelockController is ITimelockController {
     /// @notice Proposer role: accounts that can queue and cancel transactions.
     mapping(address => bool) public isProposer;
 
-    /// @notice Executor role mapping.
+    /// @notice Executor role: accounts that can execute queued transactions.
     mapping(address => bool) public isExecutor;
 
     /// @notice Admin role mapping.
