@@ -21,7 +21,7 @@ contract ERC1155 is IERC1155 {
     /// @notice account => tokenId => balance
     mapping(address => mapping(uint256 => uint256)) private _balances;
 
-    /// @notice account => operator => approved
+    /// @notice account => operator => isApproved for all tokens
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
     // ─── Modifiers ─────────────────────────────────────────────────────────────
