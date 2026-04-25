@@ -13,3 +13,15 @@
 [submodule "DAO_Governance/lib/forge-std"]
 	path = DAO_Governance/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "Lottery/lib/forge-std"]
+	path = Lottery/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "Escrow/lib/forge-std"]
+	path = Escrow/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "Staking/lib/forge-std"]
+	path = Staking/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "Dutch_Auction/lib/forge-std"]
+	path = Dutch_Auction/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
