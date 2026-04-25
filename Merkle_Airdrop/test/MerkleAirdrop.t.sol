@@ -401,6 +401,19 @@ contract MerkleAirdropTest is Test {
 
     // ─── Fuzz ──────────────────────────────────────────────────────────────────
 
+    function test_Claim_SingleLeafTree() public {
+        address solo = makeAddr("solo");
+        uint256 soloAmt = 77e18;
+        bytes32 soloLeaf = _leaf(solo, soloAmt);
+        AirdropToken t2 = new AirdropToken(soloAmt);
+        MerkleAirdrop a2 = new MerkleAirdrop(address(t2), soloLeaf);
+        t2.transfer(address(a2), soloAmt);
+        bytes32[] memory emptyProof = new bytes32[](0);
+        vm.prank(solo);
+        a2.claim(soloAmt, emptyProof);
+        assertEq(t2.balanceOf(solo), soloAmt);
+    }
+
     function test_Claim_DoesNotAffectOtherBalances() public {
         vm.prank(alice); airdrop.claim(ALICE_AMT, _proofAlice());
         assertEq(token.balanceOf(bob),   0);
