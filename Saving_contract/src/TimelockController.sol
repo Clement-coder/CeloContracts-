@@ -174,6 +174,7 @@ contract TimelockController is ITimelockController {
 
     /// @notice Update the timelock delay.
     /// @dev    Should itself be called via a queued transaction for full governance.
+    ///         Direct admin calls are allowed for emergency use during initial setup.
     /// @param newDelay New delay in seconds (MIN_DELAY <= newDelay <= MAX_DELAY).
     function setDelay(uint256 newDelay) external override onlyAdmin {
         if (newDelay < MIN_DELAY) revert DelayTooShort();
