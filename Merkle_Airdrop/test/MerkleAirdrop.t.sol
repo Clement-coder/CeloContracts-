@@ -396,6 +396,13 @@ contract MerkleAirdropTest is Test {
 
     // ─── Fuzz ──────────────────────────────────────────────────────────────────
 
+    function test_Claim_DoesNotAffectOtherBalances() public {
+        vm.prank(alice); airdrop.claim(ALICE_AMT, _proofAlice());
+        assertEq(token.balanceOf(bob),   0);
+        assertEq(token.balanceOf(carol), 0);
+        assertEq(token.balanceOf(dave),  0);
+    }
+
     function testFuzz_Claim_InvalidAmount(uint256 badAmt) public {
         vm.assume(badAmt != ALICE_AMT);
         vm.prank(alice);
