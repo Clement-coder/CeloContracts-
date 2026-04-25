@@ -178,6 +178,13 @@ contract ERC1155Test is Test {
         token.burn(alice, ID1, AMT);
     }
 
+    function test_MintBatch_ToGoodReceiver() public {
+        GoodReceiver recv = new GoodReceiver();
+        token.mintBatch(address(recv), _ids(ID1, ID2), _amts(10, 20), "");
+        assertEq(token.balanceOf(address(recv), ID1), 10);
+        assertEq(token.balanceOf(address(recv), ID2), 20);
+    }
+
     function test_BurnBatch_EmitsTransferBatch() public {
         uint256[] memory ids  = _ids(ID1, ID2);
         uint256[] memory amts = _amts(50, 80);
