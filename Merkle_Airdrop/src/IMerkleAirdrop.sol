@@ -5,7 +5,7 @@ pragma solidity 0.8.20;
 /// @notice Interface for the Merkle-proof-based ERC20 airdrop contract.
 interface IMerkleAirdrop {
     // ─── Errors ────────────────────────────────────────────────────────────────
-    error AlreadyClaimed();
+    error AlreadyClaimed();  // account has already claimed their tokens
     error InvalidProof();
     error ZeroAddress();
     error AirdropEnded();
