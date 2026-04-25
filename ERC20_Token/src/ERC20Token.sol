@@ -172,6 +172,24 @@ contract ERC20Token is IERC20Token {
         pendingOwner = address(0);
     }
 
+    /// @notice Increase allowance for `spender` by `addedValue`.
+    function increaseAllowance(address spender, uint256 addedValue) external override returns (bool) {
+        if (spender == address(0)) revert ZeroAddress();
+        _allowances[msg.sender][spender] += addedValue;
+        emit Approval(msg.sender, spender, _allowances[msg.sender][spender]);
+        return true;
+    }
+
+    /// @notice Decrease allowance for `spender` by `subtractedValue`.
+    function decreaseAllowance(address spender, uint256 subtractedValue) external override returns (bool) {
+        if (spender == address(0)) revert ZeroAddress();
+        uint256 current = _allowances[msg.sender][spender];
+        if (subtractedValue > current) revert InsufficientAllowance();
+        _allowances[msg.sender][spender] = current - subtractedValue;
+        emit Approval(msg.sender, spender, _allowances[msg.sender][spender]);
+        return true;
+    }
+
     // ─── Internal ──────────────────────────────────────────────────────────────
 
     function _transfer(address from, address to, uint256 amount) internal {
