@@ -178,6 +178,14 @@ contract ERC1155Test is Test {
         token.burn(alice, ID1, AMT);
     }
 
+    function test_SafeBatchTransferFrom_RevertWrongSelectorReceiver() public {
+        WrongSelectorReceiver recv = new WrongSelectorReceiver();
+        token.mintBatch(alice, _ids(ID1), _amts(50), "");
+        vm.prank(alice);
+        vm.expectRevert(IERC1155.UnsafeRecipient.selector);
+        token.safeBatchTransferFrom(alice, address(recv), _ids(ID1), _amts(50), "");
+    }
+
     function test_MintBatch_RevertBadReceiver() public {
         BadReceiver recv = new BadReceiver();
         vm.expectRevert(IERC1155.UnsafeRecipient.selector);
