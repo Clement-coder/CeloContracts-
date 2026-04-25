@@ -596,6 +596,14 @@ contract TimelockControllerTest is Test {
 
     // ─── Receive ───────────────────────────────────────────────────────────────
 
+    function test_Receive_BalanceAccumulates() public {
+        vm.deal(address(this), 3 ether);
+        (bool ok1,) = address(timelock).call{value: 1 ether}("");
+        (bool ok2,) = address(timelock).call{value: 2 ether}("");
+        assertTrue(ok1 && ok2);
+        assertEq(address(timelock).balance, 3 ether);
+    }
+
     function test_Receive_AcceptsETH() public {
         (bool ok,) = address(timelock).call{value: 1 ether}("");
         assertTrue(ok);
