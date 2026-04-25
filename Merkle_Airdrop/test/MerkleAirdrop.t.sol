@@ -437,6 +437,14 @@ contract MerkleAirdropTest is Test {
         airdrop.claim(badAmt, _proofAlice());
     }
 
+    function testFuzz_Token_TransferFrom(uint256 amount) public {
+        amount = bound(amount, 1, BOB_AMT);
+        vm.prank(bob); airdrop.claim(BOB_AMT, _proofBob());
+        vm.prank(bob); token.approve(alice, amount);
+        vm.prank(alice); token.transferFrom(bob, carol, amount);
+        assertEq(token.balanceOf(carol), amount);
+    }
+
     function testFuzz_Token_Transfer(uint256 amount) public {
         amount = bound(amount, 1, ALICE_AMT);
         vm.prank(alice); airdrop.claim(ALICE_AMT, _proofAlice());
