@@ -81,3 +81,8 @@ forge script script/ERC20Token.s.sol --rpc-url celo --broadcast
 ```
 
 ![Solidity](https://img.shields.io/badge/solidity-0.8.20-blue)
+
+## Deploy
+```shell
+forge script script/ERC20Token.s.sol --rpc-url celo --broadcast
+```
