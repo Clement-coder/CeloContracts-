@@ -13,6 +13,7 @@ interface IMerkleAirdrop {
     error TransferFailed();   // ERC20 transfer returned false
 
     // ─── Events ────────────────────────────────────────────────────────────────
+    /// @dev Emitted when a recipient successfully claims their tokens.
     event Claimed(address indexed account, uint256 amount);
     event MerkleRootUpdated(bytes32 oldRoot, bytes32 newRoot);
     event Swept(address indexed to, uint256 amount);
