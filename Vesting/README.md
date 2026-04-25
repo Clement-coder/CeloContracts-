@@ -82,3 +82,5 @@ forge script script/Vesting.s.sol --rpc-url celo --broadcast
 
 ## Contract
 `Vesting`
+
+![Solidity](https://img.shields.io/badge/solidity-0.8.20-blue)
