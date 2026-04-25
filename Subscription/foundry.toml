@@ -11,3 +11,4 @@ celo = "https://forno.celo.org"
 
 [etherscan]
 celo = { key = "${CELOSCAN_API_KEY}", url = "https://api.celoscan.io/api" }
+
