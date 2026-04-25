@@ -366,6 +366,12 @@ contract MerkleAirdropTest is Test {
         token.transferFrom(alice, bob, 1);
     }
 
+    function test_Token_Approve_RevertZeroAddress() public {
+        vm.prank(alice);
+        vm.expectRevert(AirdropToken.ZeroAddress.selector);
+        token.approve(address(0), 100);
+    }
+
     function test_Token_Approve_ZeroResetsAllowance() public {
         vm.prank(alice); token.approve(bob, 100);
         vm.prank(alice); token.approve(bob, 0);
