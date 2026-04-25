@@ -38,7 +38,7 @@ contract TimelockController is ITimelockController {
     /// @notice Current timelock delay in seconds.
     uint256 public delay;
 
-    /// @notice Proposer role mapping.
+    /// @notice Proposer role: accounts that can queue and cancel transactions.
     mapping(address => bool) public isProposer;
 
     /// @notice Executor role mapping.
