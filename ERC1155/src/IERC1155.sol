@@ -7,7 +7,7 @@ interface IERC1155 {
     // ─── Errors ────────────────────────────────────────────────────────────────
     error NotOwnerOrApproved(); // caller is not token owner or approved operator
     error ZeroAddress();
-    error LengthMismatch();
+    error LengthMismatch();       // ids and amounts arrays have different lengths
     error InsufficientBalance();
     error UnsafeRecipient();
     error NotOwner();
