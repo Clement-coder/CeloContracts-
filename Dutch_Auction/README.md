@@ -82,3 +82,5 @@ forge script script/DutchAuction.s.sol --rpc-url celo --broadcast
 
 ## Contract
 `Dutch_Auction`
+
+![Solidity](https://img.shields.io/badge/solidity-0.8.20-blue)
