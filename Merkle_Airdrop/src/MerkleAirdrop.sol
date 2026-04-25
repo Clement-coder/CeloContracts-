@@ -59,6 +59,7 @@ contract MerkleAirdrop is IMerkleAirdrop {
         bytes32 leaf = _leaf(msg.sender, amount);
         if (!_verify(proof, merkleRoot, leaf)) revert InvalidProof();
 
+        // Mark claimed before transfer to prevent reentrancy
         _claimed[msg.sender] = true;
         emit Claimed(msg.sender, amount);
 
