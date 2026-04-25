@@ -224,5 +224,6 @@ contract TimelockController is ITimelockController {
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     /// @notice Accept ETH so the timelock can forward value in transactions.
+    /// @dev    Required for executing transactions that forward ETH to target contracts.
     receive() external payable {}
 }
