@@ -79,3 +79,6 @@ forge test -vvv
 ```shell
 forge script script/Loan.s.sol --rpc-url celo --broadcast
 ```
+
+## Contract
+`loan_contract`
