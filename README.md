@@ -37,3 +37,12 @@ forge build
 forge test
 forge script script/<Name>.s.sol --rpc-url celo --broadcast
 ```
+
+## Network
+
+| Parameter | Value |
+|---|---|
+| Network | Celo Mainnet |
+| Chain ID | 42220 |
+| RPC | https://forno.celo.org |
+| Explorer | https://celoscan.io |
