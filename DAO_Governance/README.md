@@ -79,3 +79,6 @@ forge test -vvv
 ```shell
 forge script script/DAOGovernance.s.sol --rpc-url celo --broadcast
 ```
+
+## Contract
+`DAO_Governance`
