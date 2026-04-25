@@ -17,6 +17,7 @@ interface IMerkleAirdrop {
     event Claimed(address indexed account, uint256 amount);
     /// @dev Emitted when the owner updates the Merkle root.
     event MerkleRootUpdated(bytes32 oldRoot, bytes32 newRoot);
+    /// @dev Emitted when the owner sweeps remaining tokens after the airdrop.
     event Swept(address indexed to, uint256 amount);
 
     // ─── Functions ─────────────────────────────────────────────────────────────
