@@ -153,7 +153,7 @@ contract TimelockController is ITimelockController {
         if (block.timestamp > eta + GRACE_PERIOD) revert GracePeriodExpired(eta);
 
         _executed[txHash] = true;
-        delete _queue[txHash];
+        delete _queue[txHash]; // free storage; eta no longer needed
 
         emit TransactionExecuted(txHash, target, value, data);
 
