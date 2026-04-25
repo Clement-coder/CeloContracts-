@@ -5,7 +5,7 @@ pragma solidity 0.8.20;
 /// @notice Minimal ERC-1155 interface (EIP-1155).
 interface IERC1155 {
     // ─── Errors ────────────────────────────────────────────────────────────────
-    error NotOwnerOrApproved();
+    error NotOwnerOrApproved(); // caller is not token owner or approved operator
     error ZeroAddress();
     error LengthMismatch();
     error InsufficientBalance();
