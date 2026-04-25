@@ -91,3 +91,11 @@ forge script script/ERC20Token.s.sol --rpc-url celo --broadcast
 ```shell
 forge test -vvv
 ```
+
+## Features
+- ERC20 standard (transfer, approve, transferFrom)
+- Mint / Burn (owner only)
+- Supply cap
+- Pause / Unpause
+- Two-step ownership transfer
+- increaseAllowance / decreaseAllowance
