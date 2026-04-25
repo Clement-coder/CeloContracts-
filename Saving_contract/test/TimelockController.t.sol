@@ -401,6 +401,12 @@ contract TimelockControllerTest is Test {
         timelock.setExecutor(address(0), true);
     }
 
+    function test_Execute_IsExecutedFalseBeforeExecution() public {
+        bytes memory data = abi.encodeCall(savings.pause, ());
+        (bytes32 txHash,) = _queue(data);
+        assertFalse(timelock.isExecuted(txHash));
+    }
+
     // ─── GetTxHash ─────────────────────────────────────────────────────────────
 
     function test_GetTxHash_Deterministic() public view {
