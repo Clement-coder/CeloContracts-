@@ -25,3 +25,18 @@
 [submodule "Dutch_Auction/lib/forge-std"]
 	path = Dutch_Auction/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "Flash/lib/forge-std"]
+	path = Flash/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "Subscription/lib/forge-std"]
+	path = Subscription/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "ERC721_NFT/lib/forge-std"]
+	path = ERC721_NFT/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "Token_Swap/lib/forge-std"]
+	path = Token_Swap/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "ERC20_Token/lib/forge-std"]
+	path = ERC20_Token/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std

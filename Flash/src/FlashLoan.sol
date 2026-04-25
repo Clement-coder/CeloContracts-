@@ -1,0 +1,176 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.20;
+
+import {IFlashLoan, IFlashLoanReceiver} from "./IFlashLoan.sol";
+
+/// @title FlashLoan
+/// @notice CELO flash loan pool. Borrowers receive any amount in one transaction
+///         and must repay principal + fee before the transaction ends.
+///         Pool is funded by anyone. Fees accumulate and are withdrawn by owner.
+/// @dev    Production-grade: reentrancy guard, pause, two-step ownership,
+///         custom errors, full NatSpec, locked pragma, optimizer config.
+contract FlashLoanPool is IFlashLoan {
+
+    // ─── Constants ─────────────────────────────────────────────────────────────
+
+    /// @notice Maximum flash loan fee: 1% (100 bps).
+    uint256 public constant MAX_FEE_BPS = 100;
+
+    /// @notice Minimum loan amount: 0.001 CELO.
+    uint256 public constant MIN_AMOUNT = 0.001 ether;
+
+    // ─── State ─────────────────────────────────────────────────────────────────
+
+    /// @notice Current contract owner.
+    address public owner;
+
+    /// @notice Pending owner in two-step transfer.
+    address public pendingOwner;
+
+    /// @notice Whether the contract is paused.
+    bool public paused;
+
+    /// @notice Reentrancy lock.
+    bool private _locked;
+
+    /// @notice Flash loan fee in basis points (e.g. 9 = 0.09%).
+    uint256 public feeBps;
+
+    /// @notice Accumulated fees available for withdrawal.
+    uint256 public accruedFees;
+
+    // ─── Modifiers ─────────────────────────────────────────────────────────────
+
+    modifier onlyOwner() {
+        if (msg.sender != owner) revert NotOwner();
+        _;
+    }
+
+    modifier whenNotPaused() {
+        if (paused) revert Paused();
+        _;
+    }
+
+    modifier nonReentrant() {
+        if (_locked) revert Reentrancy();
+        _locked = true;
+        _;
+        _locked = false;
+    }
+
+    // ─── Constructor ───────────────────────────────────────────────────────────
+
+    /// @notice Deploy the flash loan pool.
+    /// @param _feeBps Flash loan fee in basis points. Must be <= MAX_FEE_BPS.
+    constructor(uint256 _feeBps) {
+        if (_feeBps > MAX_FEE_BPS) revert FeeTooHigh();
+        owner = msg.sender;
+        feeBps = _feeBps;
+    }
+
+    // ─── Core ──────────────────────────────────────────────────────────────────
+
+    /// @notice Execute a flash loan. Sends `amount` CELO to `receiver`, calls
+    ///         `executeOperation`, then verifies full repayment (principal + fee).
+    /// @param receiver Address of the contract implementing IFlashLoanReceiver.
+    /// @param amount   Amount of CELO to borrow in wei. Must be >= MIN_AMOUNT.
+    /// @param data     Arbitrary data forwarded to the receiver's executeOperation.
+    /// @dev   Emits {FlashLoan}. Reverts if repayment is not received in same tx.
+    function flashLoan(address receiver, uint256 amount, bytes calldata data)
+        external override whenNotPaused nonReentrant
+    {
+        if (receiver == address(0)) revert InvalidReceiver();
+        if (amount < MIN_AMOUNT) revert AmountTooLow();
+        if (amount > availableLiquidity()) revert InsufficientLiquidity();
+
+        uint256 fee = (amount * feeBps) / 10_000;
+        uint256 repayment = amount + fee;
+        uint256 balanceBefore = address(this).balance;
+
+        emit FlashLoan(receiver, amount, fee);
+
+        // Send loan to receiver
+        (bool sent,) = receiver.call{value: amount}("");
+        if (!sent) revert TransferFailed();
+
+        // Trigger borrower's callback
+        IFlashLoanReceiver(receiver).executeOperation(amount, fee, data);
+
+        // Verify full repayment
+        if (address(this).balance < balanceBefore - amount + repayment) {
+            revert RepaymentFailed();
+        }
+
+        accruedFees += fee;
+    }
+
+    // ─── Pool Management ───────────────────────────────────────────────────────
+
+    /// @notice Fund the flash loan pool. Anyone can contribute liquidity.
+    /// @dev Emits {PoolFunded}.
+    function fundPool() external payable override {
+        if (msg.value == 0) revert AmountTooLow();
+        emit PoolFunded(msg.sender, msg.value);
+    }
+
+    /// @notice Owner withdraws accumulated fees.
+    /// @dev Emits {FeesWithdrawn}.
+    function withdrawFees() external override onlyOwner nonReentrant {
+        uint256 amount = accruedFees;
+        if (amount == 0) revert AmountTooLow();
+        accruedFees = 0;
+        emit FeesWithdrawn(owner, amount);
+        (bool ok,) = owner.call{value: amount}("");
+        if (!ok) revert TransferFailed();
+    }
+
+    // ─── Views ─────────────────────────────────────────────────────────────────
+
+    /// @notice Returns the amount of CELO available for flash loans.
+    /// @return Available liquidity in wei (excludes accrued fees).
+    function availableLiquidity() public view override returns (uint256) {
+        return address(this).balance - accruedFees;
+    }
+
+    // ─── Admin ─────────────────────────────────────────────────────────────────
+
+    /// @notice Update the flash loan fee.
+    /// @param newFeeBps New fee in basis points. Must be <= MAX_FEE_BPS.
+    function setFee(uint256 newFeeBps) external override onlyOwner {
+        if (newFeeBps > MAX_FEE_BPS) revert FeeTooHigh();
+        emit FeeUpdated(feeBps, newFeeBps);
+        feeBps = newFeeBps;
+    }
+
+    /// @notice Pause the contract.
+    function pause() external override onlyOwner {
+        paused = true;
+        emit ContractPaused(msg.sender);
+    }
+
+    /// @notice Unpause the contract.
+    function unpause() external override onlyOwner {
+        paused = false;
+        emit ContractUnpaused(msg.sender);
+    }
+
+    /// @notice Initiate two-step ownership transfer.
+    function transferOwnership(address newOwner) external override onlyOwner {
+        if (newOwner == address(0)) revert ZeroAddress();
+        pendingOwner = newOwner;
+        emit OwnershipTransferStarted(owner, newOwner);
+    }
+
+    /// @notice Accept ownership.
+    function acceptOwnership() external override {
+        if (msg.sender != pendingOwner) revert NotPendingOwner();
+        emit OwnershipTransferred(owner, pendingOwner);
+        owner = pendingOwner;
+        pendingOwner = address(0);
+    }
+
+    /// @notice Accept direct ETH deposits.
+    receive() external payable {
+        emit PoolFunded(msg.sender, msg.value);
+    }
+}
