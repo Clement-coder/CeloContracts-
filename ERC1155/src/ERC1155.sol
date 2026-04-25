@@ -163,6 +163,7 @@ contract ERC1155 is IERC1155 {
     }
 
     /// @notice Update the base URI. Only owner.
+    /// @dev    Does not emit URI event per token — caller should emit off-chain if needed.
     function setBaseURI(string calldata newURI) external onlyOwner {
         baseURI = newURI;
     }
