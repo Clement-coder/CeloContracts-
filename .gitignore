@@ -1,2 +1,7 @@
 out/
 cache/
+
+# artifacts
+broadcast/
+.env
+*.log
