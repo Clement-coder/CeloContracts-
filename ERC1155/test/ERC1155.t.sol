@@ -540,6 +540,14 @@ contract ERC1155Test is Test {
 
     // ─── Fuzz ──────────────────────────────────────────────────────────────────
 
+    function test_BalanceOfBatch_AllZeroForFreshAccount() public {
+        address[] memory accs = new address[](3);
+        accs[0] = alice; accs[1] = bob; accs[2] = carol;
+        uint256[] memory ids = _ids(ID1, ID2, ID3);
+        uint256[] memory bals = token.balanceOfBatch(accs, ids);
+        assertEq(bals[0], 0); assertEq(bals[1], 0); assertEq(bals[2], 0);
+    }
+
     function testFuzz_Mint_BalanceOf(uint256 id, uint256 amount) public {
         amount = bound(amount, 0, type(uint128).max);
         token.mint(alice, id, amount, "");
