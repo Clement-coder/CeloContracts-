@@ -252,6 +252,11 @@ contract MerkleAirdropTest is Test {
         airdrop.setMerkleRoot(bytes32(uint256(1)));
     }
 
+    function test_SetMerkleRoot_ToZeroBytes32() public {
+        airdrop.setMerkleRoot(bytes32(0));
+        assertEq(airdrop.merkleRoot(), bytes32(0));
+    }
+
     function test_SetMerkleRoot_AllowsNewClaims() public {
         // Build a new 1-leaf tree for a new recipient
         address newUser = makeAddr("newUser");
