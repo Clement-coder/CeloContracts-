@@ -555,6 +555,14 @@ contract TimelockControllerTest is Test {
         assertEq(timelock.delay(), newDelay);
     }
 
+    function testFuzz_QueueDifferentValues(uint256 val) public {
+        val = bound(val, 0, 10 ether);
+        bytes memory data = "";
+        vm.prank(proposer);
+        (bytes32 txHash, uint256 eta) = timelock.queueTransaction(address(savings), val, data);
+        assertEq(timelock.getEta(txHash), eta);
+    }
+
     function testFuzz_QueueAndExecute(uint256 warpTime) public {
         warpTime = bound(warpTime, DELAY + 1, DELAY + timelock.GRACE_PERIOD());
         bytes memory data = abi.encodeCall(savings.pause, ());
