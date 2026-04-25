@@ -135,7 +135,8 @@ contract ERC1155 is IERC1155 {
     /// @notice Burn `amount` of token `id` from `from`. Caller must be owner or approved.
     function burn(address from, uint256 id, uint256 amount) external {
         if (from != msg.sender && !isApprovedForAll(from, msg.sender)) revert NotOwnerOrApproved();
-        _balances[from][id] -= amount; // reverts on underflow
+        // Underflow reverts automatically on insufficient balance
+        _balances[from][id] -= amount;
         emit TransferSingle(msg.sender, from, address(0), id, amount);
     }
 
