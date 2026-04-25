@@ -90,3 +90,22 @@ forge script script/Savings.s.sol --rpc-url celo --broadcast
 ## License
 
 MIT
+
+## TimelockController
+
+Governance timelock for the Savings contract. Admin actions (pause, unpause, transferOwnership) must be queued, wait for the configured delay, then executed within the grace period.
+
+### Constants
+- `MIN_DELAY`: 1 day
+- `MAX_DELAY`: 30 days
+- `GRACE_PERIOD`: 14 days
+
+### Roles
+- **Admin**: update delay, manage roles
+- **Proposer**: queue and cancel transactions
+- **Executor**: execute queued transactions after delay
+
+### Deploy
+```shell
+forge script script/TimelockController.s.sol --rpc-url celo --broadcast
+```
