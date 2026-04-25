@@ -50,3 +50,5 @@ forge script script/<Name>.s.sol --rpc-url celo --broadcast
 ## License
 
 MIT
+
+![Foundry](https://img.shields.io/badge/built%20with-Foundry-blue)
