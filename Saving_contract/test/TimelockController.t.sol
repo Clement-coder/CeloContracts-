@@ -416,6 +416,13 @@ contract TimelockControllerTest is Test {
 
     // ─── GetTxHash ─────────────────────────────────────────────────────────────
 
+    function test_GetEta_ReturnsCorrectEta() public {
+        bytes memory data = abi.encodeCall(savings.pause, ());
+        vm.prank(proposer);
+        (bytes32 txHash, uint256 eta) = timelock.queueTransaction(address(savings), 0, data);
+        assertEq(timelock.getEta(txHash), eta);
+    }
+
     function test_GetTxHash_Deterministic() public view {
         bytes memory data = abi.encodeCall(savings.pause, ());
         uint256 eta = block.timestamp + DELAY;
