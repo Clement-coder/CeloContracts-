@@ -15,6 +15,7 @@ interface IMerkleAirdrop {
     // ─── Events ────────────────────────────────────────────────────────────────
     /// @dev Emitted when a recipient successfully claims their tokens.
     event Claimed(address indexed account, uint256 amount);
+    /// @dev Emitted when the owner updates the Merkle root.
     event MerkleRootUpdated(bytes32 oldRoot, bytes32 newRoot);
     event Swept(address indexed to, uint256 amount);
 
