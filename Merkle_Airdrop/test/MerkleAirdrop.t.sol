@@ -217,6 +217,10 @@ contract MerkleAirdropTest is Test {
 
     // ─── hasClaimed ────────────────────────────────────────────────────────────
 
+    function test_HasClaimed_FalseForZeroAddress() public view {
+        assertFalse(airdrop.hasClaimed(address(0)));
+    }
+
     function test_HasClaimed_FalseBeforeClaim() public view {
         assertFalse(airdrop.hasClaimed(alice));
     }
