@@ -380,6 +380,14 @@ contract MerkleAirdropTest is Test {
         token.transfer(bob, 1);
     }
 
+    function test_Token_TransferFrom_RevertInsufficientBalance() public {
+        vm.prank(alice); token.approve(bob, type(uint256).max);
+        // alice has 0 tokens (airdrop holds them all)
+        vm.prank(bob);
+        vm.expectRevert(AirdropToken.InsufficientBalance.selector);
+        token.transferFrom(alice, carol, 1);
+    }
+
     function test_Token_TransferFrom_RevertInsufficientAllowance() public {
         vm.prank(alice);
         airdrop.claim(ALICE_AMT, _proofAlice());
