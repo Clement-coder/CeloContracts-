@@ -62,6 +62,7 @@ contract AirdropToken {
         if (to == address(0)) revert ZeroAddress();
         if (balanceOf[from] < amount) revert InsufficientBalance();
         uint256 allowed = allowance[from][msg.sender];
+        // Skip decrement for max allowance (gas optimisation, matches OZ behaviour)
         if (allowed != type(uint256).max) {
             if (allowed < amount) revert InsufficientAllowance();
             allowance[from][msg.sender] = allowed - amount;
