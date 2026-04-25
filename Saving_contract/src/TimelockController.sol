@@ -47,7 +47,7 @@ contract TimelockController is ITimelockController {
     /// @notice Admin role: accounts that can update delay and manage roles.
     mapping(address => bool) public isAdmin;
 
-    /// @notice txHash => eta. 0 means not queued.
+    /// @notice txHash => eta. 0 means not queued or already executed/cancelled.
     mapping(bytes32 => uint256) private _queue;
 
     /// @notice txHash => executed flag.
