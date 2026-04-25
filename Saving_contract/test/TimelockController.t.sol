@@ -477,6 +477,15 @@ contract TimelockControllerTest is Test {
         timelock.executeTransaction(address(savings), 0, data, eta);
     }
 
+    function test_Integration_MultipleProposersCanQueue() public {
+        address proposer2 = makeAddr("proposer2");
+        timelock.setProposer(proposer2, true);
+        bytes memory data = abi.encodeCall(savings.pause, ());
+        vm.prank(proposer2);
+        (bytes32 txHash,) = timelock.queueTransaction(address(savings), 0, data);
+        assertTrue(timelock.isQueued(txHash));
+    }
+
     // ─── Fuzz ──────────────────────────────────────────────────────────────────
 
     function testFuzz_SetDelay(uint256 newDelay) public {
