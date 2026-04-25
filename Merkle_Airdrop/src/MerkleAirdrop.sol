@@ -78,6 +78,7 @@ contract MerkleAirdrop is IMerkleAirdrop {
     // ─── Owner ─────────────────────────────────────────────────────────────────
 
     /// @notice Update the Merkle root (e.g. to add new recipients).
+    /// @dev    Existing claimed flags are preserved; previously claimed accounts cannot re-claim.
     /// @param newRoot New Merkle root.
     function setMerkleRoot(bytes32 newRoot) external override onlyOwner {
         emit MerkleRootUpdated(merkleRoot, newRoot);
