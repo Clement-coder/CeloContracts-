@@ -178,6 +178,16 @@ contract ERC1155Test is Test {
         token.burn(alice, ID1, AMT);
     }
 
+    function test_BurnBatch_EmitsTransferBatch() public {
+        uint256[] memory ids  = _ids(ID1, ID2);
+        uint256[] memory amts = _amts(50, 80);
+        token.mintBatch(alice, ids, amts, "");
+        vm.expectEmit(true, true, true, false);
+        emit TransferBatch(alice, alice, address(0), ids, amts);
+        vm.prank(alice);
+        token.burnBatch(alice, ids, amts);
+    }
+
     function test_Burn_FullBalance() public {
         token.mint(alice, ID1, AMT, "");
         vm.prank(alice);
