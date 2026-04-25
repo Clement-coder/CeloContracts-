@@ -366,6 +366,14 @@ contract MerkleAirdropTest is Test {
         token.transferFrom(alice, bob, 1);
     }
 
+    function test_Token_MaxAllowance_NotDecremented() public {
+        vm.prank(alice); airdrop.claim(ALICE_AMT, _proofAlice());
+        vm.prank(alice); token.approve(bob, type(uint256).max);
+        vm.prank(bob);   token.transferFrom(alice, carol, ALICE_AMT);
+        // max allowance should not be decremented
+        assertEq(token.allowance(alice, bob), type(uint256).max);
+    }
+
     // ─── Fuzz ──────────────────────────────────────────────────────────────────
 
     function testFuzz_Claim_InvalidAmount(uint256 badAmt) public {
