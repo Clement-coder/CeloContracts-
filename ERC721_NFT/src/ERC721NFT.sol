@@ -26,7 +26,7 @@ contract ERC721NFT is IERC721NFT {
     uint256 public totalSupply;
 
     /// @notice Next token ID to mint (auto-increments).
-    uint256 private _nextId;
+    uint256 public nextTokenId;
 
     // ─── State ─────────────────────────────────────────────────────────────────
 
@@ -168,7 +168,7 @@ contract ERC721NFT is IERC721NFT {
         if (to == address(0)) revert ZeroAddress();
         if (totalSupply >= CAP) revert CapExceeded();
 
-        tokenId = ++_nextId;
+        tokenId = ++nextTokenId;
         totalSupply += 1;
         _owners[tokenId] = to;
         _balances[to] += 1;
