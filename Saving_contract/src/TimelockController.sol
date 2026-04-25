@@ -61,6 +61,7 @@ contract TimelockController is ITimelockController {
         _;
     }
 
+    /// @dev Reverts with NotProposer if caller is not in isProposer mapping.
     modifier onlyProposer() {
         if (!isProposer[msg.sender]) revert NotProposer();
         _;
