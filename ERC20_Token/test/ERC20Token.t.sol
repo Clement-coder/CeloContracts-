@@ -18,6 +18,8 @@ contract ERC20TokenTest is Test {
     event Approval(address indexed owner, address indexed spender, uint256 amount);
     event Minted(address indexed to, uint256 amount);
     event Burned(address indexed from, uint256 amount);
+    event ContractPaused(address indexed by);
+    event ContractUnpaused(address indexed by);
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
@@ -33,6 +35,7 @@ contract ERC20TokenTest is Test {
         assertEq(token.decimals(), 18);
         assertEq(token.CAP(), CAP);
         assertEq(token.owner(), owner);
+        assertEq(token.totalSupply(), 0);
     }
 
     function test_Constructor_RevertZeroCap() public {
@@ -83,6 +86,11 @@ contract ERC20TokenTest is Test {
         token.mint(alice, AMOUNT);
     }
 
+    function test_Mint_ExactCap() public {
+        token.mint(alice, CAP);
+        assertEq(token.totalSupply(), CAP);
+    }
+
     // ─── Burn ──────────────────────────────────────────────────────────────────
 
     function test_Burn_Success() public {
@@ -91,6 +99,13 @@ contract ERC20TokenTest is Test {
         token.burn(AMOUNT);
         assertEq(token.balanceOf(alice), 0);
         assertEq(token.totalSupply(), 0);
+    }
+
+    function test_Burn_Partial() public {
+        token.mint(alice, AMOUNT);
+        vm.prank(alice);
+        token.burn(AMOUNT / 2);
+        assertEq(token.balanceOf(alice), AMOUNT / 2);
     }
 
     function test_Burn_EmitsEvents() public {
@@ -116,6 +131,14 @@ contract ERC20TokenTest is Test {
         token.burn(0);
     }
 
+    function test_Burn_RevertWhenPaused() public {
+        token.mint(alice, AMOUNT);
+        token.pause();
+        vm.prank(alice);
+        vm.expectRevert(IERC20Token.Paused.selector);
+        token.burn(AMOUNT);
+    }
+
     // ─── Transfer ──────────────────────────────────────────────────────────────
 
     function test_Transfer_Success() public {
@@ -124,6 +147,14 @@ contract ERC20TokenTest is Test {
         token.transfer(bob, AMOUNT);
         assertEq(token.balanceOf(alice), 0);
         assertEq(token.balanceOf(bob), AMOUNT);
+    }
+
+    function test_Transfer_Partial() public {
+        token.mint(alice, AMOUNT);
+        vm.prank(alice);
+        token.transfer(bob, AMOUNT / 2);
+        assertEq(token.balanceOf(alice), AMOUNT / 2);
+        assertEq(token.balanceOf(bob), AMOUNT / 2);
     }
 
     function test_Transfer_EmitsEvent() public {
@@ -145,6 +176,13 @@ contract ERC20TokenTest is Test {
         vm.prank(alice);
         vm.expectRevert(IERC20Token.ZeroAddress.selector);
         token.transfer(address(0), AMOUNT);
+    }
+
+    function test_Transfer_RevertZeroAmount() public {
+        token.mint(alice, AMOUNT);
+        vm.prank(alice);
+        vm.expectRevert(IERC20Token.ZeroAmount.selector);
+        token.transfer(bob, 0);
     }
 
     function test_Transfer_RevertWhenPaused() public {
@@ -170,6 +208,20 @@ contract ERC20TokenTest is Test {
         token.approve(bob, AMOUNT);
     }
 
+    function test_Approve_RevertZeroAddress() public {
+        vm.prank(alice);
+        vm.expectRevert(IERC20Token.ZeroAddress.selector);
+        token.approve(address(0), AMOUNT);
+    }
+
+    function test_Approve_Overwrite() public {
+        vm.prank(alice);
+        token.approve(bob, AMOUNT);
+        vm.prank(alice);
+        token.approve(bob, AMOUNT * 2);
+        assertEq(token.allowance(alice, bob), AMOUNT * 2);
+    }
+
     function test_TransferFrom_Success() public {
         token.mint(alice, AMOUNT);
         vm.prank(alice);
@@ -180,13 +232,22 @@ contract ERC20TokenTest is Test {
         assertEq(token.allowance(alice, bob), 0);
     }
 
+    function test_TransferFrom_DecreasesAllowance() public {
+        token.mint(alice, AMOUNT);
+        vm.prank(alice);
+        token.approve(bob, AMOUNT);
+        vm.prank(bob);
+        token.transferFrom(alice, bob, AMOUNT / 2);
+        assertEq(token.allowance(alice, bob), AMOUNT / 2);
+    }
+
     function test_TransferFrom_UnlimitedAllowance() public {
         token.mint(alice, AMOUNT);
         vm.prank(alice);
         token.approve(bob, type(uint256).max);
         vm.prank(bob);
         token.transferFrom(alice, bob, AMOUNT);
-        assertEq(token.allowance(alice, bob), type(uint256).max); // not decremented
+        assertEq(token.allowance(alice, bob), type(uint256).max);
     }
 
     function test_TransferFrom_RevertInsufficientAllowance() public {
@@ -196,11 +257,22 @@ contract ERC20TokenTest is Test {
         token.transferFrom(alice, bob, AMOUNT);
     }
 
+    function test_TransferFrom_RevertWhenPaused() public {
+        token.mint(alice, AMOUNT);
+        vm.prank(alice);
+        token.approve(bob, AMOUNT);
+        token.pause();
+        vm.prank(bob);
+        vm.expectRevert(IERC20Token.Paused.selector);
+        token.transferFrom(alice, bob, AMOUNT);
+    }
+
     // ─── Pause ─────────────────────────────────────────────────────────────────
 
     function test_Pause_Unpause() public {
         token.pause();
         assertTrue(token.paused());
+        emit ContractPaused(owner);
         token.unpause();
         assertFalse(token.paused());
     }
@@ -209,6 +281,13 @@ contract ERC20TokenTest is Test {
         vm.prank(alice);
         vm.expectRevert(IERC20Token.NotOwner.selector);
         token.pause();
+    }
+
+    function test_Unpause_RevertNotOwner() public {
+        token.pause();
+        vm.prank(alice);
+        vm.expectRevert(IERC20Token.NotOwner.selector);
+        token.unpause();
     }
 
     // ─── Ownership ─────────────────────────────────────────────────────────────
@@ -225,6 +304,12 @@ contract ERC20TokenTest is Test {
     function test_TransferOwnership_RevertZeroAddress() public {
         vm.expectRevert(IERC20Token.ZeroAddress.selector);
         token.transferOwnership(address(0));
+    }
+
+    function test_TransferOwnership_RevertNotOwner() public {
+        vm.prank(alice);
+        vm.expectRevert(IERC20Token.NotOwner.selector);
+        token.transferOwnership(bob);
     }
 
     function test_AcceptOwnership_RevertNotPending() public {
@@ -262,13 +347,39 @@ contract ERC20TokenTest is Test {
         vm.prank(alice);
         token.transfer(bob, amount);
         assertEq(token.balanceOf(bob), amount);
+        assertEq(token.balanceOf(alice), 0);
     }
 
-    // ─── Invariant ─────────────────────────────────────────────────────────────
+    function testFuzz_TransferFrom(uint256 amount) public {
+        amount = bound(amount, 1, CAP);
+        token.mint(alice, amount);
+        vm.prank(alice);
+        token.approve(bob, amount);
+        vm.prank(bob);
+        token.transferFrom(alice, bob, amount);
+        assertEq(token.balanceOf(bob), amount);
+    }
+
+    // ─── Invariants ────────────────────────────────────────────────────────────
 
     function test_Invariant_TotalSupplyLeqCap() public {
         token.mint(alice, CAP / 2);
         token.mint(bob, CAP / 2);
         assertLe(token.totalSupply(), token.CAP());
+    }
+
+    function test_Invariant_BalanceSumAfterTransfer() public {
+        token.mint(alice, AMOUNT);
+        vm.prank(alice);
+        token.transfer(bob, AMOUNT / 2);
+        assertEq(token.balanceOf(alice) + token.balanceOf(bob), AMOUNT);
+    }
+
+    function test_Invariant_TotalSupplyDecreasesOnBurn() public {
+        token.mint(alice, AMOUNT);
+        uint256 supplyBefore = token.totalSupply();
+        vm.prank(alice);
+        token.burn(AMOUNT / 2);
+        assertEq(token.totalSupply(), supplyBefore - AMOUNT / 2);
     }
 }
