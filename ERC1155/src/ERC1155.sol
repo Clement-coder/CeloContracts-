@@ -18,7 +18,7 @@ contract ERC1155 is IERC1155 {
     /// @notice Base URI for token metadata. Full URI = baseURI + id + ".json".
     string public baseURI;
 
-    /// @notice account => id => balance
+    /// @notice account => tokenId => balance
     mapping(address => mapping(uint256 => uint256)) private _balances;
 
     /// @notice account => operator => approved
