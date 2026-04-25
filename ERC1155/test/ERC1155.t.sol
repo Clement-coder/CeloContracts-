@@ -540,6 +540,15 @@ contract ERC1155Test is Test {
 
     // ─── Fuzz ──────────────────────────────────────────────────────────────────
 
+    function testFuzz_BurnBatch(uint256 a, uint256 ba) public {
+        a  = bound(a,  1, type(uint128).max);
+        ba = bound(ba, 0, a);
+        token.mintBatch(alice, _ids(ID1), _amts(a), "");
+        vm.prank(alice);
+        token.burnBatch(alice, _ids(ID1), _amts(ba));
+        assertEq(token.balanceOf(alice, ID1), a - ba);
+    }
+
     function testFuzz_MintBatch_Balances(uint256 a, uint256 b) public {
         a = bound(a, 0, type(uint128).max);
         b = bound(b, 0, type(uint128).max);
