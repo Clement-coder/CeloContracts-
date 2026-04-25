@@ -178,6 +178,11 @@ contract ERC1155Test is Test {
         token.burn(alice, ID1, AMT);
     }
 
+    function test_URI_LargeId() public view {
+        string memory u = token.uri(type(uint256).max);
+        assertTrue(bytes(u).length > 0);
+    }
+
     function test_BurnBatch_ByApprovedOperator() public {
         token.mintBatch(alice, _ids(ID1, ID2), _amts(50, 80), "");
         vm.prank(alice);
