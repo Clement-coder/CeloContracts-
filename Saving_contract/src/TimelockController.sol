@@ -122,6 +122,7 @@ contract TimelockController is ITimelockController {
     ) external override onlyProposer returns (bytes32 txHash, uint256 eta) {
         if (target == address(0)) revert ZeroAddress();
 
+        // eta is fixed at queue time; the same delay applies regardless of future delay changes
         eta = block.timestamp + delay;
         txHash = getTxHash(target, value, data, eta);
 
