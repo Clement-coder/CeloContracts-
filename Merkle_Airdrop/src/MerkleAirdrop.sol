@@ -71,6 +71,7 @@ contract MerkleAirdrop is IMerkleAirdrop {
     // ─── Views ─────────────────────────────────────────────────────────────────
 
     /// @notice Returns true if `account` has already claimed.
+    /// @dev    Reads from the private _claimed mapping.
     function hasClaimed(address account) external view override returns (bool) {
         return _claimed[account];
     }
