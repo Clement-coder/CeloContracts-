@@ -309,6 +309,14 @@ contract TimelockControllerTest is Test {
         timelock.cancelTransaction(bytes32(0));
     }
 
+    function test_Cancel_GetEtaZeroAfterCancel() public {
+        bytes memory data = abi.encodeCall(savings.pause, ());
+        (bytes32 txHash,) = _queue(data);
+        vm.prank(proposer);
+        timelock.cancelTransaction(txHash);
+        assertEq(timelock.getEta(txHash), 0);
+    }
+
     // ─── SetDelay ──────────────────────────────────────────────────────────────
 
     function test_SetDelay_Success() public {
