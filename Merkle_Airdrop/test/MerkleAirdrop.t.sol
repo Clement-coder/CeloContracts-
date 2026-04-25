@@ -366,6 +366,12 @@ contract MerkleAirdropTest is Test {
         token.transferFrom(alice, bob, 1);
     }
 
+    function test_Token_Approve_ZeroResetsAllowance() public {
+        vm.prank(alice); token.approve(bob, 100);
+        vm.prank(alice); token.approve(bob, 0);
+        assertEq(token.allowance(alice, bob), 0);
+    }
+
     function test_Token_MaxAllowance_NotDecremented() public {
         vm.prank(alice); airdrop.claim(ALICE_AMT, _proofAlice());
         vm.prank(alice); token.approve(bob, type(uint256).max);
