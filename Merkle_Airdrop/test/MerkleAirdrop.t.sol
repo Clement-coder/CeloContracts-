@@ -319,6 +319,11 @@ contract MerkleAirdropTest is Test {
 
     // ─── AirdropToken ──────────────────────────────────────────────────────────
 
+    function test_Token_Constructor_MintsToDeployer() public {
+        AirdropToken t2 = new AirdropToken(1000e18);
+        assertEq(t2.balanceOf(address(this)), 1000e18);
+    }
+
     function test_Token_Name() public view {
         assertEq(token.name(), "Airdrop Token");
     }
