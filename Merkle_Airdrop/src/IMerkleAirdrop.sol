@@ -6,7 +6,7 @@ pragma solidity 0.8.20;
 interface IMerkleAirdrop {
     // ─── Errors ────────────────────────────────────────────────────────────────
     error AlreadyClaimed();  // account has already claimed their tokens
-    error InvalidProof();
+    error InvalidProof();     // Merkle proof does not verify against root
     error ZeroAddress();
     error AirdropEnded();
     error NotOwner();
