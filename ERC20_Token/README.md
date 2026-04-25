@@ -104,3 +104,7 @@ forge test -vvv
 `ERC20Token`
 
 ![Solidity](https://img.shields.io/badge/solidity-0.8.20-blue)
+
+## License
+
+MIT
