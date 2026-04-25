@@ -153,6 +153,13 @@ contract TimelockControllerTest is Test {
         timelock.queueTransaction(address(savings), 0, data);
     }
 
+    function test_Queue_WithNonZeroValue() public {
+        bytes memory data = "";
+        vm.prank(proposer);
+        (bytes32 txHash, uint256 eta) = timelock.queueTransaction(address(savings), 1 ether, data);
+        assertEq(timelock.getEta(txHash), eta);
+    }
+
     // ─── Execute ───────────────────────────────────────────────────────────────
 
     function _queue(bytes memory data) internal returns (bytes32 txHash, uint256 eta) {
