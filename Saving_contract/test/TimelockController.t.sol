@@ -519,6 +519,11 @@ contract TimelockControllerTest is Test {
 
     // ─── Fuzz ──────────────────────────────────────────────────────────────────
 
+    function test_SetDelay_AtMinDelay() public {
+        timelock.setDelay(timelock.MIN_DELAY());
+        assertEq(timelock.delay(), timelock.MIN_DELAY());
+    }
+
     function testFuzz_SetDelay(uint256 newDelay) public {
         newDelay = bound(newDelay, timelock.MIN_DELAY(), timelock.MAX_DELAY());
         timelock.setDelay(newDelay);
