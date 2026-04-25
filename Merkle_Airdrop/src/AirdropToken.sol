@@ -29,6 +29,7 @@ contract AirdropToken {
 
     // ─── Constructor ───────────────────────────────────────────────────────────
 
+    /// @notice Deploy the token and mint the full supply to the deployer.
     /// @param initialSupply Total tokens minted to deployer (in wei).
     constructor(uint256 initialSupply) {
         totalSupply = initialSupply;
