@@ -57,6 +57,7 @@ contract AirdropToken {
         return true;
     }
 
+    /// @notice Transfer tokens on behalf of from (requires prior approval).
     function transferFrom(address from, address to, uint256 amount) external returns (bool) {
         if (to == address(0)) revert ZeroAddress();
         if (balanceOf[from] < amount) revert InsufficientBalance();
