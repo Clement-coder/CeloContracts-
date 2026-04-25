@@ -44,7 +44,7 @@ contract TimelockController is ITimelockController {
     /// @notice Executor role: accounts that can execute queued transactions.
     mapping(address => bool) public isExecutor;
 
-    /// @notice Admin role mapping.
+    /// @notice Admin role: accounts that can update delay and manage roles.
     mapping(address => bool) public isAdmin;
 
     /// @notice txHash => eta. 0 means not queued.
