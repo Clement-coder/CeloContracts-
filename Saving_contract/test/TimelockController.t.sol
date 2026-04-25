@@ -555,6 +555,14 @@ contract TimelockControllerTest is Test {
         assertEq(timelock.delay(), newDelay);
     }
 
+    function testFuzz_GetTxHash_UniquePerEta(uint256 eta1, uint256 eta2) public view {
+        vm.assume(eta1 != eta2);
+        bytes memory data = abi.encodeCall(savings.pause, ());
+        bytes32 h1 = timelock.getTxHash(address(savings), 0, data, eta1);
+        bytes32 h2 = timelock.getTxHash(address(savings), 0, data, eta2);
+        assertTrue(h1 != h2);
+    }
+
     function testFuzz_QueueDifferentValues(uint256 val) public {
         val = bound(val, 0, 10 ether);
         bytes memory data = "";
