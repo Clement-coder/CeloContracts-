@@ -74,3 +74,8 @@ forge build
 ```shell
 forge test -vvv
 ```
+
+## Deploy
+```shell
+forge script script/ERC20Token.s.sol --rpc-url celo --broadcast
+```
