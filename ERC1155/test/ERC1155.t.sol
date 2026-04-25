@@ -95,6 +95,11 @@ contract ERC1155Test is Test {
         assertEq(token.balanceOf(alice, ID2), 20);
     }
 
+    function test_Mint_ZeroAmount() public {
+        token.mint(alice, ID1, 0, "");
+        assertEq(token.balanceOf(alice, ID1), 0);
+    }
+
     function test_Mint_AccumulatesBalance() public {
         token.mint(alice, ID1, 50, "");
         token.mint(alice, ID1, 50, "");
