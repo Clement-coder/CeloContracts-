@@ -540,6 +540,15 @@ contract ERC1155Test is Test {
 
     // ─── Fuzz ──────────────────────────────────────────────────────────────────
 
+    function test_Integration_MintTransferBurn() public {
+        token.mint(alice, ID1, 100, "");
+        vm.prank(alice); token.safeTransferFrom(alice, bob, ID1, 60, "");
+        vm.prank(alice); token.burn(alice, ID1, 40);
+        vm.prank(bob);   token.burn(bob,   ID1, 60);
+        assertEq(token.balanceOf(alice, ID1), 0);
+        assertEq(token.balanceOf(bob,   ID1), 0);
+    }
+
     function testFuzz_SupportsInterface_UnknownId(bytes4 id) public view {
         vm.assume(id != 0xd9b67a26 && id != 0x0e89341c && id != 0x01ffc9a7);
         assertFalse(token.supportsInterface(id));
