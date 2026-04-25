@@ -39,6 +39,7 @@ contract MerkleAirdrop is IMerkleAirdrop {
 
     // ─── Constructor ───────────────────────────────────────────────────────────
 
+    /// @dev    Token is stored as immutable and cannot be changed after deploy.
     /// @param _token      Address of the ERC20 token to distribute.
     /// @param _merkleRoot Initial Merkle root of the claim tree.
     constructor(address _token, bytes32 _merkleRoot) {
