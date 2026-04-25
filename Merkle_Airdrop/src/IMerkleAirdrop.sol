@@ -8,7 +8,7 @@ interface IMerkleAirdrop {
     error AlreadyClaimed();  // account has already claimed their tokens
     error InvalidProof();     // Merkle proof does not verify against root
     error ZeroAddress();
-    error AirdropEnded();
+    error AirdropEnded();     // airdrop window has closed
     error NotOwner();
     error TransferFailed();
 
