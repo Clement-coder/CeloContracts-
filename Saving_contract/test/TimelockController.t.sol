@@ -65,6 +65,15 @@ contract TimelockControllerTest is Test {
         assertTrue(timelock.isProposer(proposer));
     }
 
+    function test_Constructor_EmitsExecutorSet() public {
+        address[] memory p = new address[](0);
+        address[] memory e = new address[](1);
+        e[0] = makeAddr("e2");
+        vm.expectEmit(true, false, false, true);
+        emit ExecutorSet(e[0], true);
+        new TimelockController(DELAY, p, e);
+    }
+
     function test_Constructor_SetsExecutor() public view {
         assertTrue(timelock.isExecutor(executor));
     }
