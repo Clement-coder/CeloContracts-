@@ -410,6 +410,15 @@ contract MerkleAirdropTest is Test {
 
     // ─── Fuzz ──────────────────────────────────────────────────────────────────
 
+    function test_Claim_OrderIndependent() public {
+        // Claim in reverse order: dave, carol, bob, alice
+        vm.prank(dave);  airdrop.claim(DAVE_AMT,  _proofDave());
+        vm.prank(carol); airdrop.claim(CAROL_AMT, _proofCarol());
+        vm.prank(bob);   airdrop.claim(BOB_AMT,   _proofBob());
+        vm.prank(alice); airdrop.claim(ALICE_AMT, _proofAlice());
+        assertEq(token.balanceOf(address(airdrop)), 0);
+    }
+
     function test_Claim_SingleLeafTree() public {
         address solo = makeAddr("solo");
         uint256 soloAmt = 77e18;
