@@ -55,6 +55,7 @@ contract TimelockController is ITimelockController {
 
     // ─── Modifiers ─────────────────────────────────────────────────────────────
 
+    /// @dev Reverts with NotAdmin if caller is not in isAdmin mapping.
     modifier onlyAdmin() {
         if (!isAdmin[msg.sender]) revert NotAdmin();
         _;
