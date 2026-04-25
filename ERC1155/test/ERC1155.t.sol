@@ -178,6 +178,10 @@ contract ERC1155Test is Test {
         token.burn(alice, ID1, AMT);
     }
 
+    function test_BalanceOf_ZeroForUnminted() public view {
+        assertEq(token.balanceOf(alice, 999), 0);
+    }
+
     function test_IsApprovedForAll_FalseByDefault() public view {
         assertFalse(token.isApprovedForAll(alice, bob));
     }
