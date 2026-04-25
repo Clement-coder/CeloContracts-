@@ -42,6 +42,8 @@ interface IERC721NFT {
     // ─── Mint / Burn ───────────────────────────────────────────────────────────
     function mint(address to, string calldata uri) external returns (uint256 tokenId);
     function burn(uint256 tokenId) external;
+    function totalSupply() external view returns (uint256);
+    function CAP() external view returns (uint256);
 
     // ─── Admin ─────────────────────────────────────────────────────────────────
     function pause() external;
