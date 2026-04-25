@@ -540,6 +540,14 @@ contract ERC1155Test is Test {
 
     // ─── Fuzz ──────────────────────────────────────────────────────────────────
 
+    function testFuzz_MintBatch_Balances(uint256 a, uint256 b) public {
+        a = bound(a, 0, type(uint128).max);
+        b = bound(b, 0, type(uint128).max);
+        token.mintBatch(alice, _ids(ID1, ID2), _amts(a, b), "");
+        assertEq(token.balanceOf(alice, ID1), a);
+        assertEq(token.balanceOf(alice, ID2), b);
+    }
+
     function test_SafeTransferFrom_WrongSelectorReceiver() public {
         WrongSelectorReceiver recv = new WrongSelectorReceiver();
         token.mint(alice, ID1, AMT, "");
