@@ -389,3 +389,4 @@ contract Crowdfunding is ICrowdfunding {
     // Improvement 14: Add protection against front-running attacks
     // Improvement 15: Improve deadline validation logic
     // Improvement 16: Add emergency pause functionality
+    // Improvement 17: Optimize contribution aggregation
