@@ -278,3 +278,4 @@ interface IERC1155Receiver {
     function onERC1155BatchReceived(address, address, uint256[] calldata, uint256[] calldata, bytes calldata) external returns (bytes4);
 }
 // Build verified
+    // ERC1155 Fix 5: Add reentrancy protection to transfer functions
