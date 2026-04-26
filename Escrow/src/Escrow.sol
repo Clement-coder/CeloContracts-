@@ -19,6 +19,9 @@ contract Escrow is IEscrow {
     /// @notice Minimum escrow amount: 0.001 CELO.
     uint256 public constant MIN_AMOUNT = 0.001 ether;
 
+    /// @notice Maximum escrow duration: 365 days.
+    uint256 public constant MAX_DURATION = 365 days;
+
     /// @notice Minimum deadline from now: 1 hour.
     uint256 public constant MIN_DEADLINE = 1 hours;
 
