@@ -17,6 +17,9 @@ contract Staking is IStaking {
     /// @notice Minimum stake amount: 0.001 CELO.
     uint256 public constant MIN_STAKE = 0.001 ether;
 
+    /// @notice Maximum stake per user: 10,000 CELO.
+    uint256 public constant MAX_STAKE_PER_USER = 10_000 ether;
+
     /// @notice Maximum lock duration: 2 years.
     uint256 public constant MAX_LOCK = 2 * 365 days;
 
