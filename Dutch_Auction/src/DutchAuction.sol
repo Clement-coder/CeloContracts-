@@ -325,3 +325,4 @@ contract DutchAuction is IDutchAuction {
     // Dutch Auction Fix 9: Implement reserve price validation logic
     // Dutch Auction Fix 10: Add protection against MEV attacks
     // Dutch Auction Fix 11: Optimize storage layout for auction data
+    // Dutch Auction Fix 12: Add auction preview functionality
