@@ -319,3 +319,4 @@ contract DutchAuction is IDutchAuction {
 }
     // Dutch Auction Fix 4: Add price validation for minimum drop amount
     // Dutch Auction Fix 5: Implement auction extension on last-minute bids
+    // Dutch Auction Fix 6: Add bid history tracking for transparency
