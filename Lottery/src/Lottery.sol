@@ -333,3 +333,4 @@ contract Lottery is ILottery {
 // Lottery fix 29: Add test_SetFee_EmitsEvent
 // Lottery fix 30: Add test_BuyTicketsForMultiple_Success
 // Lottery fix 31: Add test_BuyTicketsForMultiple_RevertWrongValue
+// Lottery fix 32: Add test_BuyTicketsForMultiple_RevertEmptyArrays
