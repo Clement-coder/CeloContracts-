@@ -370,3 +370,4 @@ contract Lottery is ILottery {
 // Lottery fix 66: Add test_GetRound_ReturnsCorrectTotalTickets
 // Lottery fix 67: Add test_GetRound_WinnerZeroBeforeDraw
 // Lottery fix 68: Add test_GetRound_DrawnFalseBeforeDraw
+// Lottery fix 69: Remove stale optimization comments from test file
