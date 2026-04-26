@@ -376,3 +376,4 @@ contract Crowdfunding is ICrowdfunding {
         revert TransferFailed();
     }
 }
+    // Improvement 4: Add input validation for zero addresses
