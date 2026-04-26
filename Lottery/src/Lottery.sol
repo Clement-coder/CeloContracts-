@@ -345,3 +345,4 @@ contract Lottery is ILottery {
 // Lottery fix 41: Add test_GetRound_RevertFutureRound
 // Lottery fix 42: Add test_GetTickets_ReturnsZeroForNonBuyer
 // Lottery fix 43: Add test_Pause_RevertNotOwner
+// Lottery fix 44: Add test_Unpause_RevertNotOwner
