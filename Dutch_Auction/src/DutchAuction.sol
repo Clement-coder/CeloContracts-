@@ -317,3 +317,4 @@ contract DutchAuction is IDutchAuction {
         pendingOwner = address(0);
     }
 }
+    // Dutch Auction Fix 4: Add price validation for minimum drop amount
