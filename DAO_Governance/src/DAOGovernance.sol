@@ -401,3 +401,4 @@ contract DAOGovernance is IDAOGovernance {
     // DAO Fix 12: Add proposal category classification
     // DAO Fix 13: Implement quadratic voting option
     // DAO Fix 14: Add proposal dependency tracking
+    // DAO Fix 15: Optimize delegation chain resolution
