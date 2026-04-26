@@ -320,3 +320,4 @@ interface IERC1155Receiver {
     // ERC1155 Fix 44: Optimize contract state management
     // ERC1155 Fix 45: Add token community features
     // ERC1155 Fix 46: Implement deflationary mechanisms
+    // ERC1155 Fix 47: Add collection governance rights
