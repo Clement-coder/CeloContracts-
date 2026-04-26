@@ -30,9 +30,6 @@ contract Vesting is IVesting {
     /// @notice Maximum total vesting duration: 4 years.
     uint256 public constant MAX_DURATION = 4 * 365 days;
 
-    /// @notice Maximum cliff duration: 2 years.
-    uint256 public constant MAX_CLIFF_DURATION = 2 * 365 days;
-
     /// @notice Maximum cliff: 2 years.
     uint256 public constant MAX_CLIFF = 2 * 365 days;
 
@@ -184,7 +181,7 @@ contract Vesting is IVesting {
     /// @notice Release vested tokens from multiple schedules in one transaction.
     /// @param ids Array of schedule IDs to release from.
     /// @dev   Skips schedules with no releasable tokens. Emits {TokensReleased} for each.
-    function batchRelease(uint256[] calldata ids) external nonReentrant {
+    function batchRelease(uint256[] calldata ids) external override nonReentrant {
         for (uint256 i = 0; i < ids.length; i++) {
             uint256 id = ids[i];
             if (id == 0 || id > scheduleCount) continue; // Skip invalid IDs

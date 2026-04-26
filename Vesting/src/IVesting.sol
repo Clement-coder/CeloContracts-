@@ -34,6 +34,7 @@ interface IVesting {
     // ─── Functions ─────────────────────────────────────────────────────────────
     function createSchedule(address beneficiary, address token, uint256 amount, uint256 cliffDuration, uint256 totalDuration, bool revocable) external returns (uint256);
     function release(uint256 id) external;
+    function batchRelease(uint256[] calldata ids) external;
     function revoke(uint256 id) external;
     function releasable(uint256 id) external view returns (uint256);
     function getSchedule(uint256 id) external view returns (address beneficiary, address token, uint256 amount, uint256 start, uint256 cliff, uint256 duration, uint256 released, bool revocable, bool revoked);
