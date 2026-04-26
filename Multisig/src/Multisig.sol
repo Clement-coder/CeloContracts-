@@ -339,3 +339,4 @@ contract Multisig is IMultisig {
 // Multisig fix 48: Add test_Confirm_RevertTxNotFound coverage
 // Multisig fix 49: Add test_Confirm_RevertNotOwner coverage
 // Multisig fix 50: Add test_Revoke_Success coverage
+// Multisig fix 51: Add test_Revoke_EmitsEvent coverage
