@@ -19,6 +19,7 @@ contract SubscriptionTest is Test {
     event Subscribed(uint256 indexed planId, address indexed subscriber, uint256 nextPayment);
     event PaymentProcessed(uint256 indexed planId, address indexed subscriber, uint256 amount, uint256 nextPayment);
     event Unsubscribed(uint256 indexed planId, address indexed subscriber);
+    event SubscriptionCancelled(uint256 indexed planId, address indexed subscriber, address indexed cancelledBy);
     event PlanDeactivated(uint256 indexed planId);
     event EarningsWithdrawn(address indexed provider, uint256 amount);
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
@@ -140,6 +141,12 @@ contract SubscriptionTest is Test {
         sub.subscribe{value: PRICE}(1);
     }
 
+    function test_Subscribe_RevertPlanNotFound() public {
+        vm.prank(alice);
+        vm.expectRevert(ISubscription.PlanNotFound.selector);
+        sub.subscribe{value: PRICE}(999);
+    }
+
     // ─── ProcessPayment ────────────────────────────────────────────────────────
 
     function test_ProcessPayment_Success() public {
@@ -179,12 +186,67 @@ contract SubscriptionTest is Test {
         sub.processPayment{value: PRICE}(1, alice);
     }
 
+    function test_ProcessPayment_RevertWrongPrice() public {
+        uint256 planId = _subscribe(alice);
+        skip(PERIOD + 1);
+        vm.expectRevert(ISubscription.InsufficientPayment.selector);
+        sub.processPayment{value: PRICE + 1}(planId, alice);
+    }
+
     function test_ProcessPayment_CalledByAnyone() public {
         uint256 planId = _subscribe(alice);
         skip(PERIOD + 1);
-        vm.prank(bob); // third party pays
+        vm.prank(bob);
         sub.processPayment{value: PRICE}(planId, alice);
         assertEq(sub.earnings(provider), PRICE * 2);
+    }
+
+    // ─── CancelForNonPayment ───────────────────────────────────────────────────
+
+    function test_CancelForNonPayment_Success() public {
+        uint256 planId = _subscribe(alice);
+        skip(PERIOD + sub.GRACE_PERIOD() + 1);
+        sub.cancelForNonPayment(planId, alice);
+        (bool active,) = sub.getSubscription(planId, alice);
+        assertFalse(active);
+    }
+
+    function test_CancelForNonPayment_EmitsEvent() public {
+        uint256 planId = _subscribe(alice);
+        skip(PERIOD + sub.GRACE_PERIOD() + 1);
+        vm.expectEmit(true, true, true, false);
+        emit SubscriptionCancelled(planId, alice, address(this));
+        sub.cancelForNonPayment(planId, alice);
+    }
+
+    function test_CancelForNonPayment_CalledByAnyone() public {
+        uint256 planId = _subscribe(alice);
+        skip(PERIOD + sub.GRACE_PERIOD() + 1);
+        vm.prank(bob);
+        sub.cancelForNonPayment(planId, alice);
+        (bool active,) = sub.getSubscription(planId, alice);
+        assertFalse(active);
+    }
+
+    function test_CancelForNonPayment_RevertGracePeriodNotExpired() public {
+        uint256 planId = _subscribe(alice);
+        skip(PERIOD + 1); // past due but within grace
+        vm.expectRevert(ISubscription.PaymentNotDue.selector);
+        sub.cancelForNonPayment(planId, alice);
+    }
+
+    function test_CancelForNonPayment_RevertNotSubscribed() public {
+        _createPlan();
+        vm.expectRevert(ISubscription.NotSubscribed.selector);
+        sub.cancelForNonPayment(1, alice);
+    }
+
+    function test_CancelForNonPayment_ResetsNextPayment() public {
+        uint256 planId = _subscribe(alice);
+        skip(PERIOD + sub.GRACE_PERIOD() + 1);
+        sub.cancelForNonPayment(planId, alice);
+        (, uint256 nextPayment) = sub.getSubscription(planId, alice);
+        assertEq(nextPayment, 0);
     }
 
     // ─── Unsubscribe ───────────────────────────────────────────────────────────
@@ -203,6 +265,14 @@ contract SubscriptionTest is Test {
         emit Unsubscribed(planId, alice);
         vm.prank(alice);
         sub.unsubscribe(planId);
+    }
+
+    function test_Unsubscribe_ResetsNextPayment() public {
+        uint256 planId = _subscribe(alice);
+        vm.prank(alice);
+        sub.unsubscribe(planId);
+        (, uint256 nextPayment) = sub.getSubscription(planId, alice);
+        assertEq(nextPayment, 0);
     }
 
     function test_Unsubscribe_RevertNotSubscribed() public {
@@ -233,8 +303,21 @@ contract SubscriptionTest is Test {
     function test_DeactivatePlan_RevertNotProvider() public {
         _createPlan();
         vm.prank(alice);
-        vm.expectRevert(ISubscription.NotOwner.selector);
+        vm.expectRevert(ISubscription.NotProvider.selector);
         sub.deactivatePlan(1);
+    }
+
+    function test_DeactivatePlan_RevertPlanNotFound() public {
+        vm.prank(provider);
+        vm.expectRevert(ISubscription.PlanNotFound.selector);
+        sub.deactivatePlan(999);
+    }
+
+    // ─── GetPlan ───────────────────────────────────────────────────────────────
+
+    function test_GetPlan_RevertPlanNotFound() public {
+        vm.expectRevert(ISubscription.PlanNotFound.selector);
+        sub.getPlan(0);
     }
 
     // ─── WithdrawEarnings ──────────────────────────────────────────────────────
@@ -258,7 +341,7 @@ contract SubscriptionTest is Test {
 
     function test_WithdrawEarnings_RevertNoEarnings() public {
         vm.prank(provider);
-        vm.expectRevert(ISubscription.AmountTooLow.selector);
+        vm.expectRevert(ISubscription.NoEarnings.selector);
         sub.withdrawEarnings();
     }
 
@@ -269,6 +352,12 @@ contract SubscriptionTest is Test {
         assertTrue(sub.paused());
         sub.unpause();
         assertFalse(sub.paused());
+    }
+
+    function test_Pause_RevertNotOwner() public {
+        vm.prank(alice);
+        vm.expectRevert(ISubscription.NotOwner.selector);
+        sub.pause();
     }
 
     function test_TwoStepOwnership() public {
@@ -291,6 +380,16 @@ contract SubscriptionTest is Test {
         sub.acceptOwnership();
     }
 
+    function test_TransferOwnership_EmitsEvents() public {
+        vm.expectEmit(true, true, false, false);
+        emit OwnershipTransferStarted(owner, alice);
+        sub.transferOwnership(alice);
+        vm.expectEmit(true, true, false, false);
+        emit OwnershipTransferred(owner, alice);
+        vm.prank(alice);
+        sub.acceptOwnership();
+    }
+
     // ─── Fuzz ──────────────────────────────────────────────────────────────────
 
     function testFuzz_CreateAndSubscribe(uint256 price, uint256 period) public {
@@ -305,6 +404,14 @@ contract SubscriptionTest is Test {
         assertTrue(active);
     }
 
+    function testFuzz_ProcessPayment(uint256 elapsed) public {
+        uint256 planId = _subscribe(alice);
+        elapsed = bound(elapsed, PERIOD + 1, 365 days);
+        skip(elapsed);
+        sub.processPayment{value: PRICE}(planId, alice);
+        assertEq(sub.earnings(provider), PRICE * 2);
+    }
+
     // ─── Invariant ─────────────────────────────────────────────────────────────
 
     function test_Invariant_BalanceEqualsEarnings() public {
@@ -314,7 +421,13 @@ contract SubscriptionTest is Test {
         assertEq(address(sub).balance, sub.earnings(provider));
     }
 
+    function test_Invariant_BalanceDecreasesOnWithdraw() public {
+        _subscribe(alice);
+        uint256 balBefore = address(sub).balance;
+        vm.prank(provider);
+        sub.withdrawEarnings();
+        assertEq(address(sub).balance, balBefore - PRICE);
+    }
+
     receive() external payable {}
 }
-// Commit 13 optimization
-// Commit 33 optimization

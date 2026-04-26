@@ -128,7 +128,7 @@ contract Subscription is ISubscription {
     /// @dev Only callable by the plan provider. Emits {PlanDeactivated}.
     function deactivatePlan(uint256 planId) external override planExists(planId) {
         Plan storage p = plans[planId];
-        if (msg.sender != p.provider) revert NotOwner();
+        if (msg.sender != p.provider) revert NotProvider();
         p.active = false;
         emit PlanDeactivated(planId);
     }
@@ -137,7 +137,7 @@ contract Subscription is ISubscription {
     /// @dev Emits {EarningsWithdrawn}.
     function withdrawEarnings() external override nonReentrant {
         uint256 amount = earnings[msg.sender];
-        if (amount == 0) revert AmountTooLow();
+        if (amount == 0) revert NoEarnings();
         earnings[msg.sender] = 0;
         emit EarningsWithdrawn(msg.sender, amount);
         (bool ok,) = msg.sender.call{value: amount}("");
@@ -190,7 +190,7 @@ contract Subscription is ISubscription {
     /// @param subscriber Address of the subscriber to cancel.
     /// @dev Anyone can call this if payment is overdue by more than GRACE_PERIOD.
     function cancelForNonPayment(uint256 planId, address subscriber)
-        external planExists(planId)
+        external override planExists(planId)
     {
         Sub storage s = subscriptions[planId][subscriber];
         if (!s.active) revert NotSubscribed();

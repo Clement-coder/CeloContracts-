@@ -6,6 +6,7 @@ pragma solidity 0.8.20;
 interface ISubscription {
     error NotOwner();
     error NotPendingOwner();
+    error NotProvider();
     error ZeroAddress();
     error Paused();
     error Reentrancy();
@@ -18,6 +19,7 @@ interface ISubscription {
     error AmountTooLow();
     error PeriodTooShort();
     error TransferFailed();
+    error NoEarnings();
 
     event PlanCreated(uint256 indexed planId, address indexed provider, uint256 price, uint256 period);
     event PlanDeactivated(uint256 indexed planId);
@@ -36,6 +38,7 @@ interface ISubscription {
     function processPayment(uint256 planId, address subscriber) external payable;
     function unsubscribe(uint256 planId) external;
     function deactivatePlan(uint256 planId) external;
+    function cancelForNonPayment(uint256 planId, address subscriber) external;
     function withdrawEarnings() external;
     function getPlan(uint256 planId) external view returns (address provider, uint256 price, uint256 period, bool active);
     function getSubscription(uint256 planId, address subscriber) external view returns (bool active, uint256 nextPayment);
