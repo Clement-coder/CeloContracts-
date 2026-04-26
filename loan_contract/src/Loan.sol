@@ -474,3 +474,4 @@ contract Loan is ILoan {
 // Loan fix 40: Add test_ExtendLoan_RevertMaxExtensions
 // Loan fix 41: Add test_ExtendLoan_RevertInsufficientPayment
 // Loan fix 42: Add test_ExtendLoan_OverpaymentRefunded
+// Loan fix 43: Add test_ExtendLoan_RevertWhenPaused
