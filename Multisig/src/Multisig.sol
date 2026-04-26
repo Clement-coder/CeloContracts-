@@ -351,3 +351,4 @@ contract Multisig is IMultisig {
 // Multisig fix 60: Add test_RemoveOwner_ViaSelfCall coverage
 // Multisig fix 61: Add test_ChangeThreshold_ViaSelfCall coverage
 // Multisig fix 62: Add test_AddOwner_RevertDirectCall coverage
+// Multisig fix 63: Add test_RemoveOwner_AdjustsThreshold coverage
