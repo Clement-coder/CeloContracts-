@@ -240,6 +240,20 @@ contract Loan is ILoan {
         return address(this).balance - totalLockedCollateral;
     }
 
+    /// @notice Calculate the health factor of a loan (collateral / debt ratio).
+    /// @param borrower Address to check.
+    /// @return healthFactor Collateral to debt ratio (scaled by 100). 0 if no active loan.
+    function getHealthFactor(address borrower) external view returns (uint256 healthFactor) {
+        LoanRecord storage loan = loans[borrower];
+        if (!loan.active) return 0;
+        
+        uint256 interest = _calcInterest(loan.principal, loan.startTime);
+        uint256 totalDebt = loan.principal + interest;
+        
+        // Return ratio as percentage (150 = 150%)
+        return (loan.collateral * 100) / totalDebt;
+    }
+
     // ─── Admin ─────────────────────────────────────────────────────────────────
 
     /// @notice Update the annual interest rate.
