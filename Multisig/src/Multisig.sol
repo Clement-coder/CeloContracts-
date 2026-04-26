@@ -302,3 +302,4 @@ contract Multisig is IMultisig {
 // Multisig fix 11: Add test_BatchConfirm_Success
 // Multisig fix 12: Add test_BatchConfirm_SkipsInvalid
 // Multisig fix 13: Add test_BatchConfirm_SkipsAlreadyConfirmed
+// Multisig fix 14: Add test_BatchConfirm_RevertNotOwner
