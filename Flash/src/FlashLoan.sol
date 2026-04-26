@@ -264,3 +264,4 @@ contract FlashLoanPool is IFlashLoan {
     // Flash Loan Fix 12: Add flash loan analytics dashboard
     // Flash Loan Fix 13: Implement multi-token flash loans
     // Flash Loan Fix 14: Add flash loan arbitrage protection
+    // Flash Loan Fix 15: Optimize event emission for indexing
