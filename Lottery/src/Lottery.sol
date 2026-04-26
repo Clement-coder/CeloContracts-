@@ -355,3 +355,4 @@ contract Lottery is ILottery {
 // Lottery fix 51: Add test_MultipleRounds_IndependentPots
 // Lottery fix 52: Add test_MultipleRounds_TicketsNotCarryOver
 // Lottery fix 53: Add test_DrawWinner_SingleEntryAlwaysWins
+// Lottery fix 54: Add test_BuyTickets_TicketCountTrackedPerRound
