@@ -39,6 +39,12 @@ contract FlashLoanPool is IFlashLoan {
     /// @notice Accumulated fees available for withdrawal.
     uint256 public accruedFees;
 
+    /// @notice Total number of flash loans executed.
+    uint256 public totalLoans;
+
+    /// @notice Total volume of CELO borrowed via flash loans.
+    uint256 public totalVolume;
+
     // ─── Modifiers ─────────────────────────────────────────────────────────────
 
     modifier onlyOwner() {
@@ -102,6 +108,8 @@ contract FlashLoanPool is IFlashLoan {
         }
 
         accruedFees += fee;
+        totalLoans += 1;
+        totalVolume += amount;
     }
 
     // ─── Pool Management ───────────────────────────────────────────────────────
@@ -130,6 +138,24 @@ contract FlashLoanPool is IFlashLoan {
     /// @return Available liquidity in wei (excludes accrued fees).
     function availableLiquidity() public view override returns (uint256) {
         return address(this).balance - accruedFees;
+    }
+
+    /// @notice Returns pool utilization statistics.
+    /// @return totalLoansCount Total number of flash loans executed.
+    /// @return totalVolumeAmount Total CELO volume borrowed.
+    /// @return currentLiquidity Current available liquidity.
+    /// @return utilizationRate Current utilization rate (bps, 10000 = 100%).
+    function getUtilizationStats() external view returns (
+        uint256 totalLoansCount,
+        uint256 totalVolumeAmount, 
+        uint256 currentLiquidity,
+        uint256 utilizationRate
+    ) {
+        uint256 totalPool = address(this).balance;
+        uint256 available = availableLiquidity();
+        uint256 utilization = totalPool > 0 ? ((totalPool - available) * 10000) / totalPool : 0;
+        
+        return (totalLoans, totalVolume, available, utilization);
     }
 
     // ─── Admin ─────────────────────────────────────────────────────────────────
