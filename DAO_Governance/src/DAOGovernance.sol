@@ -92,6 +92,9 @@ contract DAOGovernance is IDAOGovernance {
     /// @notice voted[proposalId][voter] = true if already voted.
     mapping(uint256 => mapping(address => bool)) public voted;
 
+    /// @notice delegations[delegator] = delegate address (0 = no delegation).
+    mapping(address => address) public delegations;
+
     // ─── Modifiers ─────────────────────────────────────────────────────────────
 
     modifier onlyOwner() {
@@ -190,6 +193,47 @@ contract DAOGovernance is IDAOGovernance {
         }
 
         emit Voted(proposalId, msg.sender, support, weight);
+    }
+
+    /// @notice Delegate voting power to another address.
+    /// @param delegate Address to delegate to (address(0) to remove delegation).
+    /// @dev   Emits {VotingPowerDelegated}.
+    function delegate(address delegate) external {
+        if (delegate == msg.sender) revert ZeroAddress(); // Cannot delegate to self
+        
+        address oldDelegate = delegations[msg.sender];
+        delegations[msg.sender] = delegate;
+        
+        emit VotingPowerDelegated(msg.sender, oldDelegate, delegate);
+    }
+
+    /// @notice Cast a vote on behalf of a delegator.
+    /// @param proposalId Proposal ID to vote on.
+    /// @param support    True = FOR, False = AGAINST.
+    /// @param delegator  Address that delegated voting power.
+    /// @dev   Caller must be the delegated address. Emits {Voted}.
+    function voteByDelegate(uint256 proposalId, bool support, address delegator)
+        external whenNotPaused proposalExists(proposalId)
+    {
+        if (delegations[delegator] != msg.sender) revert NotOwner(); // Reusing error for "not delegate"
+        
+        Proposal storage p = proposals[proposalId];
+        if (p.cancelled) revert ProposalNotActive();
+        if (block.timestamp >= p.votingEnd) revert ProposalNotActive();
+        if (voted[proposalId][delegator]) revert AlreadyVoted();
+
+        uint256 weight = IERC20(token).balanceOf(delegator);
+        if (weight == 0) revert NoVotingPower();
+
+        voted[proposalId][delegator] = true;
+
+        if (support) {
+            p.forVotes += weight;
+        } else {
+            p.againstVotes += weight;
+        }
+
+        emit Voted(proposalId, delegator, support, weight);
     }
 
     /// @notice Execute a succeeded proposal.

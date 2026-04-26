@@ -26,6 +26,7 @@ interface IDAOGovernance {
     // ─── Events ────────────────────────────────────────────────────────────────
     event ProposalCreated(uint256 indexed id, address indexed proposer, string description, uint256 votingEnd);
     event Voted(uint256 indexed id, address indexed voter, bool support, uint256 weight);
+    event VotingPowerDelegated(address indexed delegator, address indexed oldDelegate, address indexed newDelegate);
     event ProposalExecuted(uint256 indexed id, address indexed executor);
     event ProposalCancelled(uint256 indexed id);
     event QuorumUpdated(uint256 oldQuorum, uint256 newQuorum);
