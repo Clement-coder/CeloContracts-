@@ -338,3 +338,4 @@ contract ERC721NFT is IERC721NFT {
     // ERC721 NFT Fix 18: Add token burn with refund
     // ERC721 NFT Fix 19: Optimize approval management
     // ERC721 NFT Fix 20: Add collection trading controls
+    // ERC721 NFT Fix 21: Implement token evolution system
