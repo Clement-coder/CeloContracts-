@@ -325,3 +325,4 @@ contract ERC721NFT is IERC721NFT {
     // ERC721 NFT Fix 5: Implement token enumeration by owner
     // ERC721 NFT Fix 6: Add metadata freezing functionality
     // ERC721 NFT Fix 7: Optimize gas usage in batch operations
+    // ERC721 NFT Fix 8: Add token reveal mechanism
