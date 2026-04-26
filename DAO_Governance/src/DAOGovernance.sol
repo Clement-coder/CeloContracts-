@@ -29,6 +29,9 @@ contract DAOGovernance is IDAOGovernance {
     /// @notice Execution window after voting ends: 7 days.
     uint256 public constant EXECUTION_WINDOW = 7 days;
 
+    /// @notice Minimum proposal threshold: 1% of total supply.
+    uint256 public constant MIN_PROPOSAL_THRESHOLD = 100; // 1% in basis points
+
     // ─── Proposal States ───────────────────────────────────────────────────────
 
     uint8 public constant STATE_ACTIVE    = 0;
