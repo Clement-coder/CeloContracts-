@@ -294,3 +294,4 @@ interface IERC1155Receiver {
     // ERC1155 Fix 18: Implement token staking integration
     // ERC1155 Fix 19: Add marketplace integration support
     // ERC1155 Fix 20: Optimize event emission for indexing
+    // ERC1155 Fix 21: Add token utility mechanisms
