@@ -316,6 +316,11 @@ contract ERC20Token is IERC20Token {
                 low = mid + 1;
             }
         }
-        return high == 0 ? 0 : high - 1;
+        
+        if (high == 0) {
+            return snapshotIds.length;
+        }
+        
+        return high - 1;
     }
 }
