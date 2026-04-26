@@ -31,12 +31,12 @@ interface IDutchAuction {
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
-    function createAuction(uint256 startPrice, uint256 endPrice, uint256 duration) external payable returns (uint256);
+    function createAuction(uint256 startPrice, uint256 endPrice, uint256 reservePrice, uint256 duration) external payable returns (uint256);
     function buy(uint256 id) external payable;
     function cancel(uint256 id) external;
     function reclaimExpired(uint256 id) external;
     function currentPrice(uint256 id) external view returns (uint256);
-    function getAuction(uint256 id) external view returns (address seller, uint256 startPrice, uint256 endPrice, uint256 startTime, uint256 endTime, uint256 itemValue, bool sold, bool cancelled);
+    function getAuction(uint256 id) external view returns (address seller, uint256 startPrice, uint256 endPrice, uint256 reservePrice, uint256 startTime, uint256 endTime, uint256 itemValue, bool sold, bool cancelled);
     function withdrawFees() external;
     function setFee(uint256 newFeeBps) external;
     function pause() external;

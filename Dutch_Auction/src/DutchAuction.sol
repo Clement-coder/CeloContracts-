@@ -57,6 +57,8 @@ contract DutchAuction is IDutchAuction {
         uint256 startPrice;
         /// @dev Floor price in wei (price at end of auction).
         uint256 endPrice;
+        /// @dev Reserve price - minimum acceptable sale price.
+        uint256 reservePrice;
         /// @dev Timestamp when auction started.
         uint256 startTime;
         /// @dev Timestamp when auction ends.
@@ -111,14 +113,16 @@ contract DutchAuction is IDutchAuction {
     /// @notice Create a new Dutch auction. Seller deposits the item value upfront.
     /// @param startPrice Starting price in wei. Must be > endPrice >= MIN_PRICE.
     /// @param endPrice   Floor price in wei. Price never drops below this.
+    /// @param reservePrice Minimum acceptable sale price (0 = no reserve).
     /// @param duration   Auction duration in seconds.
     /// @return id        The new auction ID.
     /// @dev   msg.value = item value being auctioned. Emits {AuctionCreated}.
-    function createAuction(uint256 startPrice, uint256 endPrice, uint256 duration)
+    function createAuction(uint256 startPrice, uint256 endPrice, uint256 reservePrice, uint256 duration)
         external payable override whenNotPaused nonReentrant returns (uint256)
     {
         if (endPrice < MIN_PRICE) revert InvalidPrice();
         if (startPrice <= endPrice) revert InvalidPrice();
+        if (reservePrice > 0 && reservePrice > startPrice) revert InvalidPrice();
         if (msg.value == 0) revert InvalidPrice();
         if (duration < MIN_DURATION || duration > MAX_DURATION) revert InvalidDuration();
 
@@ -129,6 +133,7 @@ contract DutchAuction is IDutchAuction {
             seller: msg.sender,
             startPrice: startPrice,
             endPrice: endPrice,
+            reservePrice: reservePrice,
             startTime: block.timestamp,
             endTime: end,
             itemValue: msg.value,
@@ -155,6 +160,9 @@ contract DutchAuction is IDutchAuction {
 
         uint256 price = _currentPrice(a);
         if (msg.value < price) revert InsufficientPayment();
+        
+        // Check reserve price if set
+        if (a.reservePrice > 0 && price < a.reservePrice) revert InsufficientPayment();
 
         a.sold = true;
 
@@ -239,10 +247,10 @@ contract DutchAuction is IDutchAuction {
     /// @param id Auction ID to query.
     function getAuction(uint256 id)
         external view override auctionExists(id)
-        returns (address seller, uint256 startPrice, uint256 endPrice, uint256 startTime, uint256 endTime, uint256 itemValue, bool sold, bool cancelled)
+        returns (address seller, uint256 startPrice, uint256 endPrice, uint256 reservePrice, uint256 startTime, uint256 endTime, uint256 itemValue, bool sold, bool cancelled)
     {
         Auction storage a = auctions[id];
-        return (a.seller, a.startPrice, a.endPrice, a.startTime, a.endTime, a.itemValue, a.sold, a.cancelled);
+        return (a.seller, a.startPrice, a.endPrice, a.reservePrice, a.startTime, a.endTime, a.itemValue, a.sold, a.cancelled);
     }
 
     // ─── Internal ──────────────────────────────────────────────────────────────
