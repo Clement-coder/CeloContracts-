@@ -452,3 +452,4 @@ contract Loan is ILoan {
 // Loan fix 18: Add getLoanInfo() to ILoan interface
 // Loan fix 19: Add extendLoan() to ILoan interface
 // Loan fix 20: Add withdrawFees() to ILoan interface
+// Loan fix 21: Add setOriginationFee() to ILoan interface
