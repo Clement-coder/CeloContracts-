@@ -266,7 +266,32 @@ contract ERC721NFT is IERC721NFT {
         }
     }
 
-    // ─── Admin ─────────────────────────────────────────────────────────────────
+    /// @notice Batch mint multiple tokens to `to` with given URIs. Only owner.
+    /// @param to Address to mint tokens to.
+    /// @param uris Array of token URIs.
+    /// @return tokenIds Array of newly minted token IDs.
+    function batchMint(address to, string[] calldata uris) 
+        external onlyOwner whenNotPaused returns (uint256[] memory tokenIds) 
+    {
+        if (to == address(0)) revert ZeroAddress();
+        if (uris.length == 0 || uris.length > MAX_MINT_PER_TX) revert ZeroAmount();
+        if (totalSupply + uris.length > CAP) revert CapExceeded();
+
+        tokenIds = new uint256[](uris.length);
+        
+        for (uint256 i = 0; i < uris.length; i++) {
+            uint256 tokenId = ++nextTokenId;
+            totalSupply += 1;
+            _owners[tokenId] = to;
+            _tokenURIs[tokenId] = uris[i];
+            tokenIds[i] = tokenId;
+            
+            emit Transfer(address(0), to, tokenId);
+            emit Minted(to, tokenId, uris[i]);
+        }
+        
+        _balances[to] += uris.length;
+    }
 
     /// @notice Pause the contract.
     function pause() external override onlyOwner {
