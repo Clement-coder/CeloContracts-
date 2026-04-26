@@ -316,7 +316,236 @@ contract LotteryTest is Test {
     }
 
     receive() external payable {}
+
+    event FeeUpdated(uint256 oldFee, uint256 newFee);
+    event ContractPaused(address indexed by);
+    event ContractUnpaused(address indexed by);
+
+    // ─── SetFee ────────────────────────────────────────────────────────────────
+
+    function test_SetFee_Success() public {
+        lottery.setFee(500);
+        assertEq(lottery.feeBps(), 500);
+    }
+
+    function test_SetFee_RevertTooHigh() public {
+        vm.expectRevert(ILottery.InvalidFee.selector);
+        lottery.setFee(1_001);
+    }
+
+    function test_SetFee_RevertNotOwner() public {
+        vm.prank(alice);
+        vm.expectRevert(ILottery.NotOwner.selector);
+        lottery.setFee(100);
+    }
+
+    function test_SetFee_EmitsEvent() public {
+        vm.expectEmit(false, false, false, true);
+        emit FeeUpdated(FEE, 500);
+        lottery.setFee(500);
+    }
+
+    // ─── BuyTicketsForMultiple ─────────────────────────────────────────────────
+
+    function test_BuyTicketsForMultiple_Success() public {
+        _start();
+        address[] memory r = new address[](2);
+        uint256[] memory c = new uint256[](2);
+        r[0] = alice; r[1] = bob; c[0] = 1; c[1] = 2;
+        lottery.buyTicketsForMultiple{value: PRICE * 3}(r, c);
+        assertEq(lottery.getTickets(1, alice), 1);
+        assertEq(lottery.getTickets(1, bob), 2);
+    }
+
+    function test_BuyTicketsForMultiple_RevertWrongValue() public {
+        _start();
+        address[] memory r = new address[](1);
+        uint256[] memory c = new uint256[](1);
+        r[0] = alice; c[0] = 1;
+        vm.expectRevert(ILottery.TicketPriceMismatch.selector);
+        lottery.buyTicketsForMultiple{value: PRICE + 1}(r, c);
+    }
+
+    function test_BuyTicketsForMultiple_RevertEmptyArrays() public {
+        _start();
+        address[] memory r = new address[](0);
+        uint256[] memory c = new uint256[](0);
+        vm.expectRevert(ILottery.NoTickets.selector);
+        lottery.buyTicketsForMultiple{value: 0}(r, c);
+    }
+
+    function test_BuyTicketsForMultiple_RevertZeroCount() public {
+        _start();
+        address[] memory r = new address[](1);
+        uint256[] memory c = new uint256[](1);
+        r[0] = alice; c[0] = 0;
+        vm.expectRevert(ILottery.NoTickets.selector);
+        lottery.buyTicketsForMultiple{value: 0}(r, c);
+    }
+
+    function test_BuyTicketsForMultiple_RevertZeroRecipient() public {
+        _start();
+        address[] memory r = new address[](1);
+        uint256[] memory c = new uint256[](1);
+        r[0] = address(0); c[0] = 1;
+        vm.expectRevert(ILottery.ZeroRecipient.selector);
+        lottery.buyTicketsForMultiple{value: PRICE}(r, c);
+    }
+
+    function test_BuyTicketsForMultiple_RevertWhenPaused() public {
+        _start();
+        lottery.pause();
+        address[] memory r = new address[](1);
+        uint256[] memory c = new uint256[](1);
+        r[0] = alice; c[0] = 1;
+        vm.expectRevert(ILottery.Paused.selector);
+        lottery.buyTicketsForMultiple{value: PRICE}(r, c);
+    }
+
+    function test_BuyTicketsForMultiple_FeeDeducted() public {
+        _start();
+        address[] memory r = new address[](1);
+        uint256[] memory c = new uint256[](1);
+        r[0] = alice; c[0] = 1;
+        lottery.buyTicketsForMultiple{value: PRICE}(r, c);
+        assertEq(lottery.accruedFees(), (PRICE * FEE) / 10_000);
+    }
+
+    // ─── Extra coverage ────────────────────────────────────────────────────────
+
+    function test_Constructor_ZeroFeeAllowed() public {
+        Lottery l = new Lottery(0);
+        assertEq(l.feeBps(), 0);
+    }
+
+    function test_Constructor_MaxFeeAllowed() public {
+        Lottery l = new Lottery(1_000);
+        assertEq(l.feeBps(), 1_000);
+    }
+
+    function test_BuyTickets_RevertExceedsMaxPerPurchase() public {
+        _start();
+        uint256 max = lottery.MAX_TICKETS_PER_PURCHASE();
+        vm.deal(alice, PRICE * (max + 1));
+        vm.prank(alice);
+        vm.expectRevert(ILottery.InvalidAmount.selector);
+        lottery.buyTickets{value: PRICE * (max + 1)}(max + 1);
+    }
+
+    function test_BuyTickets_ExactlyMaxPerPurchase() public {
+        _start();
+        uint256 max = lottery.MAX_TICKETS_PER_PURCHASE();
+        vm.deal(alice, PRICE * max);
+        vm.prank(alice);
+        lottery.buyTickets{value: PRICE * max}(max);
+        assertEq(lottery.getTickets(1, alice), max);
+    }
+
+    function test_WithdrawFees_RevertNoFees() public {
+        vm.expectRevert(ILottery.InvalidAmount.selector);
+        lottery.withdrawFees();
+    }
+
+    function test_GetRound_RevertRoundZero() public {
+        vm.expectRevert(ILottery.RoundNotFound.selector);
+        lottery.getRound(0);
+    }
+
+    function test_GetRound_RevertFutureRound() public {
+        vm.expectRevert(ILottery.RoundNotFound.selector);
+        lottery.getRound(99);
+    }
+
+    function test_GetRound_WinnerZeroBeforeDraw() public {
+        _start();
+        (,,,, address w,) = lottery.getRound(1);
+        assertEq(w, address(0));
+    }
+
+    function test_GetRound_DrawnFalseBeforeDraw() public {
+        _start();
+        (,,,,, bool drawn) = lottery.getRound(1);
+        assertFalse(drawn);
+    }
+
+    function test_GetRound_ReturnsCorrectTotalTickets() public {
+        _start();
+        vm.prank(alice); lottery.buyTickets{value: PRICE * 3}(3);
+        vm.prank(bob);   lottery.buyTickets{value: PRICE * 2}(2);
+        (,,, uint256 total,,) = lottery.getRound(1);
+        assertEq(total, 5);
+    }
+
+    function test_GetTickets_ReturnsZeroForNonBuyer() public {
+        _start();
+        assertEq(lottery.getTickets(1, carol), 0);
+    }
+
+    function test_DrawWinner_SingleEntryAlwaysWins() public {
+        _start();
+        vm.prank(alice); lottery.buyTickets{value: PRICE}(1);
+        skip(DURATION + 1);
+        lottery.drawWinner();
+        (,,,, address w,) = lottery.getRound(1);
+        assertEq(w, alice);
+    }
+
+    function test_DrawWinner_PotZeroAfterDraw() public {
+        _start();
+        vm.prank(alice); lottery.buyTickets{value: PRICE}(1);
+        skip(DURATION + 1);
+        lottery.drawWinner();
+        (,, uint256 pot,,,) = lottery.getRound(1);
+        assertEq(pot, 0);
+    }
+
+    function test_DrawWinner_RevertNoRound() public {
+        vm.expectRevert(ILottery.LotteryNotOpen.selector);
+        lottery.drawWinner();
+    }
+
+    function test_StartRound_CanStartAfterNoWinnerDraw() public {
+        _start();
+        skip(DURATION + 1);
+        lottery.drawWinner(); // no entries, NoWinner emitted
+        lottery.startRound(PRICE, DURATION); // should succeed
+        assertEq(lottery.currentRound(), 2);
+    }
+
+    function test_Pause_RevertNotOwner() public {
+        vm.prank(alice);
+        vm.expectRevert(ILottery.NotOwner.selector);
+        lottery.pause();
+    }
+
+    function test_Unpause_RevertNotOwner() public {
+        lottery.pause();
+        vm.prank(alice);
+        vm.expectRevert(ILottery.NotOwner.selector);
+        lottery.unpause();
+    }
+
+    function test_MultipleRounds_TicketsNotCarryOver() public {
+        _buyAndDraw();
+        lottery.startRound(PRICE, DURATION);
+        assertEq(lottery.getTickets(2, alice), 0);
+    }
+
+    function testFuzz_TicketFeeAlwaysCorrect(uint256 count) public {
+        count = bound(count, 1, lottery.MAX_TICKETS_PER_PURCHASE());
+        _start();
+        uint256 total = PRICE * count;
+        vm.deal(alice, total);
+        vm.prank(alice);
+        lottery.buyTickets{value: total}(count);
+        uint256 expectedFee = (total * FEE) / 10_000;
+        assertEq(lottery.accruedFees(), expectedFee);
+    }
+
+    function testFuzz_SetFee(uint256 fee) public {
+        fee = bound(fee, 0, 1_000);
+        lottery.setFee(fee);
+        assertEq(lottery.feeBps(), fee);
+    }
+
 }
-// Commit 8 optimization
-// Commit 28 optimization
-// Commit 48 optimization

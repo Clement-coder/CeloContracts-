@@ -19,6 +19,8 @@ interface ILottery {
     error InvalidDuration();
     error InvalidFee();
     error RoundNotFound();
+    error InvalidAmount();
+    error ZeroRecipient();
 
     event RoundStarted(uint256 indexed round, uint256 ticketPrice, uint256 endTime);
     event TicketBought(uint256 indexed round, address indexed buyer, uint256 tickets, uint256 totalPot);
@@ -30,6 +32,7 @@ interface ILottery {
     event ContractUnpaused(address indexed by);
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    event FeeUpdated(uint256 oldFee, uint256 newFee);
 
     function buyTickets(uint256 count) external payable;
     function drawWinner() external;
@@ -41,4 +44,6 @@ interface ILottery {
     function unpause() external;
     function transferOwnership(address newOwner) external;
     function acceptOwnership() external;
+    function setFee(uint256 newFeeBps) external;
+    function buyTicketsForMultiple(address[] calldata recipients, uint256[] calldata counts) external payable;
 }

@@ -136,6 +136,7 @@ contract Lottery is ILottery {
         if (r.drawn) revert LotteryNotOpen();
         if (block.timestamp >= r.endTime) revert LotteryNotOpen();
         if (count == 0) revert NoTickets();
+        if (count > MAX_TICKETS_PER_PURCHASE) revert InvalidAmount();
         if (msg.value != r.ticketPrice * count) revert TicketPriceMismatch();
 
         // Deduct fee, add remainder to pot
@@ -170,6 +171,8 @@ contract Lottery is ILottery {
         uint256 totalTickets = 0;
         for (uint256 i = 0; i < counts.length; i++) {
             if (counts[i] == 0) revert NoTickets();
+            if (recipients[i] == address(0)) revert ZeroRecipient();
+            if (counts[i] > MAX_TICKETS_PER_PURCHASE) revert InvalidAmount();
             totalTickets += counts[i];
         }
 
@@ -231,7 +234,7 @@ contract Lottery is ILottery {
     /// @notice Owner withdraws accumulated platform fees.
     function withdrawFees() external override onlyOwner nonReentrant {
         uint256 amount = accruedFees;
-        if (amount == 0) revert NoTickets();
+        if (amount == 0) revert InvalidAmount();
         accruedFees = 0;
         emit FeeWithdrawn(owner, amount);
         (bool ok,) = owner.call{value: amount}("");
@@ -299,3 +302,4 @@ contract Lottery is ILottery {
         return tickets[round][player];
     }
 }
+// Lottery fix 1: Enforce MAX_TICKETS_PER_PURCHASE in buyTickets() - constant was unused
