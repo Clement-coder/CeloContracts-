@@ -417,3 +417,4 @@ contract NFTMarketplace is INFTMarketplace {
 // NFT Marketplace fix 11: Add setFeeShareRate() to INFTMarketplace interface (was missing)
 // NFT Marketplace fix 12: Add setFeeShareRate() function to contract with MAX_FEE_SHARE_RATE guard
 // NFT Marketplace fix 13: Remove stale optimization comments from test file
+// NFT Marketplace fix 14: Add test_MakeOffer_Success
