@@ -221,3 +221,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 43: Add NatSpec to MAX_BATCH_CLAIM constant
 // Merkle Airdrop fix 44: Add test_Sweep_RevertNotOwner coverage
 // Merkle Airdrop fix 45: Add test_Sweep_RevertZeroAddress coverage
+// Merkle Airdrop fix 46: Add test_SetMerkleRoot_ToZeroBytes32 edge case
