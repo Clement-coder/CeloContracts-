@@ -354,3 +354,4 @@ contract Multisig is IMultisig {
 // Multisig fix 63: Add test_RemoveOwner_AdjustsThreshold coverage
 // Multisig fix 64: Add test_Deposit_EmitsEvent coverage
 // Multisig fix 65: Add testFuzz_SubmitAndExecute fuzz test
+// Multisig fix 66: Add test_Invariant_ThresholdNeverExceedsOwners invariant
