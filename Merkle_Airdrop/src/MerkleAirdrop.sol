@@ -205,3 +205,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 27: Add test_ExtendDeadline_RevertShorterDeadline
 // Merkle Airdrop fix 28: Add test_TwoStepOwnership
 // Merkle Airdrop fix 29: Add test_TransferOwnership_EmitsEvent
+// Merkle Airdrop fix 30: Add test_AcceptOwnership_EmitsEvent
