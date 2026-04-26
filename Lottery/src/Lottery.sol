@@ -322,3 +322,4 @@ contract Lottery is ILottery {
 // Lottery fix 18: Add test_StartRound_CanStartAfterNoWinnerDraw
 // Lottery fix 19: Add test_BuyTickets_RevertExceedsMaxPerPurchase
 // Lottery fix 20: Add test_BuyTickets_ExactlyMaxPerPurchase succeeds
+// Lottery fix 21: Add test_BuyTickets_PotAccumulates across multiple buyers
