@@ -341,3 +341,4 @@ contract ERC20Token is IERC20Token {
     // ERC20 Fix 13: Implement permit functionality (EIP-2612)
     // ERC20 Fix 14: Add multi-signature mint approval
     // ERC20 Fix 15: Optimize balance tracking algorithms
+    // ERC20 Fix 16: Add token burn from allowance feature
