@@ -26,8 +26,11 @@ contract DutchAuction is IDutchAuction {
     /// @notice Minimum start price: 0.001 CELO.
     uint256 public constant MIN_PRICE = 0.001 ether;
 
-    /// @notice Price drop interval: 1 hour.
-    uint256 public constant PRICE_DROP_INTERVAL = 1 hours;
+    /// @notice Minimum bid increment: 0.0001 CELO.
+    uint256 public constant MIN_BID_INCREMENT = 0.0001 ether;
+
+    /// @notice Maximum auction extension: 1 hour.
+    uint256 public constant MAX_EXTENSION = 1 hours;
 
     // ─── State ─────────────────────────────────────────────────────────────────
 
