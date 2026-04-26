@@ -30,6 +30,9 @@ contract Vesting is IVesting {
     /// @notice Maximum total vesting duration: 4 years.
     uint256 public constant MAX_DURATION = 4 * 365 days;
 
+    /// @notice Maximum cliff duration: 2 years.
+    uint256 public constant MAX_CLIFF_DURATION = 2 * 365 days;
+
     /// @notice Maximum cliff: 2 years.
     uint256 public constant MAX_CLIFF = 2 * 365 days;
 
