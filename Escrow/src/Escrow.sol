@@ -302,6 +302,7 @@ contract Escrow is IEscrow {
     /// @param newFeeBps New fee in basis points. Must be <= MAX_FEE_BPS.
     function setFee(uint256 newFeeBps) external override onlyOwner {
         if (newFeeBps > MAX_FEE_BPS) revert FeeTooHigh();
+        emit FeeUpdated(feeBps, newFeeBps);
         feeBps = newFeeBps;
     }
 
