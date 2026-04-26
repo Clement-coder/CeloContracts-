@@ -258,3 +258,4 @@ contract FlashLoanPool is IFlashLoan {
     // Flash Loan Fix 6: Add flash loan fee discount system
     // Flash Loan Fix 7: Optimize gas usage in loan execution
     // Flash Loan Fix 8: Add flash loan whitelist functionality
+    // Flash Loan Fix 9: Implement loan history tracking
