@@ -20,8 +20,14 @@ contract Loan is ILoan {
     /// @notice Maximum allowed annual interest rate: 50% (5000 bps).
     uint256 public constant MAX_RATE_BPS = 5_000;
 
-    /// @notice Minimum borrow amount: 0.001 CELO.
-    uint256 public constant MIN_BORROW = 0.001 ether;
+    /// @notice Loan origination fee in basis points.
+    uint256 public originationFeeBps;
+
+    /// @notice Maximum origination fee: 2% (200 bps).
+    uint256 public constant MAX_ORIGINATION_FEE = 200;
+
+    /// @notice Loan origination fee in basis points.
+    uint256 public originationFeeBps;
 
     /// @notice Loan duration before liquidation is allowed: 30 days.
     uint256 public constant LOAN_DURATION = 30 days;
