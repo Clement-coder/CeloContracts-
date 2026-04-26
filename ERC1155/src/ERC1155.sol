@@ -136,7 +136,6 @@ contract ERC1155 is IERC1155 {
 
     /// @notice Batch mint multiple token ids to `to`. Only owner.
     /// @dev    ids[i] and amounts[i] must correspond to the same token.
-    /// @dev    ids[i] and amounts[i] must correspond to the same token.
     function mintBatch(address to, uint256[] calldata ids, uint256[] calldata amounts, bytes calldata data) external onlyOwner {
         if (to == address(0)) revert ZeroAddress();
         if (ids.length != amounts.length) revert LengthMismatch();
