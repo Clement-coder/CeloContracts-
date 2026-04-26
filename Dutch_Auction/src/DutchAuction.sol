@@ -272,7 +272,7 @@ contract DutchAuction is IDutchAuction {
     /// @notice Owner withdraws accumulated platform fees.
     function withdrawFees() external override onlyOwner nonReentrant {
         uint256 amount = accruedFees;
-        if (amount == 0) revert InvalidPrice();
+        if (amount == 0) revert InvalidPrice(); // No fees to withdraw
         accruedFees = 0;
         emit FeeWithdrawn(owner, amount);
         (bool ok,) = owner.call{value: amount}("");
