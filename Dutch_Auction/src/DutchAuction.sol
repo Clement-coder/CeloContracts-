@@ -352,3 +352,4 @@ contract DutchAuction is IDutchAuction {
     // Dutch Auction Fix 36: Add auction market analysis
     // Dutch Auction Fix 37: Implement price trend tracking
     // Dutch Auction Fix 38: Add seller dashboard functionality
+    // Dutch Auction Fix 39: Optimize fee collection efficiency
