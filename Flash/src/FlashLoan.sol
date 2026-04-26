@@ -45,6 +45,18 @@ contract FlashLoanPool is IFlashLoan {
     /// @notice Total volume of CELO borrowed via flash loans.
     uint256 public totalVolume;
 
+    /// @notice Circuit breaker - maximum loan amount per transaction.
+    uint256 public maxLoanAmount;
+
+    /// @notice Circuit breaker - maximum total loans per day.
+    uint256 public maxDailyLoans;
+
+    /// @notice Daily loan counter.
+    uint256 public dailyLoanCount;
+
+    /// @notice Last reset timestamp for daily counter.
+    uint256 public lastResetTime;
+
     // ─── Modifiers ─────────────────────────────────────────────────────────────
 
     modifier onlyOwner() {
@@ -72,6 +84,9 @@ contract FlashLoanPool is IFlashLoan {
         if (_feeBps > MAX_FEE_BPS) revert FeeTooHigh();
         owner = msg.sender;
         feeBps = _feeBps;
+        maxLoanAmount = 100 ether; // Default 100 CELO max per loan
+        maxDailyLoans = 1000; // Default 1000 loans per day
+        lastResetTime = block.timestamp;
     }
 
     // ─── Core ──────────────────────────────────────────────────────────────────
@@ -87,7 +102,16 @@ contract FlashLoanPool is IFlashLoan {
     {
         if (receiver == address(0)) revert InvalidReceiver();
         if (amount < MIN_AMOUNT) revert AmountTooLow();
+        if (amount > maxLoanAmount) revert AmountTooLow(); // Reusing error for max amount
         if (amount > availableLiquidity()) revert InsufficientLiquidity();
+
+        // Reset daily counter if needed
+        if (block.timestamp >= lastResetTime + 1 days) {
+            dailyLoanCount = 0;
+            lastResetTime = block.timestamp;
+        }
+
+        if (dailyLoanCount >= maxDailyLoans) revert AmountTooLow(); // Reusing error for daily limit
 
         uint256 fee = (amount * feeBps) / 10_000;
         uint256 repayment = amount + fee;
@@ -110,6 +134,7 @@ contract FlashLoanPool is IFlashLoan {
         accruedFees += fee;
         totalLoans += 1;
         totalVolume += amount;
+        dailyLoanCount += 1;
     }
 
     // ─── Pool Management ───────────────────────────────────────────────────────
@@ -166,6 +191,17 @@ contract FlashLoanPool is IFlashLoan {
         if (newFeeBps > MAX_FEE_BPS) revert FeeTooHigh();
         emit FeeUpdated(feeBps, newFeeBps);
         feeBps = newFeeBps;
+    }
+
+    /// @notice Update circuit breaker limits (only owner).
+    /// @param newMaxLoanAmount New maximum loan amount per transaction.
+    /// @param newMaxDailyLoans New maximum loans per day.
+    function updateLimits(uint256 newMaxLoanAmount, uint256 newMaxDailyLoans) external onlyOwner {
+        if (newMaxLoanAmount < MIN_AMOUNT) revert AmountTooLow();
+        
+        emit LimitsUpdated(maxLoanAmount, newMaxLoanAmount, maxDailyLoans, newMaxDailyLoans);
+        maxLoanAmount = newMaxLoanAmount;
+        maxDailyLoans = newMaxDailyLoans;
     }
 
     /// @notice Pause the contract.

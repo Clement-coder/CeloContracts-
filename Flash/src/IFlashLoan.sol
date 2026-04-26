@@ -20,6 +20,7 @@ interface IFlashLoan {
     event PoolFunded(address indexed funder, uint256 amount);
     event FeesWithdrawn(address indexed to, uint256 amount);
     event FeeUpdated(uint256 oldFee, uint256 newFee);
+    event LimitsUpdated(uint256 oldMaxLoan, uint256 newMaxLoan, uint256 oldMaxDaily, uint256 newMaxDaily);
     event ContractPaused(address indexed by);
     event ContractUnpaused(address indexed by);
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
