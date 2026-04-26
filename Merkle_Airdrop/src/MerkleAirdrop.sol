@@ -188,3 +188,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 10: Add NotPendingOwner error to IMerkleAirdrop interface
 // Merkle Airdrop fix 11: Add InvalidAmount error to IMerkleAirdrop interface
 // Merkle Airdrop fix 12: Add OwnershipTransferStarted event to IMerkleAirdrop interface
+// Merkle Airdrop fix 13: Add OwnershipTransferred event to IMerkleAirdrop interface
