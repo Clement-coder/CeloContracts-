@@ -130,7 +130,8 @@ contract FlashLoanPool is IFlashLoan {
         IFlashLoanReceiver(receiver).executeOperation(amount, fee, data);
 
         // Verify full repayment
-        if (address(this).balance < balanceBefore - amount + repayment) {
+        uint256 balanceAfter = address(this).balance;
+        if (balanceAfter < balanceBefore + fee) {
             revert RepaymentFailed();
         }
 
