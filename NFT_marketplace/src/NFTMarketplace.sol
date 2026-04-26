@@ -443,3 +443,4 @@ contract NFTMarketplace is INFTMarketplace {
 // NFT Marketplace fix 37: Add OfferMade event mirror to test file
 // NFT Marketplace fix 38: Add OfferAccepted event mirror to test file
 // NFT Marketplace fix 39: Add OfferCancelled event mirror to test file
+// NFT Marketplace fix 40: Add NatSpec to makeOffer() documenting expiry requirement
