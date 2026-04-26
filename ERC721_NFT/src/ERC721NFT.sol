@@ -357,3 +357,4 @@ contract ERC721NFT is IERC721NFT {
     // ERC721 NFT Fix 37: Implement lazy minting system
     // ERC721 NFT Fix 38: Add token bundling functionality
     // ERC721 NFT Fix 39: Optimize royalty distribution
+    // ERC721 NFT Fix 40: Add collection floor price tracking
