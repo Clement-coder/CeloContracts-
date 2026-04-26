@@ -210,3 +210,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 32: Add test_AcceptOwnership_RevertNotPending
 // Merkle Airdrop fix 33: Add test_TotalClaimed_StartsZero
 // Merkle Airdrop fix 34: Add test_TotalClaimed_IncrementsOnClaim
+// Merkle Airdrop fix 35: Add test_TotalClaimed_EqualsTotal_AfterAll
