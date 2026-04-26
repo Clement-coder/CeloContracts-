@@ -362,3 +362,4 @@ contract Lottery is ILottery {
 // Lottery fix 58: Add test_BuyTickets_ZeroFeeNoAccrual
 // Lottery fix 59: Add test_DrawWinner_CallerGetsNoPrize (prize goes to winner not caller)
 // Lottery fix 60: Add test_Pause_BlocksBuyTickets
+// Lottery fix 61: Add test_Pause_BlocksStartRound
