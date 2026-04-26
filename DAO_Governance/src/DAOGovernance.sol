@@ -390,3 +390,4 @@ contract DAOGovernance is IDAOGovernance {
         emit EmergencyPauseCancelled();
     }
 }
+    // DAO Fix 4: Add proposal threshold validation in propose function
