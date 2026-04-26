@@ -57,6 +57,23 @@ contract ERC721NFT is IERC721NFT {
     /// @dev tokenId → URI.
     mapping(uint256 => string) private _tokenURIs;
 
+    /// @notice Default royalty recipient.
+    address public royaltyRecipient;
+
+    /// @notice Default royalty percentage in basis points (e.g., 250 = 2.5%).
+    uint256 public royaltyBps;
+
+    /// @notice Maximum royalty: 10% (1000 bps).
+    uint256 public constant MAX_ROYALTY_BPS = 1000;
+
+    /// @dev Per-token royalty overrides: tokenId → (recipient, bps).
+    mapping(uint256 => RoyaltyInfo) private _tokenRoyalties;
+
+    struct RoyaltyInfo {
+        address recipient;
+        uint256 bps;
+    }
+
     // ─── Modifiers ─────────────────────────────────────────────────────────────
 
     modifier onlyOwner() {
@@ -88,6 +105,8 @@ contract ERC721NFT is IERC721NFT {
         symbol = _symbol;
         CAP = _cap;
         owner = msg.sender;
+        royaltyRecipient = msg.sender;
+        royaltyBps = 250; // 2.5% default royalty
     }
 
     // ─── ERC721 ────────────────────────────────────────────────────────────────
@@ -195,6 +214,52 @@ contract ERC721NFT is IERC721NFT {
 
         emit Transfer(tokenOwner, address(0), tokenId);
         emit Burned(tokenOwner, tokenId);
+    }
+
+    // ─── Royalties ─────────────────────────────────────────────────────────────
+
+    /// @notice Set default royalty for all tokens.
+    /// @param recipient Address to receive royalties.
+    /// @param bps Royalty percentage in basis points (max 1000 = 10%).
+    function setDefaultRoyalty(address recipient, uint256 bps) external onlyOwner {
+        if (recipient == address(0)) revert ZeroAddress();
+        if (bps > MAX_ROYALTY_BPS) revert ZeroAmount(); // Reusing error for invalid bps
+        royaltyRecipient = recipient;
+        royaltyBps = bps;
+        emit DefaultRoyaltySet(recipient, bps);
+    }
+
+    /// @notice Set royalty for a specific token.
+    /// @param tokenId Token ID to set royalty for.
+    /// @param recipient Address to receive royalties.
+    /// @param bps Royalty percentage in basis points (max 1000 = 10%).
+    function setTokenRoyalty(uint256 tokenId, address recipient, uint256 bps) external onlyOwner {
+        if (_owners[tokenId] == address(0)) revert TokenNotFound();
+        if (recipient == address(0)) revert ZeroAddress();
+        if (bps > MAX_ROYALTY_BPS) revert ZeroAmount(); // Reusing error for invalid bps
+        
+        _tokenRoyalties[tokenId] = RoyaltyInfo(recipient, bps);
+        emit TokenRoyaltySet(tokenId, recipient, bps);
+    }
+
+    /// @notice Get royalty information for a token and sale price.
+    /// @param tokenId Token ID to query.
+    /// @param salePrice Sale price to calculate royalty from.
+    /// @return recipient Address to receive royalty.
+    /// @return royaltyAmount Amount of royalty to pay.
+    function royaltyInfo(uint256 tokenId, uint256 salePrice) 
+        external view returns (address recipient, uint256 royaltyAmount) 
+    {
+        if (_owners[tokenId] == address(0)) revert TokenNotFound();
+        
+        RoyaltyInfo memory tokenRoyalty = _tokenRoyalties[tokenId];
+        if (tokenRoyalty.recipient != address(0)) {
+            recipient = tokenRoyalty.recipient;
+            royaltyAmount = (salePrice * tokenRoyalty.bps) / 10000;
+        } else {
+            recipient = royaltyRecipient;
+            royaltyAmount = (salePrice * royaltyBps) / 10000;
+        }
     }
 
     // ─── Admin ─────────────────────────────────────────────────────────────────

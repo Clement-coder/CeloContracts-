@@ -24,6 +24,8 @@ interface IERC721NFT {
     event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
     event Minted(address indexed to, uint256 indexed tokenId, string tokenURI);
     event Burned(address indexed from, uint256 indexed tokenId);
+    event DefaultRoyaltySet(address indexed recipient, uint256 bps);
+    event TokenRoyaltySet(uint256 indexed tokenId, address indexed recipient, uint256 bps);
     event ContractPaused(address indexed by);
     event ContractUnpaused(address indexed by);
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
