@@ -27,6 +27,9 @@ interface INFTMarketplace {
     event Delisted(address indexed nft, uint256 indexed tokenId, address indexed seller);
     event Sold(address indexed nft, uint256 indexed tokenId, address indexed buyer, address seller, uint256 price);
     event PriceUpdated(address indexed nft, uint256 indexed tokenId, uint256 oldPrice, uint256 newPrice);
+    event OfferMade(address indexed nft, uint256 indexed tokenId, address indexed buyer, uint256 amount, uint256 expiry);
+    event OfferAccepted(address indexed nft, uint256 indexed tokenId, address indexed buyer, address seller, uint256 amount);
+    event OfferCancelled(address indexed nft, uint256 indexed tokenId, address indexed buyer, uint256 amount);
     event EarningsWithdrawn(address indexed seller, uint256 amount);
     event FeeUpdated(uint256 oldFee, uint256 newFee);
     event FeeWithdrawn(address indexed to, uint256 amount);

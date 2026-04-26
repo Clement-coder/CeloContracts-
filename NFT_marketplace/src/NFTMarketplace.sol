@@ -57,8 +57,23 @@ contract NFTMarketplace is INFTMarketplace {
         bool active;
     }
 
+    /// @dev Offer record.
+    struct Offer {
+        /// @dev Buyer address.
+        address buyer;
+        /// @dev Offer amount in wei.
+        uint256 amount;
+        /// @dev Offer expiry timestamp.
+        uint256 expiry;
+        /// @dev Whether the offer is active.
+        bool active;
+    }
+
     /// @notice listings[nftContract][tokenId] => Listing.
     mapping(address => mapping(uint256 => Listing)) public listings;
+
+    /// @notice offers[nftContract][tokenId][buyer] => Offer.
+    mapping(address => mapping(uint256 => mapping(address => Offer))) public offers;
 
     /// @notice Pending earnings per seller (pull-payment pattern).
     mapping(address => uint256) public earnings;
@@ -187,6 +202,97 @@ contract NFTMarketplace is INFTMarketplace {
 
         // Transfer NFT to buyer
         IERC721(nft).transferFrom(seller, msg.sender, tokenId);
+    }
+
+    // ─── Offers ────────────────────────────────────────────────────────────────
+
+    /// @notice Make an offer on an NFT.
+    /// @param nft ERC721 contract address.
+    /// @param tokenId Token ID to make offer on.
+    /// @param expiry Timestamp when offer expires.
+    /// @dev Send offer amount as msg.value. Emits {OfferMade}.
+    function makeOffer(address nft, uint256 tokenId, uint256 expiry)
+        external payable whenNotPaused nonReentrant
+    {
+        if (nft == address(0)) revert ZeroAddress();
+        if (msg.value < MIN_PRICE) revert PriceTooLow();
+        if (expiry <= block.timestamp) revert PriceTooLow(); // Reusing error for invalid expiry
+        
+        // Cancel existing offer if any
+        Offer storage existingOffer = offers[nft][tokenId][msg.sender];
+        if (existingOffer.active) {
+            existingOffer.active = false;
+            // Refund previous offer
+            (bool refund,) = msg.sender.call{value: existingOffer.amount}("");
+            if (!refund) revert TransferFailed();
+        }
+
+        offers[nft][tokenId][msg.sender] = Offer({
+            buyer: msg.sender,
+            amount: msg.value,
+            expiry: expiry,
+            active: true
+        });
+
+        emit OfferMade(nft, tokenId, msg.sender, msg.value, expiry);
+    }
+
+    /// @notice Accept an offer on your NFT.
+    /// @param nft ERC721 contract address.
+    /// @param tokenId Token ID.
+    /// @param buyer Address of the buyer whose offer to accept.
+    /// @dev Emits {OfferAccepted}. NFT owner must approve this contract.
+    function acceptOffer(address nft, uint256 tokenId, address buyer)
+        external whenNotPaused nonReentrant
+    {
+        IERC721 token = IERC721(nft);
+        if (token.ownerOf(tokenId) != msg.sender) revert NotTokenOwner();
+        
+        Offer storage offer = offers[nft][tokenId][buyer];
+        if (!offer.active) revert NotListed(); // Reusing error for inactive offer
+        if (block.timestamp > offer.expiry) revert NotListed(); // Offer expired
+        
+        if (
+            token.getApproved(tokenId) != address(this) &&
+            !token.isApprovedForAll(msg.sender, address(this))
+        ) revert NotApproved();
+
+        uint256 amount = offer.amount;
+        offer.active = false;
+
+        // Calculate fee and seller proceeds
+        uint256 fee = (amount * feeBps) / 10_000;
+        uint256 sellerProceeds = amount - fee;
+
+        accruedFees += fee;
+        earnings[msg.sender] += sellerProceeds;
+
+        // Cancel any active listing
+        if (listings[nft][tokenId].active) {
+            listings[nft][tokenId].active = false;
+        }
+
+        emit OfferAccepted(nft, tokenId, buyer, msg.sender, amount);
+
+        // Transfer NFT to buyer
+        token.transferFrom(msg.sender, buyer, tokenId);
+    }
+
+    /// @notice Cancel your offer and get refund.
+    /// @param nft ERC721 contract address.
+    /// @param tokenId Token ID.
+    /// @dev Emits {OfferCancelled}.
+    function cancelOffer(address nft, uint256 tokenId) external nonReentrant {
+        Offer storage offer = offers[nft][tokenId][msg.sender];
+        if (!offer.active) revert NotListed(); // Reusing error for inactive offer
+        
+        uint256 amount = offer.amount;
+        offer.active = false;
+
+        emit OfferCancelled(nft, tokenId, msg.sender, amount);
+
+        (bool ok,) = msg.sender.call{value: amount}("");
+        if (!ok) revert TransferFailed();
     }
 
     // ─── Withdrawals ───────────────────────────────────────────────────────────
