@@ -149,6 +149,49 @@ contract Lottery is ILottery {
         emit TicketBought(currentRound, msg.sender, count, r.pot);
     }
 
+    /// @notice Buy tickets for multiple players in one transaction (gift tickets).
+    /// @param recipients Array of addresses to receive tickets.
+    /// @param counts Array of ticket counts for each recipient.
+    /// @dev   Arrays must be same length. Total cost = sum(ticketPrice * counts[i]).
+    function buyTicketsForMultiple(address[] calldata recipients, uint256[] calldata counts)
+        external payable whenNotPaused nonReentrant
+    {
+        if (currentRound == 0) revert LotteryNotOpen();
+        if (recipients.length != counts.length) revert InvalidTicketPrice();
+        if (recipients.length == 0) revert NoTickets();
+        
+        Round storage r = rounds[currentRound];
+        if (r.drawn) revert LotteryNotOpen();
+        if (block.timestamp >= r.endTime) revert LotteryNotOpen();
+
+        uint256 totalTickets = 0;
+        for (uint256 i = 0; i < counts.length; i++) {
+            if (counts[i] == 0) revert NoTickets();
+            totalTickets += counts[i];
+        }
+
+        if (msg.value != r.ticketPrice * totalTickets) revert TicketPriceMismatch();
+
+        // Deduct fee, add remainder to pot
+        uint256 fee = (msg.value * feeBps) / 10_000;
+        uint256 net = msg.value - fee;
+        accruedFees += fee;
+        r.pot += net;
+
+        // Add tickets for each recipient
+        for (uint256 i = 0; i < recipients.length; i++) {
+            address recipient = recipients[i];
+            uint256 count = counts[i];
+            
+            tickets[currentRound][recipient] += count;
+            for (uint256 j = 0; j < count; j++) {
+                r.entries.push(recipient);
+            }
+            
+            emit TicketBought(currentRound, recipient, count, r.pot);
+        }
+    }
+
     /// @notice Draw the winner for the current round. Callable by anyone after round ends.
     /// @dev   Uses block-based pseudo-randomness. Emits {WinnerDrawn} or {NoWinner}.
     function drawWinner() external override nonReentrant {
