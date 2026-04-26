@@ -218,3 +218,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 40: Add NatSpec to transferOwnership() documenting two-step pattern
 // Merkle Airdrop fix 41: Add NatSpec to sweep() noting owner-controlled timing
 // Merkle Airdrop fix 42: Add NatSpec to constructor documenting open-window pattern
+// Merkle Airdrop fix 43: Add NatSpec to MAX_BATCH_CLAIM constant
