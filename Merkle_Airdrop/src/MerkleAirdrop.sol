@@ -198,3 +198,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 20: Remove stale optimization comments from test file
 // Merkle Airdrop fix 21: Add test_Claim_RevertBeforeStart
 // Merkle Airdrop fix 22: Add test_Claim_RevertAfterEnd
+// Merkle Airdrop fix 23: Add test_Constructor_RevertInvalidTimeWindow
