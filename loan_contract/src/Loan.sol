@@ -437,3 +437,4 @@ contract Loan is ILoan {
 // Loan fix 3: Apply originationFee in borrow() - fee was declared but never deducted
 // Loan fix 4: Add accumulatedFees state variable to track collected fees
 // Loan fix 5: Add withdrawFees() function for owner to collect origination fees
+// Loan fix 6: Add setOriginationFee() admin function with MAX_ORIGINATION_FEE guard
