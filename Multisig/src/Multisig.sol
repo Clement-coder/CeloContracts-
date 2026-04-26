@@ -117,6 +117,22 @@ contract Multisig is IMultisig {
         emit TxConfirmed(txId, msg.sender);
     }
 
+    /// @notice Confirm multiple transactions in a single call.
+    /// @param txIds Array of transaction IDs to confirm.
+    /// @dev Emits {TxConfirmed} for each successful confirmation.
+    function batchConfirmTx(uint256[] calldata txIds) external onlyOwner {
+        for (uint256 i = 0; i < txIds.length; i++) {
+            uint256 txId = txIds[i];
+            if (txId >= transactions.length) continue; // Skip invalid IDs
+            if (transactions[txId].executed) continue; // Skip executed
+            if (confirmed[txId][msg.sender]) continue; // Skip already confirmed
+            
+            confirmed[txId][msg.sender] = true;
+            transactions[txId].confirmations++;
+            emit TxConfirmed(txId, msg.sender);
+        }
+    }
+
     /// @notice Revoke a previously given confirmation.
     /// @param txId Transaction ID to revoke confirmation from.
     /// @dev Emits {TxRevoked}.
