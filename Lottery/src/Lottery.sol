@@ -348,3 +348,4 @@ contract Lottery is ILottery {
 // Lottery fix 44: Add test_Unpause_RevertNotOwner
 // Lottery fix 45: Add test_TransferOwnership_EmitsEvent
 // Lottery fix 46: Add test_AcceptOwnership_EmitsEvent
+// Lottery fix 47: Add testFuzz_TicketFeeAlwaysCorrect fuzz test
