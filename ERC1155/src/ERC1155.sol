@@ -298,3 +298,4 @@ interface IERC1155Receiver {
     // ERC1155 Fix 22: Implement cross-chain compatibility
     // ERC1155 Fix 23: Add token rental system
     // ERC1155 Fix 24: Optimize contract initialization
+    // ERC1155 Fix 25: Add token insurance features
