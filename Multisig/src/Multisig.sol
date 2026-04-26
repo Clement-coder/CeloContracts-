@@ -323,3 +323,4 @@ contract Multisig is IMultisig {
 // Multisig fix 32: Add NatSpec to batchConfirmTx() documenting skip behaviour
 // Multisig fix 33: Add NatSpec to addOwner() documenting MAX_OWNERS guard
 // Multisig fix 34: Add NatSpec to submitTx() documenting whitelist check
+// Multisig fix 35: Add NatSpec to setWhitelistEnabled() documenting self-call requirement
