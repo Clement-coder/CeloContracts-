@@ -312,3 +312,4 @@ contract Lottery is ILottery {
 // Lottery fix 8: Add ZeroRecipient error and guard against address(0) in buyTicketsForMultiple()
 // Lottery fix 9: Add ZeroRecipient error to ILottery interface
 // Lottery fix 10: drawWinner() pot reset to 0 before transfer to prevent double-spend
+// Lottery fix 11: Add getRound() revert guard for round 0 (was missing boundary check)
