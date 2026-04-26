@@ -447,3 +447,4 @@ contract Loan is ILoan {
 // Loan fix 13: Add extendLoan() feature - borrowers pay accrued interest to extend deadline
 // Loan fix 14: Add MAX_EXTENSIONS constant to cap loan extensions at 3
 // Loan fix 15: Add EXTENSION_DURATION constant (7 days per extension)
+// Loan fix 16: Add extensionCount field to LoanRecord struct
