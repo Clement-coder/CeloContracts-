@@ -442,3 +442,4 @@ contract Loan is ILoan {
 // Loan fix 8: Add OriginationFeeUpdated event to ILoan interface
 // Loan fix 9: Add FeesCollected event to ILoan interface
 // Loan fix 10: Add LoanExtended event to ILoan interface
+// Loan fix 11: Fix _calcInterest - remove redundant PRECISION multiplier that cancelled itself
