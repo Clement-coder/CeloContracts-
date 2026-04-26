@@ -182,3 +182,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 4: Add extendDeadline() to IMerkleAirdrop interface (was missing)
 // Merkle Airdrop fix 5: Add transferOwnership() to IMerkleAirdrop interface (was missing)
 // Merkle Airdrop fix 6: Add acceptOwnership() to IMerkleAirdrop interface (was missing)
+// Merkle Airdrop fix 7: Add totalClaimed() view to IMerkleAirdrop interface (was missing)
