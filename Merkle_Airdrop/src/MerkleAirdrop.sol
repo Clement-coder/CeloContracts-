@@ -225,3 +225,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 47: Add test_HasClaimed_FalseForZeroAddress edge case
 // Merkle Airdrop fix 48: Add test_Claim_DoesNotAffectOtherBalances isolation test
 // Merkle Airdrop fix 49: Add test_Claim_OrderIndependent ordering test
+// Merkle Airdrop fix 50: Add testFuzz_Claim_InvalidAmount fuzz test
