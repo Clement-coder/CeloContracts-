@@ -494,3 +494,4 @@ contract Loan is ILoan {
 // Loan fix 60: Add test_Invariant_MultipleLoans
 // Loan fix 61: Add carol test address for multi-borrower scenarios
 // Loan fix 62: Increase alice and bob deal to 20 ether for extension tests
+// Loan fix 63: Add NatSpec to extendLoan() explaining interest-reset behaviour
