@@ -296,3 +296,4 @@ interface IERC1155Receiver {
     // ERC1155 Fix 20: Optimize event emission for indexing
     // ERC1155 Fix 21: Add token utility mechanisms
     // ERC1155 Fix 22: Implement cross-chain compatibility
+    // ERC1155 Fix 23: Add token rental system
