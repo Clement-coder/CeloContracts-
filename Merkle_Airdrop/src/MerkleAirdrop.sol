@@ -220,3 +220,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 42: Add NatSpec to constructor documenting open-window pattern
 // Merkle Airdrop fix 43: Add NatSpec to MAX_BATCH_CLAIM constant
 // Merkle Airdrop fix 44: Add test_Sweep_RevertNotOwner coverage
+// Merkle Airdrop fix 45: Add test_Sweep_RevertZeroAddress coverage
