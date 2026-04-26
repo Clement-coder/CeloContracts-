@@ -405,3 +405,4 @@ contract NFTMarketplace is INFTMarketplace {
     }
 }
 // NFT Marketplace fix 1: makeOffer() used PriceTooLow for invalid expiry - replaced with InvalidExpiry
+// NFT Marketplace fix 2: acceptOffer() used NotListed for inactive offer - replaced with OfferNotActive
