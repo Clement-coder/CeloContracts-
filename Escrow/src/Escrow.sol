@@ -135,8 +135,10 @@ contract Escrow is IEscrow {
         if (deadline < block.timestamp + MIN_DEADLINE) revert DeadlineTooShort();
         if (deadline > block.timestamp + MAX_DEADLINE) revert DeadlineTooLong();
 
+        // Prevent zero net amount after fee deduction
         uint256 fee = (msg.value * feeBps) / 10_000;
         uint256 net = msg.value - fee;
+        if (net == 0) revert AmountTooLow();
         accruedFees += fee;
 
         uint256 id = ++escrowCount;
