@@ -24,6 +24,9 @@ interface IStaking {
     event RewardCompounded(address indexed user, uint256 reward, uint256 newStakeAmount);
     event RewardPoolFunded(address indexed funder, uint256 amount);
     event RateUpdated(uint256 oldRate, uint256 newRate);
+    event ProtocolFeeAccrued(uint256 amount);
+    event ProtocolFeeUpdated(uint256 oldFee, uint256 newFee);
+    event ProtocolFeesWithdrawn(address indexed to, uint256 amount);
     event ContractPaused(address indexed by);
     event ContractUnpaused(address indexed by);
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);

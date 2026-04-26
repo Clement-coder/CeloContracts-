@@ -46,6 +46,15 @@ contract Staking is IStaking {
     /// @notice Total CELO in the reward pool.
     uint256 public rewardPool;
 
+    /// @notice Protocol fee in basis points (e.g., 100 = 1%).
+    uint256 public protocolFeeBps;
+
+    /// @notice Maximum protocol fee: 10% (1000 bps).
+    uint256 public constant MAX_PROTOCOL_FEE_BPS = 1000;
+
+    /// @notice Accumulated protocol fees.
+    uint256 public accruedProtocolFees;
+
     /// @dev Stake record per user.
     struct StakeRecord {
         /// @dev Amount staked in wei.
@@ -86,6 +95,7 @@ contract Staking is IStaking {
         if (_rewardRateBps == 0 || _rewardRateBps > MAX_RATE_BPS) revert InvalidRate();
         owner = msg.sender;
         rewardRateBps = _rewardRateBps;
+        protocolFeeBps = 100; // Default 1% protocol fee
     }
 
     // ─── Core ──────────────────────────────────────────────────────────────────
@@ -170,12 +180,20 @@ contract Staking is IStaking {
         if (reward == 0) revert NothingToWithdraw();
         if (reward > rewardPool) revert InsufficientRewardPool();
 
+        // Deduct protocol fee
+        uint256 protocolFee = (reward * protocolFeeBps) / 10_000;
+        uint256 netReward = reward - protocolFee;
+        
         rewardPool -= reward;
+        accruedProtocolFees += protocolFee;
         s.stakedAt = block.timestamp; // reset reward timer
 
-        emit RewardClaimed(msg.sender, reward);
+        emit RewardClaimed(msg.sender, netReward);
+        if (protocolFee > 0) {
+            emit ProtocolFeeAccrued(protocolFee);
+        }
 
-        (bool ok,) = msg.sender.call{value: reward}("");
+        (bool ok,) = msg.sender.call{value: netReward}("");
         if (!ok) revert TransferFailed();
     }
 
@@ -238,6 +256,26 @@ contract Staking is IStaking {
         if (newRateBps == 0 || newRateBps > MAX_RATE_BPS) revert InvalidRate();
         emit RateUpdated(rewardRateBps, newRateBps);
         rewardRateBps = newRateBps;
+    }
+
+    /// @notice Set protocol fee (only owner).
+    /// @param newFeeBps New protocol fee in basis points (max 1000 = 10%).
+    function setProtocolFee(uint256 newFeeBps) external onlyOwner {
+        if (newFeeBps > MAX_PROTOCOL_FEE_BPS) revert InvalidRate();
+        emit ProtocolFeeUpdated(protocolFeeBps, newFeeBps);
+        protocolFeeBps = newFeeBps;
+    }
+
+    /// @notice Withdraw accumulated protocol fees (only owner).
+    function withdrawProtocolFees() external onlyOwner nonReentrant {
+        uint256 amount = accruedProtocolFees;
+        if (amount == 0) revert NothingToWithdraw();
+        
+        accruedProtocolFees = 0;
+        emit ProtocolFeesWithdrawn(owner, amount);
+        
+        (bool ok,) = owner.call{value: amount}("");
+        if (!ok) revert TransferFailed();
     }
 
     /// @notice Pause the contract.
