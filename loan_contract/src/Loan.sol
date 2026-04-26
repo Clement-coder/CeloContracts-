@@ -441,3 +441,4 @@ contract Loan is ILoan {
 // Loan fix 7: Add FeeTooHigh and ExtensionLimitReached custom errors to ILoan
 // Loan fix 8: Add OriginationFeeUpdated event to ILoan interface
 // Loan fix 9: Add FeesCollected event to ILoan interface
+// Loan fix 10: Add LoanExtended event to ILoan interface
