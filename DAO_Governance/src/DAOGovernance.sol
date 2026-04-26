@@ -392,3 +392,4 @@ contract DAOGovernance is IDAOGovernance {
 }
     // DAO Fix 4: Add proposal threshold validation in propose function
     // DAO Fix 5: Implement voting power calculation with delegation
+    // DAO Fix 6: Add proposal execution delay for security
