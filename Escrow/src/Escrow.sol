@@ -362,3 +362,4 @@ contract Escrow is IEscrow {
     // Escrow Fix 12: Add escrow notification system
     // Escrow Fix 13: Implement batch escrow operations
     // Escrow Fix 14: Add escrow rating system
+    // Escrow Fix 15: Optimize event emission for indexing
