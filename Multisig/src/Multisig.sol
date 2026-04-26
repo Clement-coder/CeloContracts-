@@ -292,3 +292,4 @@ contract Multisig is IMultisig {
 // Multisig fix 1: submitTx whitelist rejection used NotOwner - replaced with NotWhitelisted
 // Multisig fix 2: addOwner() enforce MAX_OWNERS limit - constant was declared but never checked
 // Multisig fix 3: Add NotWhitelisted error to IMultisig interface
+// Multisig fix 4: Add MaxOwnersReached error to IMultisig interface
