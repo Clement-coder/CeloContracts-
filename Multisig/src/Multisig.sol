@@ -333,3 +333,4 @@ contract Multisig is IMultisig {
 // Multisig fix 42: Add test_Submit_Success coverage
 // Multisig fix 43: Add test_Submit_EmitsEvent coverage
 // Multisig fix 44: Add test_Submit_RevertNotOwner coverage
+// Multisig fix 45: Add test_Confirm_Success coverage
