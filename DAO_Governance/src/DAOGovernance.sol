@@ -416,3 +416,4 @@ contract DAOGovernance is IDAOGovernance {
     // DAO Fix 27: Optimize delegation gas costs
     // DAO Fix 28: Add proposal execution simulation
     // DAO Fix 29: Implement vote commitment schemes
+    // DAO Fix 30: Add proposal priority system
