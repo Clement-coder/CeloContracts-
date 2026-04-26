@@ -178,6 +178,29 @@ contract Vesting is IVesting {
         if (!ok) revert TransferFailed();
     }
 
+    /// @notice Release vested tokens from multiple schedules in one transaction.
+    /// @param ids Array of schedule IDs to release from.
+    /// @dev   Skips schedules with no releasable tokens. Emits {TokensReleased} for each.
+    function batchRelease(uint256[] calldata ids) external nonReentrant {
+        for (uint256 i = 0; i < ids.length; i++) {
+            uint256 id = ids[i];
+            if (id == 0 || id > scheduleCount) continue; // Skip invalid IDs
+            
+            Schedule storage s = schedules[id];
+            if (s.revoked) continue; // Skip revoked schedules
+            
+            uint256 amount = _releasable(s);
+            if (amount == 0) continue; // Skip if nothing to release
+            
+            s.released += amount;
+            
+            emit TokensReleased(id, s.beneficiary, amount);
+            
+            bool ok = IERC20(s.token).transfer(s.beneficiary, amount);
+            if (!ok) revert TransferFailed();
+        }
+    }
+
     /// @notice Owner revokes a revocable schedule. Unvested tokens returned to owner.
     /// @param id Schedule ID to revoke.
     /// @dev   Emits {ScheduleRevoked}. Already-vested tokens remain claimable by beneficiary.
