@@ -28,6 +28,8 @@ interface IMultisig {
     event OwnerAdded(address indexed owner);
     event OwnerRemoved(address indexed owner);
     event ThresholdChanged(uint256 oldThreshold, uint256 newThreshold);
+    event WhitelistUpdated(address indexed target, bool enabled);
+    event WhitelistToggled(bool enabled);
 
     // ─── Functions ─────────────────────────────────────────────────────────────
     function submitTx(address to, uint256 value, bytes calldata data) external returns (uint256);

@@ -45,6 +45,12 @@ contract Multisig is IMultisig {
     /// @notice confirmed[txId][owner] = true if owner confirmed.
     mapping(uint256 => mapping(address => bool)) public confirmed;
 
+    /// @notice Whitelist of addresses that can be transaction targets.
+    mapping(address => bool) public whitelist;
+
+    /// @notice Whether whitelist is enabled.
+    bool public whitelistEnabled;
+
     // ─── Modifiers ─────────────────────────────────────────────────────────────
 
     modifier onlyOwner() {
@@ -100,6 +106,8 @@ contract Multisig is IMultisig {
     function submitTx(address to, uint256 value, bytes calldata data)
         external override onlyOwner returns (uint256 txId)
     {
+        if (whitelistEnabled && !whitelist[to]) revert NotOwner(); // Reusing error for not whitelisted
+        
         txId = transactions.length;
         transactions.push(Transaction({to: to, value: value, data: data, executed: false, confirmations: 0}));
         emit TxSubmitted(txId, msg.sender, to, value, data);
@@ -246,6 +254,30 @@ contract Multisig is IMultisig {
     /// @notice Returns the total number of transactions submitted.
     function txCount() external view returns (uint256) {
         return transactions.length;
+    }
+
+    /// @notice Add address to whitelist (must be called via executeTx).
+    /// @param target Address to add to whitelist.
+    function addToWhitelist(address target) external {
+        if (msg.sender != address(this)) revert NotOwner();
+        whitelist[target] = true;
+        emit WhitelistUpdated(target, true);
+    }
+
+    /// @notice Remove address from whitelist (must be called via executeTx).
+    /// @param target Address to remove from whitelist.
+    function removeFromWhitelist(address target) external {
+        if (msg.sender != address(this)) revert NotOwner();
+        whitelist[target] = false;
+        emit WhitelistUpdated(target, false);
+    }
+
+    /// @notice Enable/disable whitelist (must be called via executeTx).
+    /// @param enabled Whether to enable whitelist.
+    function setWhitelistEnabled(bool enabled) external {
+        if (msg.sender != address(this)) revert NotOwner();
+        whitelistEnabled = enabled;
+        emit WhitelistToggled(enabled);
     }
 
     /// @notice Accept CELO deposits.
