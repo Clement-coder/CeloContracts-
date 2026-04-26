@@ -315,3 +315,4 @@ contract Lottery is ILottery {
 // Lottery fix 11: Add getRound() revert guard for round 0 (was missing boundary check)
 // Lottery fix 12: startRound() allows new round after no-winner draw (entries==0 case)
 // Lottery fix 13: Add NatSpec to buyTicketsForMultiple() documenting array length requirement
+// Lottery fix 14: Add NatSpec to setFee() documenting effect on future rounds only
