@@ -357,3 +357,4 @@ contract Multisig is IMultisig {
 // Multisig fix 66: Add test_Invariant_ThresholdNeverExceedsOwners invariant
 // Multisig fix 67: Add Counter helper contract for calldata execution test
 // Multisig fix 68: Add dave address for non-owner test scenarios
+// Multisig fix 69: Add vm.deal setup for alice bob carol in setUp
