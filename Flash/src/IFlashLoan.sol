@@ -17,10 +17,12 @@ interface IFlashLoan {
     error InvalidReceiver();
     error AmountTooHigh();
     error DailyLimitExceeded();
+    error NotPaused();
 
     event FlashLoan(address indexed receiver, uint256 amount, uint256 fee);
     event PoolFunded(address indexed funder, uint256 amount);
     event FeesWithdrawn(address indexed to, uint256 amount);
+    event EmergencyWithdrawal(address indexed to, uint256 amount);
     event FeeUpdated(uint256 oldFee, uint256 newFee);
     event LimitsUpdated(uint256 oldMaxLoan, uint256 newMaxLoan, uint256 oldMaxDaily, uint256 newMaxDaily);
     event ContractPaused(address indexed by);

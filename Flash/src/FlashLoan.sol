@@ -235,8 +235,21 @@ contract FlashLoanPool is IFlashLoan {
         pendingOwner = address(0);
     }
 
+    /// @notice Emergency withdrawal function for owner (only when paused).
+    /// @param amount Amount to withdraw.
+    /// @dev Only callable when contract is paused for emergency situations.
+    function emergencyWithdraw(uint256 amount) external onlyOwner nonReentrant {
+        if (!paused) revert NotPaused();
+        if (amount > address(this).balance) revert InsufficientLiquidity();
+        
+        emit EmergencyWithdrawal(owner, amount);
+        (bool ok,) = owner.call{value: amount}("");
+        if (!ok) revert TransferFailed();
+    }
+
     /// @notice Accept direct ETH deposits.
     receive() external payable {
         emit PoolFunded(msg.sender, msg.value);
     }
+}
 }
