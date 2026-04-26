@@ -326,3 +326,4 @@ contract Multisig is IMultisig {
 // Multisig fix 35: Add NatSpec to setWhitelistEnabled() documenting self-call requirement
 // Multisig fix 36: Add test_Constructor_SetsOwners coverage
 // Multisig fix 37: Add test_Constructor_RevertInvalidThreshold coverage
+// Multisig fix 38: Add test_Constructor_RevertZeroThreshold coverage
