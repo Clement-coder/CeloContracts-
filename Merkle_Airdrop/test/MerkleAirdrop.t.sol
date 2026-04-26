@@ -57,7 +57,7 @@ contract MerkleAirdropTest is Test {
 
         // Deploy
         token   = new AirdropToken(TOTAL);
-        airdrop = new MerkleAirdrop(address(token), root);
+        airdrop = new MerkleAirdrop(address(token), root, 0, type(uint256).max);
         token.transfer(address(airdrop), TOTAL);
     }
 
@@ -113,7 +113,7 @@ contract MerkleAirdropTest is Test {
 
     function test_Constructor_RevertZeroToken() public {
         vm.expectRevert(IMerkleAirdrop.ZeroAddress.selector);
-        new MerkleAirdrop(address(0), root);
+        new MerkleAirdrop(address(0), root, 0, type(uint256).max);
     }
 
     function test_Constructor_AirdropFunded() public view {
@@ -463,7 +463,7 @@ contract MerkleAirdropTest is Test {
         uint256 soloAmt = 77e18;
         bytes32 soloLeaf = _leaf(solo, soloAmt);
         AirdropToken t2 = new AirdropToken(soloAmt);
-        MerkleAirdrop a2 = new MerkleAirdrop(address(t2), soloLeaf);
+        MerkleAirdrop a2 = new MerkleAirdrop(address(t2), soloLeaf, 0, type(uint256).max);
         t2.transfer(address(a2), soloAmt);
         bytes32[] memory emptyProof = new bytes32[](0);
         vm.prank(solo);
@@ -505,6 +505,135 @@ contract MerkleAirdropTest is Test {
         vm.assume(rando != alice && rando != bob && rando != carol && rando != dave);
         assertFalse(airdrop.hasClaimed(rando));
     }
+
+    event DeadlineExtended(uint256 oldDeadline, uint256 newDeadline);
+    event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+    // ─── Time window ───────────────────────────────────────────────────────────
+
+    function test_Claim_RevertBeforeStart() public {
+        AirdropToken t2 = new AirdropToken(ALICE_AMT);
+        uint256 start = block.timestamp + 1 days;
+        MerkleAirdrop a2 = new MerkleAirdrop(address(t2), _leaf(alice, ALICE_AMT), start, start + 1 days);
+        t2.transfer(address(a2), ALICE_AMT);
+        bytes32[] memory proof = new bytes32[](0);
+        vm.prank(alice);
+        vm.expectRevert(IMerkleAirdrop.ClaimingNotStarted.selector);
+        a2.claim(ALICE_AMT, proof);
+    }
+
+    function test_Claim_RevertAfterEnd() public {
+        AirdropToken t2 = new AirdropToken(ALICE_AMT);
+        uint256 start = block.timestamp;
+        MerkleAirdrop a2 = new MerkleAirdrop(address(t2), _leaf(alice, ALICE_AMT), start, start + 1 days);
+        t2.transfer(address(a2), ALICE_AMT);
+        skip(2 days);
+        bytes32[] memory proof = new bytes32[](0);
+        vm.prank(alice);
+        vm.expectRevert(IMerkleAirdrop.ClaimingEnded.selector);
+        a2.claim(ALICE_AMT, proof);
+    }
+
+    function test_Constructor_RevertInvalidTimeWindow() public {
+        vm.expectRevert(IMerkleAirdrop.InvalidTimeWindow.selector);
+        new MerkleAirdrop(address(token), root, 100, 50); // start >= end
+    }
+
+    // ─── extendDeadline ────────────────────────────────────────────────────────
+
+    function test_ExtendDeadline_Success() public {
+        AirdropToken t2 = new AirdropToken(ALICE_AMT);
+        uint256 start = block.timestamp;
+        MerkleAirdrop a2 = new MerkleAirdrop(address(t2), root, start, start + 1 days);
+        uint256 newEnd = start + 2 days;
+        a2.extendDeadline(newEnd);
+        assertEq(a2.endTime(), newEnd);
+    }
+
+    function test_ExtendDeadline_EmitsEvent() public {
+        AirdropToken t2 = new AirdropToken(ALICE_AMT);
+        uint256 start = block.timestamp;
+        MerkleAirdrop a2 = new MerkleAirdrop(address(t2), root, start, start + 1 days);
+        uint256 newEnd = start + 2 days;
+        vm.expectEmit(false, false, false, true);
+        emit DeadlineExtended(start + 1 days, newEnd);
+        a2.extendDeadline(newEnd);
+    }
+
+    function test_ExtendDeadline_RevertNotOwner() public {
+        AirdropToken t2 = new AirdropToken(ALICE_AMT);
+        uint256 start = block.timestamp;
+        MerkleAirdrop a2 = new MerkleAirdrop(address(t2), root, start, start + 1 days);
+        vm.prank(alice);
+        vm.expectRevert(IMerkleAirdrop.NotOwner.selector);
+        a2.extendDeadline(start + 2 days);
+    }
+
+    function test_ExtendDeadline_RevertShorterDeadline() public {
+        AirdropToken t2 = new AirdropToken(ALICE_AMT);
+        uint256 start = block.timestamp;
+        MerkleAirdrop a2 = new MerkleAirdrop(address(t2), root, start, start + 2 days);
+        vm.expectRevert(IMerkleAirdrop.InvalidTimeWindow.selector);
+        a2.extendDeadline(start + 1 days);
+    }
+
+    // ─── Ownership ─────────────────────────────────────────────────────────────
+
+    function test_TwoStepOwnership() public {
+        airdrop.transferOwnership(alice);
+        assertEq(airdrop.pendingOwner(), alice);
+        vm.prank(alice);
+        airdrop.acceptOwnership();
+        assertEq(airdrop.owner(), alice);
+        assertEq(airdrop.pendingOwner(), address(0));
+    }
+
+    function test_TransferOwnership_EmitsEvent() public {
+        vm.expectEmit(true, true, false, false);
+        emit OwnershipTransferStarted(address(this), alice);
+        airdrop.transferOwnership(alice);
+    }
+
+    function test_AcceptOwnership_EmitsEvent() public {
+        airdrop.transferOwnership(alice);
+        vm.expectEmit(true, true, false, false);
+        emit OwnershipTransferred(address(this), alice);
+        vm.prank(alice);
+        airdrop.acceptOwnership();
+    }
+
+    function test_TransferOwnership_RevertZeroAddress() public {
+        vm.expectRevert(IMerkleAirdrop.ZeroAddress.selector);
+        airdrop.transferOwnership(address(0));
+    }
+
+    function test_AcceptOwnership_RevertNotPending() public {
+        airdrop.transferOwnership(alice);
+        vm.prank(bob);
+        vm.expectRevert(IMerkleAirdrop.NotPendingOwner.selector);
+        airdrop.acceptOwnership();
+    }
+
+    // ─── totalClaimed ──────────────────────────────────────────────────────────
+
+    function test_TotalClaimed_StartsZero() public view {
+        assertEq(airdrop.totalClaimed(), 0);
+    }
+
+    function test_TotalClaimed_IncrementsOnClaim() public {
+        vm.prank(alice); airdrop.claim(ALICE_AMT, _proofAlice());
+        assertEq(airdrop.totalClaimed(), ALICE_AMT);
+        vm.prank(bob);   airdrop.claim(BOB_AMT, _proofBob());
+        assertEq(airdrop.totalClaimed(), ALICE_AMT + BOB_AMT);
+    }
+
+    function test_TotalClaimed_EqualsTotal_AfterAll() public {
+        vm.prank(alice); airdrop.claim(ALICE_AMT, _proofAlice());
+        vm.prank(bob);   airdrop.claim(BOB_AMT,   _proofBob());
+        vm.prank(carol); airdrop.claim(CAROL_AMT, _proofCarol());
+        vm.prank(dave);  airdrop.claim(DAVE_AMT,  _proofDave());
+        assertEq(airdrop.totalClaimed(), TOTAL);
+    }
+
 }
-// Commit 18 optimization
-// Commit 38 optimization
