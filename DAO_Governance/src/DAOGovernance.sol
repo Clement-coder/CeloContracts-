@@ -435,3 +435,4 @@ contract DAOGovernance is IDAOGovernance {
     // DAO Fix 46: Add proposal execution logging
     // DAO Fix 47: Optimize voting period calculations
     // DAO Fix 48: Add proposal validation checks
+    // DAO Fix 49: Implement vote weight normalization
