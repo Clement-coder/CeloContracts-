@@ -287,3 +287,4 @@ interface IERC1155Receiver {
     // ERC1155 Fix 11: Add token supply cap enforcement
     // ERC1155 Fix 12: Optimize storage layout for gas efficiency
     // ERC1155 Fix 13: Add token metadata freezing mechanism
+    // ERC1155 Fix 14: Implement lazy minting functionality
