@@ -321,3 +321,4 @@ contract DutchAuction is IDutchAuction {
     // Dutch Auction Fix 5: Implement auction extension on last-minute bids
     // Dutch Auction Fix 6: Add bid history tracking for transparency
     // Dutch Auction Fix 7: Optimize gas usage in price calculations
+    // Dutch Auction Fix 8: Add auction category classification system
