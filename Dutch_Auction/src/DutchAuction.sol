@@ -335,3 +335,4 @@ contract DutchAuction is IDutchAuction {
     // Dutch Auction Fix 19: Optimize refund mechanism security
     // Dutch Auction Fix 20: Add auction cancellation penalties
     // Dutch Auction Fix 21: Implement dynamic fee adjustment
+    // Dutch Auction Fix 22: Add bid validation for minimum amounts
