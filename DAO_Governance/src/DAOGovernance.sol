@@ -209,7 +209,7 @@ contract DAOGovernance is IDAOGovernance {
     /// @param delegate Address to delegate to (address(0) to remove delegation).
     /// @dev   Emits {VotingPowerDelegated}.
     function delegate(address delegate) external {
-        if (delegate == msg.sender) revert ZeroAddress(); // Cannot delegate to self
+        if (delegate == msg.sender && delegate != address(0)) revert ZeroAddress(); // Cannot delegate to self
         
         address oldDelegate = delegations[msg.sender];
         delegations[msg.sender] = delegate;
