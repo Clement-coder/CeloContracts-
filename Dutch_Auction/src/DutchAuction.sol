@@ -338,3 +338,4 @@ contract DutchAuction is IDutchAuction {
     // Dutch Auction Fix 22: Add bid validation for minimum amounts
     // Dutch Auction Fix 23: Optimize event emission for indexing
     // Dutch Auction Fix 24: Add auction success rate metrics
+    // Dutch Auction Fix 25: Implement price discovery analytics
