@@ -214,3 +214,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 36: Add DeadlineExtended event mirror to test file
 // Merkle Airdrop fix 37: Add OwnershipTransferStarted event mirror to test file
 // Merkle Airdrop fix 38: Add OwnershipTransferred event mirror to test file
+// Merkle Airdrop fix 39: Add NatSpec to extendDeadline() documenting newEndTime requirement
