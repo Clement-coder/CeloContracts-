@@ -9,14 +9,15 @@ contract LoanTest is Test {
     Loan loan;
     address owner = address(this);
     address alice = makeAddr("alice");
-    address bob = makeAddr("bob");
+    address bob   = makeAddr("bob");
+    address carol = makeAddr("carol");
 
-    uint256 constant RATE = 1_000;
-    uint256 constant POOL = 10 ether;
-    uint256 constant BORROW = 1 ether;
+    uint256 constant RATE       = 1_000;  // 10% APR
+    uint256 constant POOL       = 10 ether;
+    uint256 constant BORROW     = 1 ether;
     uint256 constant COLLATERAL = 1.5 ether;
 
-    // Mirror events for expectEmit
+    // Mirror events
     event LoanTaken(address indexed borrower, uint256 principal, uint256 collateral, uint256 deadline);
     event LoanRepaid(address indexed borrower, uint256 repaid, uint256 collateralReturned);
     event LoanLiquidated(address indexed borrower, address indexed liquidator, uint256 collateralSeized);
@@ -25,13 +26,17 @@ contract LoanTest is Test {
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
     event InterestRateUpdated(uint256 oldRate, uint256 newRate);
+    event OriginationFeeUpdated(uint256 oldFee, uint256 newFee);
     event DirectDepositReceived(address indexed sender, uint256 amount);
+    event LoanExtended(address indexed borrower, uint256 newDeadline, uint256 extensionCount);
+    event FeesCollected(address indexed owner, uint256 amount);
 
     function setUp() public {
         loan = new Loan(RATE);
         loan.fund{value: POOL}();
-        vm.deal(alice, 10 ether);
-        vm.deal(bob, 10 ether);
+        vm.deal(alice, 20 ether);
+        vm.deal(bob,   20 ether);
+        vm.deal(carol, 20 ether);
     }
 
     // ─── Constructor ───────────────────────────────────────────────────────────
@@ -39,6 +44,10 @@ contract LoanTest is Test {
     function test_Constructor_SetsOwnerAndRate() public view {
         assertEq(loan.owner(), owner);
         assertEq(loan.interestRateBps(), RATE);
+    }
+
+    function test_Constructor_DefaultOriginationFeeZero() public view {
+        assertEq(loan.originationFeeBps(), 0);
     }
 
     function test_Constructor_RevertZeroRate() public {
@@ -49,6 +58,11 @@ contract LoanTest is Test {
     function test_Constructor_RevertRateTooHigh() public {
         vm.expectRevert(ILoan.RateTooHigh.selector);
         new Loan(5_001);
+    }
+
+    function test_Constructor_MaxRateAllowed() public {
+        Loan l = new Loan(5_000);
+        assertEq(l.interestRateBps(), 5_000);
     }
 
     // ─── Fund ──────────────────────────────────────────────────────────────────
@@ -83,6 +97,7 @@ contract LoanTest is Test {
         uint256 balBefore = alice.balance;
         vm.prank(alice);
         loan.borrow{value: COLLATERAL}(BORROW);
+        // No origination fee, so alice gets full BORROW back minus collateral
         assertEq(alice.balance, balBefore - COLLATERAL + BORROW);
         assertEq(loan.totalLockedCollateral(), COLLATERAL);
         assertEq(loan.totalOutstandingPrincipal(), BORROW);
@@ -112,14 +127,14 @@ contract LoanTest is Test {
     function test_Borrow_RevertInsufficientCollateral() public {
         vm.prank(alice);
         vm.expectRevert(ILoan.InsufficientCollateral.selector);
-        loan.borrow{value: 1 ether}(BORROW);
+        loan.borrow{value: 1 ether}(BORROW); // 1 ether < 1.5 ether required
     }
 
     function test_Borrow_RevertPoolInsufficient() public {
         vm.deal(alice, 30 ether);
         vm.prank(alice);
         vm.expectRevert(ILoan.PoolInsufficient.selector);
-        loan.borrow{value: 20 ether}(11 ether);
+        loan.borrow{value: 20 ether}(11 ether); // pool only has 10
     }
 
     function test_Borrow_RevertWhenPaused() public {
@@ -127,6 +142,25 @@ contract LoanTest is Test {
         vm.prank(alice);
         vm.expectRevert(ILoan.Paused.selector);
         loan.borrow{value: COLLATERAL}(BORROW);
+    }
+
+    function test_Borrow_WithOriginationFee() public {
+        loan.setOriginationFee(100); // 1%
+        uint256 balBefore = alice.balance;
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        uint256 fee = BORROW / 100; // 1%
+        assertEq(alice.balance, balBefore - COLLATERAL + BORROW - fee);
+        assertEq(loan.accumulatedFees(), fee);
+    }
+
+    function test_Borrow_FreePoolExcludesFees() public {
+        loan.setOriginationFee(100); // 1%
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        // freePool = balance - lockedCollateral - fees
+        uint256 expected = address(loan).balance - loan.totalLockedCollateral() - loan.accumulatedFees();
+        assertEq(loan.freePoolBalance(), expected);
     }
 
     // ─── Repay ─────────────────────────────────────────────────────────────────
@@ -141,7 +175,7 @@ contract LoanTest is Test {
         loan.repay{value: due}();
         assertEq(loan.totalLockedCollateral(), 0);
         assertEq(loan.totalOutstandingPrincipal(), 0);
-        assertGt(alice.balance, balBefore);
+        assertGt(alice.balance, balBefore); // got collateral back
     }
 
     function test_Repay_OverpaymentRefunded() public {
@@ -151,6 +185,7 @@ contract LoanTest is Test {
         uint256 balBefore = alice.balance;
         vm.prank(alice);
         loan.repay{value: due + 0.5 ether}();
+        // Should get overpayment + collateral back
         assertGt(alice.balance, balBefore);
     }
 
@@ -186,8 +221,19 @@ contract LoanTest is Test {
         loan.repay{value: due}();
         (uint256 dueAfter,,) = loan.amountDue(alice);
         assertEq(dueAfter, 0);
-        (,,,, bool active) = loan.loans(alice);
+        (,,,,bool active,) = loan.getLoanInfo(alice);
         assertFalse(active);
+    }
+
+    function test_Repay_WorksWhenPaused() public {
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        loan.pause();
+        (uint256 due,,) = loan.amountDue(alice);
+        // repay should NOT revert when paused
+        vm.prank(alice);
+        loan.repay{value: due}();
+        assertEq(loan.totalLockedCollateral(), 0);
     }
 
     // ─── Liquidate ─────────────────────────────────────────────────────────────
@@ -227,6 +273,109 @@ contract LoanTest is Test {
         loan.liquidate(alice);
     }
 
+    function test_Liquidate_RevertWhenPaused() public {
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        skip(loan.LOAN_DURATION() + 1);
+        loan.pause();
+        vm.prank(bob);
+        vm.expectRevert(ILoan.Paused.selector);
+        loan.liquidate(alice);
+    }
+
+    function test_Liquidate_ClearsState() public {
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        skip(loan.LOAN_DURATION() + 1);
+        vm.prank(bob);
+        loan.liquidate(alice);
+        assertEq(loan.totalOutstandingPrincipal(), 0);
+        (,,,,bool active,) = loan.getLoanInfo(alice);
+        assertFalse(active);
+    }
+
+    // ─── ExtendLoan ────────────────────────────────────────────────────────────
+
+    function test_ExtendLoan_Success() public {
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        skip(15 days);
+        (uint256 due,,uint256 interest) = loan.amountDue(alice);
+        (,,,uint256 deadlineBefore,,) = loan.getLoanInfo(alice);
+        vm.prank(alice);
+        loan.extendLoan{value: interest}();
+        (,,,uint256 deadlineAfter,,uint256 extCount) = loan.getLoanInfo(alice);
+        assertEq(deadlineAfter, deadlineBefore + loan.EXTENSION_DURATION());
+        assertEq(extCount, 1);
+        (due,,) = loan.amountDue(alice); // interest should be near 0 after reset
+        assertLt(due - BORROW, interest); // new interest < old interest
+    }
+
+    function test_ExtendLoan_EmitsEvent() public {
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        skip(1 days);
+        (,,uint256 interest) = loan.amountDue(alice);
+        (,,,uint256 deadlineBefore,,) = loan.getLoanInfo(alice);
+        vm.expectEmit(true, false, false, false);
+        emit LoanExtended(alice, deadlineBefore + loan.EXTENSION_DURATION(), 1);
+        vm.prank(alice);
+        loan.extendLoan{value: interest}();
+    }
+
+    function test_ExtendLoan_RevertNoActiveLoan() public {
+        vm.prank(alice);
+        vm.expectRevert(ILoan.NoActiveLoan.selector);
+        loan.extendLoan{value: 0}();
+    }
+
+    function test_ExtendLoan_RevertMaxExtensions() public {
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        for (uint256 i = 0; i < loan.MAX_EXTENSIONS(); i++) {
+            skip(1 days);
+            (,,uint256 interest) = loan.amountDue(alice);
+            vm.prank(alice);
+            loan.extendLoan{value: interest + 1}();
+        }
+        skip(1 days);
+        (,,uint256 interest) = loan.amountDue(alice);
+        vm.prank(alice);
+        vm.expectRevert(ILoan.ExtensionLimitReached.selector);
+        loan.extendLoan{value: interest + 1}();
+    }
+
+    function test_ExtendLoan_RevertInsufficientPayment() public {
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        skip(10 days);
+        (,,uint256 interest) = loan.amountDue(alice);
+        vm.prank(alice);
+        vm.expectRevert(ILoan.InsufficientRepayment.selector);
+        loan.extendLoan{value: interest - 1}();
+    }
+
+    function test_ExtendLoan_OverpaymentRefunded() public {
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        skip(1 days);
+        (,,uint256 interest) = loan.amountDue(alice);
+        uint256 balBefore = alice.balance;
+        vm.prank(alice);
+        loan.extendLoan{value: interest + 1 ether}();
+        // Should get 1 ether back
+        assertApproxEqAbs(alice.balance, balBefore - interest, 1e9);
+    }
+
+    function test_ExtendLoan_RevertWhenPaused() public {
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        loan.pause();
+        vm.prank(alice);
+        vm.expectRevert(ILoan.Paused.selector);
+        loan.extendLoan{value: 0}();
+    }
+
     // ─── WithdrawPool ──────────────────────────────────────────────────────────
 
     function test_WithdrawPool_Success() public {
@@ -257,10 +406,78 @@ contract LoanTest is Test {
     function test_WithdrawPool_CannotTouchLockedCollateral() public {
         vm.prank(alice);
         loan.borrow{value: COLLATERAL}(BORROW);
+        // free pool = 10 ether (pool) - 1 ether (lent out) = 9 ether
         assertEq(loan.freePoolBalance(), 9 ether);
         loan.withdrawPool(9 ether);
         vm.expectRevert(ILoan.WithdrawExceedsFree.selector);
         loan.withdrawPool(1);
+    }
+
+    function test_WithdrawPool_RevertZeroAmount() public {
+        vm.expectRevert(ILoan.InvalidAmount.selector);
+        loan.withdrawPool(0);
+    }
+
+    // ─── WithdrawFees ──────────────────────────────────────────────────────────
+
+    function test_WithdrawFees_Success() public {
+        loan.setOriginationFee(100); // 1%
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        uint256 fee = BORROW / 100;
+        uint256 before = owner.balance;
+        loan.withdrawFees();
+        assertEq(owner.balance, before + fee);
+        assertEq(loan.accumulatedFees(), 0);
+    }
+
+    function test_WithdrawFees_EmitsEvent() public {
+        loan.setOriginationFee(100);
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        uint256 fee = BORROW / 100;
+        vm.expectEmit(true, false, false, true);
+        emit FeesCollected(owner, fee);
+        loan.withdrawFees();
+    }
+
+    function test_WithdrawFees_RevertNoFees() public {
+        vm.expectRevert(ILoan.InvalidAmount.selector);
+        loan.withdrawFees();
+    }
+
+    function test_WithdrawFees_RevertNotOwner() public {
+        loan.setOriginationFee(100);
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        vm.prank(alice);
+        vm.expectRevert(ILoan.NotOwner.selector);
+        loan.withdrawFees();
+    }
+
+    // ─── SetOriginationFee ─────────────────────────────────────────────────────
+
+    function test_SetOriginationFee_Success() public {
+        vm.expectEmit(false, false, false, true);
+        emit OriginationFeeUpdated(0, 100);
+        loan.setOriginationFee(100);
+        assertEq(loan.originationFeeBps(), 100);
+    }
+
+    function test_SetOriginationFee_RevertTooHigh() public {
+        vm.expectRevert(ILoan.FeeTooHigh.selector);
+        loan.setOriginationFee(201);
+    }
+
+    function test_SetOriginationFee_MaxAllowed() public {
+        loan.setOriginationFee(200);
+        assertEq(loan.originationFeeBps(), 200);
+    }
+
+    function test_SetOriginationFee_RevertNotOwner() public {
+        vm.prank(alice);
+        vm.expectRevert(ILoan.NotOwner.selector);
+        loan.setOriginationFee(100);
     }
 
     // ─── Ownership ─────────────────────────────────────────────────────────────
@@ -316,6 +533,12 @@ contract LoanTest is Test {
         loan.setInterestRate(5_001);
     }
 
+    function test_SetInterestRate_RevertNotOwner() public {
+        vm.prank(alice);
+        vm.expectRevert(ILoan.NotOwner.selector);
+        loan.setInterestRate(500);
+    }
+
     // ─── Pause ─────────────────────────────────────────────────────────────────
 
     function test_Pause_Unpause() public {
@@ -329,6 +552,13 @@ contract LoanTest is Test {
         vm.prank(alice);
         vm.expectRevert(ILoan.NotOwner.selector);
         loan.pause();
+    }
+
+    function test_Unpause_RevertNotOwner() public {
+        loan.pause();
+        vm.prank(alice);
+        vm.expectRevert(ILoan.NotOwner.selector);
+        loan.unpause();
     }
 
     // ─── AmountDue ─────────────────────────────────────────────────────────────
@@ -347,6 +577,34 @@ contract LoanTest is Test {
         skip(30 days);
         (uint256 due2,,) = loan.amountDue(alice);
         assertGt(due2, due1);
+    }
+
+    // ─── HealthFactor ──────────────────────────────────────────────────────────
+
+    function test_HealthFactor_InitiallyAboveThreshold() public {
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        uint256 hf = loan.getHealthFactor(alice);
+        assertGe(hf, loan.LIQUIDATION_THRESHOLD());
+    }
+
+    function test_HealthFactor_ZeroForInactiveLoan() public view {
+        assertEq(loan.getHealthFactor(alice), 0);
+    }
+
+    // ─── GetLoanInfo ───────────────────────────────────────────────────────────
+
+    function test_GetLoanInfo_ReturnsCorrectData() public {
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        (uint256 col, uint256 prin, uint256 start, uint256 deadline, bool active, uint256 extCount) =
+            loan.getLoanInfo(alice);
+        assertEq(col, COLLATERAL);
+        assertEq(prin, BORROW);
+        assertEq(start, block.timestamp);
+        assertEq(deadline, block.timestamp + loan.LOAN_DURATION());
+        assertTrue(active);
+        assertEq(extCount, 0);
     }
 
     // ─── Receive ───────────────────────────────────────────────────────────────
@@ -376,10 +634,21 @@ contract LoanTest is Test {
         loan.borrow{value: COLLATERAL}(BORROW);
         skip(elapsed);
         (, uint256 principal, uint256 interest) = loan.amountDue(alice);
-        assertLe(interest, principal);
+        assertLe(interest, principal); // interest never exceeds principal in 1 year at max 50% APR
     }
 
-    // ─── Invariant ─────────────────────────────────────────────────────────────
+    function testFuzz_OriginationFee(uint256 feeBps) public {
+        feeBps = bound(feeBps, 0, 200);
+        loan.setOriginationFee(feeBps);
+        uint256 balBefore = alice.balance;
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        uint256 fee = (BORROW * feeBps) / 10_000;
+        assertEq(alice.balance, balBefore - COLLATERAL + BORROW - fee);
+        assertEq(loan.accumulatedFees(), fee);
+    }
+
+    // ─── Invariants ────────────────────────────────────────────────────────────
 
     function test_Invariant_BalanceGteLockedCollateral() public {
         vm.prank(alice);
@@ -387,8 +656,21 @@ contract LoanTest is Test {
         assertGe(address(loan).balance, loan.totalLockedCollateral());
     }
 
+    function test_Invariant_FreePoolNeverNegative() public {
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        assertGe(loan.freePoolBalance(), 0);
+    }
+
+    function test_Invariant_MultipleLoans() public {
+        vm.prank(alice);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        vm.prank(bob);
+        loan.borrow{value: COLLATERAL}(BORROW);
+        assertEq(loan.totalLockedCollateral(), COLLATERAL * 2);
+        assertEq(loan.totalOutstandingPrincipal(), BORROW * 2);
+        assertGe(address(loan).balance, loan.totalLockedCollateral());
+    }
+
     receive() external payable {}
 }
-// Commit 1 optimization
-// Commit 21 optimization
-// Commit 41 optimization
