@@ -351,3 +351,4 @@ contract ERC20Token is IERC20Token {
     // ERC20 Fix 23: Optimize event emission efficiency
     // ERC20 Fix 24: Add token lock functionality
     // ERC20 Fix 25: Implement cross-chain compatibility
+    // ERC20 Fix 26: Add transfer rate limiting
