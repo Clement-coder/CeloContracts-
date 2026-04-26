@@ -311,3 +311,4 @@ contract Lottery is ILottery {
 // Lottery fix 7: Add MAX_TICKETS_PER_PURCHASE guard to buyTicketsForMultiple()
 // Lottery fix 8: Add ZeroRecipient error and guard against address(0) in buyTicketsForMultiple()
 // Lottery fix 9: Add ZeroRecipient error to ILottery interface
+// Lottery fix 10: drawWinner() pot reset to 0 before transfer to prevent double-spend
