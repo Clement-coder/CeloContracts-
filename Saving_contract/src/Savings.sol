@@ -44,6 +44,15 @@ contract Savings is ISavings {
     /// @notice Total number of unique depositors.
     uint256 public totalUsers;
 
+    /// @notice Emergency withdrawal enabled by owner.
+    bool public emergencyWithdrawEnabled;
+
+    /// @notice Withdrawal fee in basis points (e.g., 100 = 1%).
+    uint256 public withdrawalFeeBps;
+
+    /// @notice Maximum withdrawal fee: 5% (500 bps).
+    uint256 public constant MAX_WITHDRAWAL_FEE_BPS = 500;
+
     /// @dev Savings account per user.
     struct Account {
         /// @dev Current balance in wei.
@@ -125,6 +134,9 @@ contract Savings is ISavings {
         if (amount == 0 || amount > acc.balance) revert AmountExceedsBalance();
         if (block.timestamp < acc.unlockTime) revert FundsLocked(acc.unlockTime);
 
+        uint256 fee = (amount * withdrawalFeeBps) / 10_000;
+        uint256 netAmount = amount - fee;
+        
         acc.balance -= amount;
         totalDeposited -= amount;
 
@@ -133,9 +145,36 @@ contract Savings is ISavings {
 
         uint256 remaining = acc.balance;
 
-        emit Withdrawn(msg.sender, amount, remaining);
+        emit Withdrawn(msg.sender, netAmount, remaining);
+        if (fee > 0) {
+            emit WithdrawalFeeCharged(msg.sender, fee);
+        }
 
-        (bool ok,) = msg.sender.call{value: amount}("");
+        (bool ok,) = msg.sender.call{value: netAmount}("");
+        if (!ok) revert TransferFailed();
+    }
+
+    /// @notice Emergency withdraw ignoring lock (only when enabled by owner).
+    /// @param amount Amount to withdraw.
+    /// @dev Higher fee applies for emergency withdrawals.
+    function emergencyWithdraw(uint256 amount) external nonReentrant {
+        if (!emergencyWithdrawEnabled) revert NotOwner(); // Reusing error
+        
+        Account storage acc = accounts[msg.sender];
+        if (acc.balance == 0) revert NothingToWithdraw();
+        if (amount == 0 || amount > acc.balance) revert AmountExceedsBalance();
+
+        uint256 emergencyFee = (amount * 1000) / 10_000; // 10% emergency fee
+        uint256 netAmount = amount - emergencyFee;
+        
+        acc.balance -= amount;
+        totalDeposited -= amount;
+
+        if (acc.balance == 0) acc.unlockTime = NO_LOCK;
+
+        emit EmergencyWithdrawn(msg.sender, netAmount, emergencyFee);
+
+        (bool ok,) = msg.sender.call{value: netAmount}("");
         if (!ok) revert TransferFailed();
     }
 
@@ -216,6 +255,21 @@ contract Savings is ISavings {
         emit OwnershipTransferred(owner, pendingOwner);
         owner = pendingOwner;
         pendingOwner = address(0);
+    }
+
+    /// @notice Set withdrawal fee (only owner).
+    /// @param newFeeBps New fee in basis points (max 500 = 5%).
+    function setWithdrawalFee(uint256 newFeeBps) external onlyOwner {
+        if (newFeeBps > MAX_WITHDRAWAL_FEE_BPS) revert AmountExceedsBalance();
+        emit WithdrawalFeeUpdated(withdrawalFeeBps, newFeeBps);
+        withdrawalFeeBps = newFeeBps;
+    }
+
+    /// @notice Enable/disable emergency withdrawals (only owner).
+    /// @param enabled Whether to enable emergency withdrawals.
+    function setEmergencyWithdrawEnabled(bool enabled) external onlyOwner {
+        emergencyWithdrawEnabled = enabled;
+        emit EmergencyWithdrawToggled(enabled);
     }
 
     // ─── Receive ───────────────────────────────────────────────────────────────

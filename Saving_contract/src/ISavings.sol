@@ -20,6 +20,10 @@ interface ISavings {
     // ─── Events ────────────────────────────────────────────────────────────────
     event Deposited(address indexed user, uint256 amount, uint256 unlockTime, bool isNewAccount);
     event Withdrawn(address indexed user, uint256 amount, uint256 remaining);
+    event EmergencyWithdrawn(address indexed user, uint256 amount, uint256 fee);
+    event WithdrawalFeeCharged(address indexed user, uint256 fee);
+    event WithdrawalFeeUpdated(uint256 oldFee, uint256 newFee);
+    event EmergencyWithdrawToggled(bool enabled);
     event LockExtended(address indexed user, uint256 oldUnlockTime, uint256 newUnlockTime);
     event ContractPaused(address indexed by);
     event ContractUnpaused(address indexed by);
