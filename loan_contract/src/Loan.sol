@@ -471,3 +471,4 @@ contract Loan is ILoan {
 // Loan fix 37: Add test_ExtendLoan_Success
 // Loan fix 38: Add test_ExtendLoan_EmitsEvent
 // Loan fix 39: Add test_ExtendLoan_RevertNoActiveLoan
+// Loan fix 40: Add test_ExtendLoan_RevertMaxExtensions
