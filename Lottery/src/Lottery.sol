@@ -357,3 +357,4 @@ contract Lottery is ILottery {
 // Lottery fix 53: Add test_DrawWinner_SingleEntryAlwaysWins
 // Lottery fix 54: Add test_BuyTickets_TicketCountTrackedPerRound
 // Lottery fix 55: Add test_StartRound_IncrementRoundId
+// Lottery fix 56: Add test_StartRound_SetsEndTimeCorrectly
