@@ -467,3 +467,4 @@ contract Loan is ILoan {
 // Loan fix 33: Add test_Borrow_FreePoolExcludesFees invariant test
 // Loan fix 34: Add test_Repay_WorksWhenPaused - repay must succeed even when paused
 // Loan fix 35: Add test_Liquidate_RevertWhenPaused
+// Loan fix 36: Add test_Liquidate_ClearsState
