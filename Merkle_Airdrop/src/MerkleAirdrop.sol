@@ -244,3 +244,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 66: Add test_SetMerkleRoot_AllowsNewClaims
 // Merkle Airdrop fix 67: Add test_Sweep_ZeroBalanceAfterAllClaims edge case
 // Merkle Airdrop fix 68: Add test_Sweep_AfterPartialClaims
+// Merkle Airdrop fix 69: Add test_Claim_AllFourRecipients integration test
