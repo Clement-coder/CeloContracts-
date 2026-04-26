@@ -48,6 +48,9 @@ contract TokenSwap is ITokenSwap {
     /// @notice LP token balances per provider.
     mapping(address => uint256) public lpBalances;
 
+    /// @notice Blacklisted addresses cannot use the swap.
+    mapping(address => bool) public blacklisted;
+
     // ─── Modifiers ─────────────────────────────────────────────────────────────
 
     modifier onlyOwner() {
@@ -65,6 +68,11 @@ contract TokenSwap is ITokenSwap {
         _locked = true;
         _;
         _locked = false;
+    }
+
+    modifier notBlacklisted() {
+        if (blacklisted[msg.sender]) revert Blacklisted();
+        _;
     }
 
     // ─── Constructor ───────────────────────────────────────────────────────────
@@ -89,7 +97,7 @@ contract TokenSwap is ITokenSwap {
     /// @dev   First liquidity provider sets the initial price ratio.
     ///        Caller must approve this contract for tokenAmount. Emits {LiquidityAdded}.
     function addLiquidity(uint256 tokenAmount, uint256 minLpOut)
-        external payable override whenNotPaused nonReentrant returns (uint256 lpMinted)
+        external payable override whenNotPaused nonReentrant notBlacklisted returns (uint256 lpMinted)
     {
         if (msg.value == 0 || tokenAmount == 0) revert ZeroAmount();
 
@@ -126,7 +134,7 @@ contract TokenSwap is ITokenSwap {
     /// @return tokenOut Tokens returned.
     /// @dev Emits {LiquidityRemoved}.
     function removeLiquidity(uint256 lpAmount, uint256 minCelo, uint256 minToken)
-        external override nonReentrant returns (uint256 celoOut, uint256 tokenOut)
+        external override nonReentrant notBlacklisted returns (uint256 celoOut, uint256 tokenOut)
     {
         if (lpAmount == 0) revert ZeroAmount();
         if (lpBalances[msg.sender] < lpAmount) revert InsufficientLPTokens();
@@ -159,7 +167,7 @@ contract TokenSwap is ITokenSwap {
     /// @return tokenOut   Tokens received.
     /// @dev Emits {SwappedCeloForToken}.
     function swapCeloForToken(uint256 minTokenOut)
-        external payable override whenNotPaused nonReentrant returns (uint256 tokenOut)
+        external payable override whenNotPaused nonReentrant notBlacklisted returns (uint256 tokenOut)
     {
         if (msg.value == 0) revert ZeroAmount();
 
@@ -183,7 +191,7 @@ contract TokenSwap is ITokenSwap {
     /// @return celoOut   CELO received.
     /// @dev Emits {SwappedTokenForCelo}.
     function swapTokenForCelo(uint256 tokenIn, uint256 minCeloOut)
-        external override whenNotPaused nonReentrant returns (uint256 celoOut)
+        external override whenNotPaused nonReentrant notBlacklisted returns (uint256 celoOut)
     {
         if (tokenIn == 0) revert ZeroAmount();
 
@@ -255,6 +263,21 @@ contract TokenSwap is ITokenSwap {
         emit OwnershipTransferred(owner, pendingOwner);
         owner = pendingOwner;
         pendingOwner = address(0);
+    }
+
+    /// @notice Add address to blacklist (only owner).
+    /// @param account Address to blacklist.
+    function addToBlacklist(address account) external onlyOwner {
+        if (account == address(0)) revert ZeroAddress();
+        blacklisted[account] = true;
+        emit BlacklistUpdated(account, true);
+    }
+
+    /// @notice Remove address from blacklist (only owner).
+    /// @param account Address to remove from blacklist.
+    function removeFromBlacklist(address account) external onlyOwner {
+        blacklisted[account] = false;
+        emit BlacklistUpdated(account, false);
     }
 
     // ─── Internal ──────────────────────────────────────────────────────────────

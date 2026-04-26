@@ -16,12 +16,14 @@ interface ITokenSwap {
     error ZeroAmount();
     error TransferFailed();
     error FeeTooHigh();
+    error Blacklisted();
 
     event LiquidityAdded(address indexed provider, uint256 celoAmount, uint256 tokenAmount, uint256 lpMinted);
     event LiquidityRemoved(address indexed provider, uint256 celoAmount, uint256 tokenAmount, uint256 lpBurned);
     event SwappedCeloForToken(address indexed user, uint256 celoIn, uint256 tokenOut);
     event SwappedTokenForCelo(address indexed user, uint256 tokenIn, uint256 celoOut);
     event FeeUpdated(uint256 oldFee, uint256 newFee);
+    event BlacklistUpdated(address indexed account, bool blacklisted);
     event ContractPaused(address indexed by);
     event ContractUnpaused(address indexed by);
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
