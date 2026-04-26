@@ -441,3 +441,4 @@ contract NFTMarketplace is INFTMarketplace {
 // NFT Marketplace fix 35: Add test_BuyNFT_ZeroFee
 // NFT Marketplace fix 36: Add testFuzz_SetFeeShareRate fuzz test
 // NFT Marketplace fix 37: Add OfferMade event mirror to test file
+// NFT Marketplace fix 38: Add OfferAccepted event mirror to test file
