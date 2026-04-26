@@ -464,3 +464,4 @@ contract NFTMarketplace is INFTMarketplace {
 // NFT Marketplace fix 58: Add test_BuyNFT_OverpaymentRefunded coverage
 // NFT Marketplace fix 59: Add test_BuyNFT_RevertCannotBuyOwnListing coverage
 // NFT Marketplace fix 60: Add test_WithdrawEarnings_Success coverage
+// NFT Marketplace fix 61: Add test_WithdrawFees_Success coverage
