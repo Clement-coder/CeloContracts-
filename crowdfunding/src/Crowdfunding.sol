@@ -172,32 +172,7 @@ contract Crowdfunding is ICrowdfunding {
         }
     }
 
-    /// @notice Contribute CELO to a campaign.
-    /// @param id Campaign ID to contribute to.
-    /// @param referrer Optional referrer address for rewards.
-    /// @dev   Emits {Contributed}. Emits {GoalReached} if goal is hit.
-    ///        Campaign must be active (not ended, not cancelled).
-    function contributeWithReferral(uint256 id, address referrer)
-        external payable whenNotPaused nonReentrant campaignExists(id)
-    {
-        Campaign storage c = campaigns[id];
-        if (c.cancelled) revert CampaignAlreadyEnded();
-        if (block.timestamp >= c.deadline) revert CampaignAlreadyEnded();
-        if (msg.value < MIN_CONTRIBUTION) revert ContributionTooLow();
-
-        contributions[id][msg.sender] += msg.value;
-        c.raised += msg.value;
-
-        // Handle referral reward
-        if (referrer != address(0) && referrer != msg.sender && referrer != c.creator) {
-            uint256 referralReward = (msg.value * referralRate) / 10_000;
-            referralRewards[referrer] += referralReward;
-            emit ReferralReward(referrer, msg.sender, referralReward);
-        }
-
-        emit Contributed(id, msg.sender, msg.value, c.raised);
-
-    /// @notice Contribute CELO to a campaign.
+    /// @notice Contribute CELO to a campaign with optional referral.
     /// @param id Campaign ID to contribute to.
     /// @param referrer Optional referrer address for rewards.
     /// @dev   Emits {Contributed}. Emits {GoalReached} if goal is hit.
