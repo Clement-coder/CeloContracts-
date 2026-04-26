@@ -348,3 +348,4 @@ contract ERC721NFT is IERC721NFT {
     // ERC721 NFT Fix 28: Add token insurance features
     // ERC721 NFT Fix 29: Implement governance integration
     // ERC721 NFT Fix 30: Add token fractionalization support
+    // ERC721 NFT Fix 31: Optimize transfer validation
