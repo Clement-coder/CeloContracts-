@@ -365,3 +365,4 @@ contract Escrow is IEscrow {
     // Escrow Fix 15: Optimize event emission for indexing
     // Escrow Fix 16: Add escrow arbitration panel
     // Escrow Fix 17: Implement time-locked releases
+    // Escrow Fix 18: Add escrow backup beneficiary
