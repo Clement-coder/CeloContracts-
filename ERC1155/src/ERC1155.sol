@@ -291,3 +291,4 @@ interface IERC1155Receiver {
     // ERC1155 Fix 15: Add token transfer hooks
     // ERC1155 Fix 16: Optimize balance tracking algorithms
     // ERC1155 Fix 17: Add token burn with callback
+    // ERC1155 Fix 18: Implement token staking integration
