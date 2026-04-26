@@ -225,7 +225,7 @@ contract DAOGovernance is IDAOGovernance {
     function voteByDelegate(uint256 proposalId, bool support, address delegator)
         external whenNotPaused proposalExists(proposalId)
     {
-        if (delegations[delegator] != msg.sender) revert NotOwner(); // Reusing error for "not delegate"
+        if (delegations[delegator] != msg.sender) revert NotDelegate();
         
         Proposal storage p = proposals[proposalId];
         if (p.cancelled) revert ProposalNotActive();

@@ -22,6 +22,7 @@ interface IDAOGovernance {
     error QuorumTooLow();
     error TransferFailed();
     error DescriptionEmpty();
+    error NotDelegate();
 
     // ─── Events ────────────────────────────────────────────────────────────────
     event ProposalCreated(uint256 indexed id, address indexed proposer, string description, uint256 votingEnd);
