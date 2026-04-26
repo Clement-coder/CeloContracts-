@@ -24,6 +24,9 @@ contract NFTMarketplace is INFTMarketplace {
     /// @notice Maximum platform fee: 10% (1000 bps).
     uint256 public constant MAX_FEE_BPS = 1_000;
 
+    /// @notice Minimum bid increment: 0.001 CELO.
+    uint256 public constant MIN_BID_INCREMENT = 0.001 ether;
+
     /// @notice Minimum listing price: 0.001 CELO.
     uint256 public constant MIN_PRICE = 0.001 ether;
 
