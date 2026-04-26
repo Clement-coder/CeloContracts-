@@ -26,6 +26,12 @@ contract Loan is ILoan {
     /// @notice Loan duration before liquidation is allowed: 30 days.
     uint256 public constant LOAN_DURATION = 30 days;
 
+    /// @notice Liquidation protection period: 24 hours.
+    uint256 public constant LIQUIDATION_PROTECTION = 24 hours;
+
+    /// @notice Liquidation threshold: 120% (below this, liquidation is allowed).
+    uint256 public constant LIQUIDATION_THRESHOLD = 120;
+
     // ─── State ─────────────────────────────────────────────────────────────────
 
     /// @notice Current contract owner.
@@ -194,7 +200,20 @@ contract Loan is ILoan {
     function liquidate(address borrower) external override nonReentrant whenNotPaused {
         LoanRecord storage loan = loans[borrower];
         if (!loan.active) revert NoActiveLoan();
-        if (block.timestamp < loan.deadline) revert LoanNotExpired();
+        
+        // Check if loan is past deadline OR health factor is below liquidation threshold
+        bool pastDeadline = block.timestamp >= loan.deadline;
+        uint256 healthFactor = getHealthFactor(borrower);
+        bool unhealthy = healthFactor < LIQUIDATION_THRESHOLD && healthFactor > 0;
+        
+        if (!pastDeadline && !unhealthy) revert LoanNotExpired();
+        
+        // If liquidating due to health factor, give borrower protection period
+        if (unhealthy && !pastDeadline) {
+            if (block.timestamp < loan.startTime + LIQUIDATION_PROTECTION) {
+                revert LoanNotExpired(); // Protection period active
+            }
+        }
 
         uint256 collateral = loan.collateral;
         uint256 principal = loan.principal;
