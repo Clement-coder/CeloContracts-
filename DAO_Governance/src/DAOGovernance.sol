@@ -32,6 +32,9 @@ contract DAOGovernance is IDAOGovernance {
     /// @notice Minimum proposal threshold: 1% of total supply.
     uint256 public constant MIN_PROPOSAL_THRESHOLD = 100; // 1% in basis points
 
+    /// @notice Proposal threshold in basis points (default 1%).
+    uint256 public proposalThreshold;
+
     // ─── Proposal States ───────────────────────────────────────────────────────
 
     uint8 public constant STATE_ACTIVE    = 0;
@@ -143,6 +146,7 @@ contract DAOGovernance is IDAOGovernance {
         token = _token;
         quorum = _quorum;
         votingPeriod = _votingPeriod;
+        proposalThreshold = MIN_PROPOSAL_THRESHOLD;
         owner = msg.sender;
     }
 
