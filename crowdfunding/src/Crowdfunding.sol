@@ -167,6 +167,11 @@ contract Crowdfunding is ICrowdfunding {
 
         emit Contributed(id, msg.sender, msg.value, c.raised);
 
+        if (c.raised >= c.goal) {
+            emit GoalReached(id, c.raised);
+        }
+    }
+
     /// @notice Contribute CELO to a campaign.
     /// @param id Campaign ID to contribute to.
     /// @param referrer Optional referrer address for rewards.
