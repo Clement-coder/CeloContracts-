@@ -355,3 +355,4 @@ contract Escrow is IEscrow {
     // Escrow Fix 5: Implement multi-signature dispute resolution
     // Escrow Fix 6: Add escrow milestone system
     // Escrow Fix 7: Optimize gas usage in fund transfers
+    // Escrow Fix 8: Add escrow template system
