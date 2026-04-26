@@ -363,3 +363,4 @@ contract Lottery is ILottery {
 // Lottery fix 59: Add test_DrawWinner_CallerGetsNoPrize (prize goes to winner not caller)
 // Lottery fix 60: Add test_Pause_BlocksBuyTickets
 // Lottery fix 61: Add test_Pause_BlocksStartRound
+// Lottery fix 62: Add test_Unpause_AllowsBuyTickets
