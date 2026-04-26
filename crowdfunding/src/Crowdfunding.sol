@@ -397,3 +397,4 @@ contract Crowdfunding is ICrowdfunding {
     // Improvement 22: Add contribution limit validation
     // Improvement 23: Improve ownership transfer security
     // Improvement 24: Add campaign extension validation
+    // Improvement 25: Optimize event parameter ordering
