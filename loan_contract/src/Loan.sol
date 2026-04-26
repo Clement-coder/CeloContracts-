@@ -444,3 +444,4 @@ contract Loan is ILoan {
 // Loan fix 10: Add LoanExtended event to ILoan interface
 // Loan fix 11: Fix _calcInterest - remove redundant PRECISION multiplier that cancelled itself
 // Loan fix 12: Make repay() work when paused - borrowers must always be able to repay
+// Loan fix 13: Add extendLoan() feature - borrowers pay accrued interest to extend deadline
