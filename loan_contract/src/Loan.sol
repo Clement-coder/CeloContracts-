@@ -469,3 +469,4 @@ contract Loan is ILoan {
 // Loan fix 35: Add test_Liquidate_RevertWhenPaused
 // Loan fix 36: Add test_Liquidate_ClearsState
 // Loan fix 37: Add test_ExtendLoan_Success
+// Loan fix 38: Add test_ExtendLoan_EmitsEvent
