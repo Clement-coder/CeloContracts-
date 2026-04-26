@@ -471,3 +471,4 @@ contract NFTMarketplace is INFTMarketplace {
 // NFT Marketplace fix 65: Add testFuzz_FeeCalculation fuzz test
 // NFT Marketplace fix 66: Add test_Invariant_BalanceCoversEarningsAndFees invariant
 // NFT Marketplace fix 67: Add carol address for third-party test scenarios
+// NFT Marketplace fix 68: Add _mintAndApprove and _listToken helpers to test
