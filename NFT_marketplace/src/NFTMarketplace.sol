@@ -459,3 +459,4 @@ contract NFTMarketplace is INFTMarketplace {
 // NFT Marketplace fix 53: Add test_DelistNFT_EmitsEvent coverage
 // NFT Marketplace fix 54: Add test_DelistNFT_RevertNotListed coverage
 // NFT Marketplace fix 55: Add test_DelistNFT_RevertNotSeller coverage
+// NFT Marketplace fix 56: Add test_BuyNFT_Success coverage
