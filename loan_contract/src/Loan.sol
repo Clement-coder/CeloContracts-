@@ -464,3 +464,4 @@ contract Loan is ILoan {
 // Loan fix 30: Add test_Constructor_DefaultOriginationFeeZero
 // Loan fix 31: Add test_Constructor_MaxRateAllowed boundary test
 // Loan fix 32: Add test_Borrow_WithOriginationFee verifying fee deduction
+// Loan fix 33: Add test_Borrow_FreePoolExcludesFees invariant test
