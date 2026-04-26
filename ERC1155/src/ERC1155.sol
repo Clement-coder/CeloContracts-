@@ -290,3 +290,4 @@ interface IERC1155Receiver {
     // ERC1155 Fix 14: Implement lazy minting functionality
     // ERC1155 Fix 15: Add token transfer hooks
     // ERC1155 Fix 16: Optimize balance tracking algorithms
+    // ERC1155 Fix 17: Add token burn with callback
