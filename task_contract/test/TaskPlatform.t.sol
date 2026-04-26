@@ -18,17 +18,28 @@ contract TaskPlatformTest is Test {
     event TaskCreated(uint256 indexed id, address indexed poster, uint256 bounty, string title, uint256 deadline);
     event TaskClaimed(uint256 indexed id, address indexed worker);
     event TaskCompleted(uint256 indexed id, address indexed worker, uint256 bounty);
+    event TaskRated(uint256 indexed id, address indexed worker, uint8 rating);
     event TaskCancelled(uint256 indexed id, address indexed poster, uint256 bountyRefunded);
     event TaskExpiredAndReclaimed(uint256 indexed id, address indexed poster, uint256 bountyRefunded);
     event TaskDisputed(uint256 indexed id, address indexed raisedBy);
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    event StuckFundsWithdrawn(address indexed to, uint256 amount);
 
     function setUp() public {
         platform = new TaskPlatform();
         vm.deal(alice, 10 ether);
         vm.deal(bob, 10 ether);
         vm.deal(carol, 10 ether);
+    }
+
+    // ─── Helpers ───────────────────────────────────────────────────────────────
+
+    function _createAndClaim() internal returns (uint256 id) {
+        vm.prank(alice);
+        id = platform.createTask{value: BOUNTY}("Fix bug", "Desc");
+        vm.prank(bob);
+        platform.claimTask(id);
     }
 
     // ─── Constructor ───────────────────────────────────────────────────────────
@@ -87,7 +98,7 @@ contract TaskPlatformTest is Test {
         platform.createTask{value: BOUNTY}("Fix bug", "Desc");
         vm.prank(bob);
         platform.claimTask(1);
-        (,, address worker,,,,, ) = platform.getTask(1);
+        (,, address worker,,,,,) = platform.getTask(1);
         assertEq(worker, bob);
     }
 
@@ -139,36 +150,51 @@ contract TaskPlatformTest is Test {
     // ─── ApproveCompletion ─────────────────────────────────────────────────────
 
     function test_ApproveCompletion_Success() public {
-        vm.prank(alice);
-        platform.createTask{value: BOUNTY}("Fix bug", "Desc");
-        vm.prank(bob);
-        platform.claimTask(1);
+        uint256 id = _createAndClaim();
         uint256 bobBefore = bob.balance;
         vm.prank(alice);
-        platform.approveCompletion(1);
+        platform.approveCompletion(id, 0);
         assertGt(bob.balance, bobBefore);
         assertEq(platform.totalBountyLocked(), 0);
     }
 
     function test_ApproveCompletion_EmitsEvent() public {
-        vm.prank(alice);
-        platform.createTask{value: BOUNTY}("Fix bug", "Desc");
-        vm.prank(bob);
-        platform.claimTask(1);
+        uint256 id = _createAndClaim();
         vm.expectEmit(true, true, false, true);
-        emit TaskCompleted(1, bob, BOUNTY);
+        emit TaskCompleted(id, bob, BOUNTY);
         vm.prank(alice);
-        platform.approveCompletion(1);
+        platform.approveCompletion(id, 0);
+    }
+
+    function test_ApproveCompletion_WithRating_EmitsTaskRated() public {
+        uint256 id = _createAndClaim();
+        vm.expectEmit(true, true, false, true);
+        emit TaskRated(id, bob, 5);
+        vm.prank(alice);
+        platform.approveCompletion(id, 5);
+    }
+
+    function test_ApproveCompletion_WithRating_UpdatesReputation() public {
+        uint256 id = _createAndClaim();
+        vm.prank(alice);
+        platform.approveCompletion(id, 4);
+        (uint256 avg, uint256 completed) = platform.getWorkerReputation(bob);
+        assertEq(completed, 1);
+        assertEq(avg, 400); // 4 * 100
+    }
+
+    function test_ApproveCompletion_RevertInvalidRating() public {
+        uint256 id = _createAndClaim();
+        vm.prank(alice);
+        vm.expectRevert(ITaskPlatform.InvalidRating.selector);
+        platform.approveCompletion(id, 6);
     }
 
     function test_ApproveCompletion_RevertNotPoster() public {
-        vm.prank(alice);
-        platform.createTask{value: BOUNTY}("Fix bug", "Desc");
-        vm.prank(bob);
-        platform.claimTask(1);
+        uint256 id = _createAndClaim();
         vm.prank(bob);
         vm.expectRevert(ITaskPlatform.NotPoster.selector);
-        platform.approveCompletion(1);
+        platform.approveCompletion(id, 0);
     }
 
     function test_ApproveCompletion_RevertNotInProgress() public {
@@ -176,7 +202,7 @@ contract TaskPlatformTest is Test {
         platform.createTask{value: BOUNTY}("Fix bug", "Desc");
         vm.prank(alice);
         vm.expectRevert(ITaskPlatform.TaskNotInProgress.selector);
-        platform.approveCompletion(1);
+        platform.approveCompletion(1, 0);
     }
 
     // ─── CancelTask ────────────────────────────────────────────────────────────
@@ -201,13 +227,10 @@ contract TaskPlatformTest is Test {
     }
 
     function test_CancelTask_RevertNotOpen() public {
-        vm.prank(alice);
-        platform.createTask{value: BOUNTY}("Fix bug", "Desc");
-        vm.prank(bob);
-        platform.claimTask(1);
+        uint256 id = _createAndClaim();
         vm.prank(alice);
         vm.expectRevert(ITaskPlatform.TaskNotCancellable.selector);
-        platform.cancelTask(1);
+        platform.cancelTask(id);
     }
 
     function test_CancelTask_RevertNotPoster() public {
@@ -249,49 +272,46 @@ contract TaskPlatformTest is Test {
     }
 
     function test_ReclaimExpired_WorksOnInProgress() public {
-        vm.prank(alice);
-        platform.createTask{value: BOUNTY}("Fix bug", "Desc");
-        vm.prank(bob);
-        platform.claimTask(1);
+        uint256 id = _createAndClaim();
         skip(platform.TASK_DURATION() + 1);
         vm.prank(alice);
-        platform.reclaimExpired(1); // poster reclaims from abandoned InProgress task
+        platform.reclaimExpired(id);
         assertEq(platform.totalBountyLocked(), 0);
+    }
+
+    function test_ReclaimExpired_RevertNotPoster() public {
+        vm.prank(alice);
+        platform.createTask{value: BOUNTY}("Fix bug", "Desc");
+        skip(platform.TASK_DURATION() + 1);
+        vm.prank(bob);
+        vm.expectRevert(ITaskPlatform.NotPoster.selector);
+        platform.reclaimExpired(1);
     }
 
     // ─── DisputeTask ───────────────────────────────────────────────────────────
 
     function test_DisputeTask_ByPoster() public {
+        uint256 id = _createAndClaim();
         vm.prank(alice);
-        platform.createTask{value: BOUNTY}("Fix bug", "Desc");
-        vm.prank(bob);
-        platform.claimTask(1);
-        vm.prank(alice);
-        platform.disputeTask(1);
-        (,,,,,, uint8 status,) = platform.getTask(1);
+        platform.disputeTask(id);
+        (,,,,,, uint8 status,) = platform.getTask(id);
         assertEq(status, uint8(5)); // Disputed
     }
 
     function test_DisputeTask_ByWorker() public {
-        vm.prank(alice);
-        platform.createTask{value: BOUNTY}("Fix bug", "Desc");
+        uint256 id = _createAndClaim();
         vm.prank(bob);
-        platform.claimTask(1);
-        vm.prank(bob);
-        platform.disputeTask(1);
-        (,,,,,, uint8 status,) = platform.getTask(1);
+        platform.disputeTask(id);
+        (,,,,,, uint8 status,) = platform.getTask(id);
         assertEq(status, uint8(5));
     }
 
     function test_DisputeTask_EmitsEvent() public {
-        vm.prank(alice);
-        platform.createTask{value: BOUNTY}("Fix bug", "Desc");
-        vm.prank(bob);
-        platform.claimTask(1);
+        uint256 id = _createAndClaim();
         vm.expectEmit(true, true, false, false);
-        emit TaskDisputed(1, alice);
+        emit TaskDisputed(id, alice);
         vm.prank(alice);
-        platform.disputeTask(1);
+        platform.disputeTask(id);
     }
 
     function test_DisputeTask_RevertNotInProgress() public {
@@ -300,6 +320,38 @@ contract TaskPlatformTest is Test {
         vm.prank(alice);
         vm.expectRevert(ITaskPlatform.TaskNotInProgress.selector);
         platform.disputeTask(1);
+    }
+
+    function test_DisputeTask_RevertNotAuthorized() public {
+        uint256 id = _createAndClaim();
+        vm.prank(carol);
+        vm.expectRevert(ITaskPlatform.NotAuthorized.selector);
+        platform.disputeTask(id);
+    }
+
+    // ─── GetWorkerReputation ───────────────────────────────────────────────────
+
+    function test_GetWorkerReputation_ZeroIfNoTasks() public view {
+        (uint256 avg, uint256 completed) = platform.getWorkerReputation(bob);
+        assertEq(avg, 0);
+        assertEq(completed, 0);
+    }
+
+    function test_GetWorkerReputation_AverageScaledBy100() public {
+        uint256 id = _createAndClaim();
+        vm.prank(alice);
+        platform.approveCompletion(id, 5);
+        (uint256 avg,) = platform.getWorkerReputation(bob);
+        assertEq(avg, 500);
+    }
+
+    function test_GetWorkerReputation_NoRating_ZeroAverage() public {
+        uint256 id = _createAndClaim();
+        vm.prank(alice);
+        platform.approveCompletion(id, 0); // skip rating
+        (uint256 avg, uint256 completed) = platform.getWorkerReputation(bob);
+        assertEq(avg, 0);
+        assertEq(completed, 0);
     }
 
     // ─── Pause ─────────────────────────────────────────────────────────────────
@@ -353,7 +405,6 @@ contract TaskPlatformTest is Test {
     // ─── WithdrawStuckFunds ────────────────────────────────────────────────────
 
     function test_WithdrawStuckFunds_Success() public {
-        // Send ETH directly (not via createTask) — becomes "stuck"
         (bool ok,) = address(platform).call{value: 1 ether}("");
         assertTrue(ok);
         uint256 before = owner.balance;
@@ -361,17 +412,32 @@ contract TaskPlatformTest is Test {
         assertEq(owner.balance, before + 1 ether);
     }
 
+    function test_WithdrawStuckFunds_EmitsEvent() public {
+        (bool ok,) = address(platform).call{value: 1 ether}("");
+        assertTrue(ok);
+        vm.expectEmit(true, false, false, true);
+        emit StuckFundsWithdrawn(owner, 1 ether);
+        platform.withdrawStuckFunds(1 ether);
+    }
+
     function test_WithdrawStuckFunds_CannotTouchLockedBounty() public {
         vm.prank(alice);
         platform.createTask{value: BOUNTY}("Fix bug", "Desc");
-        vm.expectRevert(ITaskPlatform.BountyTooLow.selector);
-        platform.withdrawStuckFunds(BOUNTY); // bounty is locked
+        vm.expectRevert(ITaskPlatform.InvalidAmount.selector);
+        platform.withdrawStuckFunds(BOUNTY);
     }
 
     function test_WithdrawStuckFunds_RevertNotOwner() public {
         vm.prank(alice);
         vm.expectRevert(ITaskPlatform.NotOwner.selector);
         platform.withdrawStuckFunds(1);
+    }
+
+    function test_WithdrawStuckFunds_RevertZeroAmount() public {
+        (bool ok,) = address(platform).call{value: 1 ether}("");
+        assertTrue(ok);
+        vm.expectRevert(ITaskPlatform.InvalidAmount.selector);
+        platform.withdrawStuckFunds(0);
     }
 
     // ─── GetTask ───────────────────────────────────────────────────────────────
@@ -396,6 +462,16 @@ contract TaskPlatformTest is Test {
         assertEq(id, 1);
     }
 
+    function testFuzz_ApproveCompletion_Rating(uint8 rating) public {
+        rating = uint8(bound(rating, 1, 5));
+        uint256 id = _createAndClaim();
+        vm.prank(alice);
+        platform.approveCompletion(id, rating);
+        (uint256 avg, uint256 completed) = platform.getWorkerReputation(bob);
+        assertEq(completed, 1);
+        assertEq(avg, uint256(rating) * 100);
+    }
+
     // ─── Invariant ─────────────────────────────────────────────────────────────
 
     function test_Invariant_BalanceGteTotalBountyLocked() public {
@@ -404,6 +480,13 @@ contract TaskPlatformTest is Test {
         vm.prank(bob);
         platform.createTask{value: BOUNTY}("Write docs", "Desc");
         assertGe(address(platform).balance, platform.totalBountyLocked());
+    }
+
+    function test_Invariant_BountyLockedDecreasesOnComplete() public {
+        uint256 id = _createAndClaim();
+        vm.prank(alice);
+        platform.approveCompletion(id, 0);
+        assertEq(platform.totalBountyLocked(), 0);
     }
 
     receive() external payable {}

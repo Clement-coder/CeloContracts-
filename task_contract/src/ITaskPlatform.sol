@@ -16,6 +16,7 @@ interface ITaskPlatform {
     error TaskNotCancellable();
     error NotPoster();
     error NotWorker();
+    error NotAuthorized();
     error PosterCannotClaim();
     error TaskExpired();
     error TaskNotExpired();
@@ -23,6 +24,8 @@ interface ITaskPlatform {
     error TitleTooLong();
     error DescTooLong();
     error InvalidTask();
+    error InvalidRating();
+    error InvalidAmount();
 
     // ─── Events ────────────────────────────────────────────────────────────────
     event TaskCreated(uint256 indexed id, address indexed poster, uint256 bounty, string title, uint256 deadline);
@@ -50,6 +53,7 @@ interface ITaskPlatform {
         string memory title, string memory description,
         uint256 bounty, uint8 status, uint256 deadline, uint8 rating
     );
+    function getWorkerReputation(address worker) external view returns (uint256 averageRating, uint256 completedTasks);
     function pause() external;
     function unpause() external;
     function transferOwnership(address newOwner) external;

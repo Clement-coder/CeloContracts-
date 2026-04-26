@@ -193,7 +193,7 @@ contract TaskPlatform is ITaskPlatform {
     function approveCompletion(uint256 id, uint8 workerRating) external override onlyPoster(id) nonReentrant {
         Task storage t = tasks[id];
         if (t.status != Status.InProgress) revert TaskNotInProgress();
-        if (workerRating > 5) revert BountyTooLow(); // Reusing error for invalid rating
+        if (workerRating > 5) revert InvalidRating();
 
         address worker = t.worker;
         uint256 bounty = t.bounty;
@@ -267,7 +267,7 @@ contract TaskPlatform is ITaskPlatform {
     function disputeTask(uint256 id) external override whenNotPaused {
         Task storage t = tasks[id];
         if (t.status != Status.InProgress) revert TaskNotInProgress();
-        if (msg.sender != t.poster && msg.sender != t.worker) revert NotPoster();
+        if (msg.sender != t.poster && msg.sender != t.worker) revert NotAuthorized();
 
         t.status = Status.Disputed;
         emit TaskDisputed(id, msg.sender);
@@ -299,7 +299,7 @@ contract TaskPlatform is ITaskPlatform {
     /// @param worker Worker address to query.
     /// @return averageRating Average rating (scaled by 100, e.g., 450 = 4.5 stars).
     /// @return completedTasks Number of completed tasks.
-    function getWorkerReputation(address worker) external view returns (uint256 averageRating, uint256 completedTasks) {
+    function getWorkerReputation(address worker) external view override returns (uint256 averageRating, uint256 completedTasks) {
         WorkerReputation storage rep = workerReputation[worker];
         completedTasks = rep.completedTasks;
         if (completedTasks > 0) {
@@ -348,7 +348,7 @@ contract TaskPlatform is ITaskPlatform {
     /// @dev Emits {StuckFundsWithdrawn}. Cannot touch locked bounties.
     function withdrawStuckFunds(uint256 amount) external override onlyOwner nonReentrant {
         uint256 free = address(this).balance - totalBountyLocked;
-        if (amount == 0 || amount > free) revert BountyTooLow();
+        if (amount == 0 || amount > free) revert InvalidAmount();
         emit StuckFundsWithdrawn(owner, amount);
         (bool ok,) = owner.call{value: amount}("");
         if (!ok) revert TransferFailed();
