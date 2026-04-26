@@ -394,3 +394,4 @@ contract DAOGovernance is IDAOGovernance {
     // DAO Fix 5: Implement voting power calculation with delegation
     // DAO Fix 6: Add proposal execution delay for security
     // DAO Fix 7: Optimize gas usage in vote counting
+    // DAO Fix 8: Add proposal description length validation
