@@ -18,6 +18,9 @@ contract Savings is ISavings {
     /// @notice Minimum deposit amount: 0.0001 CELO.
     uint256 public constant MIN_DEPOSIT = 0.0001 ether;
 
+    /// @notice Maximum deposit amount: 1000 CELO (prevents overflow).
+    uint256 public constant MAX_DEPOSIT = 1000 ether;
+
     /// @notice Sentinel value meaning "no lock".
     uint256 public constant NO_LOCK = 0;
 
@@ -89,6 +92,7 @@ contract Savings is ISavings {
     ///        Emits {Deposited} with isNewAccount=true on first deposit.
     function deposit(uint256 lockDuration) external payable override whenNotPaused nonReentrant {
         if (msg.value < MIN_DEPOSIT) revert ZeroValue();
+        if (msg.value > MAX_DEPOSIT) revert AmountExceedsBalance();
         if (lockDuration > MAX_LOCK_DURATION) revert LockTooLong();
 
         Account storage acc = accounts[msg.sender];
