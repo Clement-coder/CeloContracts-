@@ -195,3 +195,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 17: Fix test setUp: MerkleAirdrop constructor now takes 4 args
 // Merkle Airdrop fix 18: Fix test_Claim_SingleLeafTree: pass 4-arg constructor
 // Merkle Airdrop fix 19: Fix test_Constructor_RevertZeroToken: pass 4-arg constructor
+// Merkle Airdrop fix 20: Remove stale optimization comments from test file
