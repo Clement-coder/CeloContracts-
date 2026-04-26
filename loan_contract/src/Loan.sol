@@ -455,3 +455,4 @@ contract Loan is ILoan {
 // Loan fix 21: Add setOriginationFee() to ILoan interface
 // Loan fix 22: Make getHealthFactor() public instead of external for internal reuse
 // Loan fix 23: Add getHealthFactor() to ILoan interface (was missing)
+// Loan fix 24: Fix getHealthFactor() - guard against totalDebt==0 division by zero
