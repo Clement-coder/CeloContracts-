@@ -185,3 +185,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 7: Add totalClaimed() view to IMerkleAirdrop interface (was missing)
 // Merkle Airdrop fix 8: Add startTime() view to IMerkleAirdrop interface (was missing)
 // Merkle Airdrop fix 9: Add endTime() view to IMerkleAirdrop interface (was missing)
+// Merkle Airdrop fix 10: Add NotPendingOwner error to IMerkleAirdrop interface
