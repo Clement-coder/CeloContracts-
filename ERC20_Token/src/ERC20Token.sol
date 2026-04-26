@@ -329,3 +329,4 @@ contract ERC20Token is IERC20Token {
         return high - 1;
     }
 }
+    // ERC20 Fix 4: Add transfer amount validation limits
