@@ -78,6 +78,15 @@ contract NFTMarketplace is INFTMarketplace {
     /// @notice Pending earnings per seller (pull-payment pattern).
     mapping(address => uint256) public earnings;
 
+    /// @notice Fee sharing pool for NFT holders.
+    uint256 public feePool;
+
+    /// @notice Fee sharing rate in basis points (e.g., 200 = 2%).
+    uint256 public feeShareRate;
+
+    /// @notice Maximum fee share rate: 50% (5000 bps).
+    uint256 public constant MAX_FEE_SHARE_RATE = 5000;
+
     // ─── Modifiers ─────────────────────────────────────────────────────────────
 
     modifier onlyOwner() {
@@ -105,6 +114,7 @@ contract NFTMarketplace is INFTMarketplace {
         if (_feeBps > MAX_FEE_BPS) revert FeeTooHigh();
         owner = msg.sender;
         feeBps = _feeBps;
+        feeShareRate = 2000; // Default 20% of fees go to fee pool
     }
 
     // ─── Listings ──────────────────────────────────────────────────────────────
@@ -264,7 +274,12 @@ contract NFTMarketplace is INFTMarketplace {
         uint256 fee = (amount * feeBps) / 10_000;
         uint256 sellerProceeds = amount - fee;
 
-        accruedFees += fee;
+        // Split fee between platform and fee pool
+        uint256 feeShare = (fee * feeShareRate) / 10_000;
+        uint256 platformFee = fee - feeShare;
+
+        accruedFees += platformFee;
+        feePool += feeShare;
         earnings[msg.sender] += sellerProceeds;
 
         // Cancel any active listing
