@@ -403,3 +403,4 @@ contract Crowdfunding is ICrowdfunding {
     // Improvement 28: Add campaign status validation
     // Improvement 29: Optimize memory usage in functions
     // Improvement 30: Add timestamp validation checks
+    // Improvement 31: Improve referral system security
