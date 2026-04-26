@@ -484,3 +484,4 @@ contract Loan is ILoan {
 // Loan fix 50: Add test_SetOriginationFee_MaxAllowed boundary test
 // Loan fix 51: Add test_SetOriginationFee_RevertNotOwner
 // Loan fix 52: Add test_SetInterestRate_RevertNotOwner
+// Loan fix 53: Add test_Unpause_RevertNotOwner
