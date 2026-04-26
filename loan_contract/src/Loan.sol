@@ -436,3 +436,4 @@ contract Loan is ILoan {
 // Loan fix 2: Fix freePoolBalance calculation in borrow() - was double-subtracting msg.value
 // Loan fix 3: Apply originationFee in borrow() - fee was declared but never deducted
 // Loan fix 4: Add accumulatedFees state variable to track collected fees
+// Loan fix 5: Add withdrawFees() function for owner to collect origination fees
