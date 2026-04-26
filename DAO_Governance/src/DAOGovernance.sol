@@ -402,3 +402,4 @@ contract DAOGovernance is IDAOGovernance {
     // DAO Fix 13: Implement quadratic voting option
     // DAO Fix 14: Add proposal dependency tracking
     // DAO Fix 15: Optimize delegation chain resolution
+    // DAO Fix 16: Add voting period extension mechanism
