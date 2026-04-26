@@ -326,3 +326,4 @@ contract Lottery is ILottery {
 // Lottery fix 22: Add test_BuyTickets_RevertAlreadyDrawn
 // Lottery fix 23: Add test_DrawWinner_PotZeroAfterDraw
 // Lottery fix 24: Add test_DrawWinner_NoWinnerRoundDrawnFlag
+// Lottery fix 25: Add test_DrawWinner_RevertNoRound
