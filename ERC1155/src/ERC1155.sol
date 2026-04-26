@@ -284,3 +284,4 @@ interface IERC1155Receiver {
     // ERC1155 Fix 8: Optimize gas usage in batch operations
     // ERC1155 Fix 9: Add token URI override per token ID
     // ERC1155 Fix 10: Implement role-based access control
+    // ERC1155 Fix 11: Add token supply cap enforcement
