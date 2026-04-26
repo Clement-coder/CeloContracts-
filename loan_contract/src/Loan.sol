@@ -459,3 +459,4 @@ contract Loan is ILoan {
 // Loan fix 25: freePoolBalance() now excludes accumulatedFees from available pool
 // Loan fix 26: extendLoan() resets startTime so interest clock restarts after extension
 // Loan fix 27: extendLoan() refunds overpayment back to borrower
+// Loan fix 28: liquidate() clears extensionCount field on loan clearance
