@@ -461,3 +461,4 @@ contract Loan is ILoan {
 // Loan fix 27: extendLoan() refunds overpayment back to borrower
 // Loan fix 28: liquidate() clears extensionCount field on loan clearance
 // Loan fix 29: repay() clears extensionCount field on loan clearance
+// Loan fix 30: Add test_Constructor_DefaultOriginationFeeZero
