@@ -422,3 +422,4 @@ contract DAOGovernance is IDAOGovernance {
     // DAO Fix 33: Implement vote delegation limits
     // DAO Fix 34: Add proposal execution validation
     // DAO Fix 35: Optimize token balance snapshots
+    // DAO Fix 36: Add proposal cancellation penalties
