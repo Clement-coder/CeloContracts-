@@ -255,3 +255,4 @@ contract FlashLoanPool is IFlashLoan {
 }
     // Flash Loan Fix 4: Add flash loan callback validation
     // Flash Loan Fix 5: Implement loan amount limits per user
+    // Flash Loan Fix 6: Add flash loan fee discount system
