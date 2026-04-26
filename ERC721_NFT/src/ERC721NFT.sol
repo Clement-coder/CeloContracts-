@@ -191,6 +191,7 @@ contract ERC721NFT is IERC721NFT {
         if (totalSupply >= CAP) revert CapExceeded();
 
         tokenId = ++nextTokenId;
+        if (tokenId > CAP) revert CapExceeded(); // Check after increment
         totalSupply += 1;
         _owners[tokenId] = to;
         _balances[to] += 1;
