@@ -324,3 +324,4 @@ interface IERC1155Receiver {
     // ERC1155 Fix 48: Optimize memory usage in functions
     // ERC1155 Fix 49: Add token lock functionality
     // ERC1155 Fix 50: Implement automatic royalty distribution
+    // ERC1155 Fix 51: Add token reveal mechanism
