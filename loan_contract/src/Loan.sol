@@ -496,3 +496,4 @@ contract Loan is ILoan {
 // Loan fix 62: Increase alice and bob deal to 20 ether for extension tests
 // Loan fix 63: Add NatSpec to extendLoan() explaining interest-reset behaviour
 // Loan fix 64: Add NatSpec to withdrawFees() documenting fee accounting
+// Loan fix 65: Add NatSpec to freePoolBalance() noting fees exclusion
