@@ -28,6 +28,9 @@ contract ERC721NFT is IERC721NFT {
     /// @notice Next token ID to mint (auto-increments).
     uint256 public nextTokenId;
 
+    /// @notice Maximum tokens per mint: 10.
+    uint256 public constant MAX_MINT_PER_TX = 10;
+
     // ─── State ─────────────────────────────────────────────────────────────────
 
     /// @notice Current owner.
