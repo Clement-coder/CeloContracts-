@@ -336,3 +336,4 @@ contract ERC721NFT is IERC721NFT {
     // ERC721 NFT Fix 16: Add token rarity system
     // ERC721 NFT Fix 17: Implement staking integration
     // ERC721 NFT Fix 18: Add token burn with refund
+    // ERC721 NFT Fix 19: Optimize approval management
