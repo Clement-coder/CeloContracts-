@@ -480,3 +480,4 @@ contract Loan is ILoan {
 // Loan fix 46: Add test_WithdrawFees_RevertNoFees
 // Loan fix 47: Add test_WithdrawFees_RevertNotOwner
 // Loan fix 48: Add test_SetOriginationFee_Success
+// Loan fix 49: Add test_SetOriginationFee_RevertTooHigh
