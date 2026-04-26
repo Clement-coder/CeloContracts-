@@ -15,6 +15,8 @@ interface IFlashLoan {
     error FeeTooHigh();
     error TransferFailed();
     error InvalidReceiver();
+    error AmountTooHigh();
+    error DailyLimitExceeded();
 
     event FlashLoan(address indexed receiver, uint256 amount, uint256 fee);
     event PoolFunded(address indexed funder, uint256 amount);

@@ -105,7 +105,7 @@ contract FlashLoanPool is IFlashLoan {
     {
         if (receiver == address(0)) revert InvalidReceiver();
         if (amount < MIN_AMOUNT) revert AmountTooLow();
-        if (amount > maxLoanAmount) revert AmountTooLow(); // Reusing error for max amount
+        if (amount > maxLoanAmount) revert AmountTooHigh(); // Use proper error for max amount
         if (amount > availableLiquidity()) revert InsufficientLiquidity();
 
         // Reset daily counter if needed
@@ -114,7 +114,7 @@ contract FlashLoanPool is IFlashLoan {
             lastResetTime = block.timestamp;
         }
 
-        if (dailyLoanCount >= maxDailyLoans) revert AmountTooLow(); // Reusing error for daily limit
+        if (dailyLoanCount >= maxDailyLoans) revert DailyLimitExceeded(); // Use proper error for daily limit
 
         uint256 fee = (amount * feeBps) / 10_000;
         uint256 repayment = amount + fee;
