@@ -241,3 +241,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 63: Add test_Token_Approve_EmitsApprovalEvent
 // Merkle Airdrop fix 64: Add test_Claim_EmitsTokenTransferEvent
 // Merkle Airdrop fix 65: Add test_Claim_AirdropBalanceZeroAfterAll invariant
+// Merkle Airdrop fix 66: Add test_SetMerkleRoot_AllowsNewClaims
