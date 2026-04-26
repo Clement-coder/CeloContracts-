@@ -168,6 +168,22 @@ contract Savings is ISavings {
         return (acc.balance, acc.unlockTime);
     }
 
+    /// @notice Check if funds are currently locked for a user.
+    /// @param user Address to check.
+    /// @return locked True if funds are locked, false otherwise.
+    function isLocked(address user) external view returns (bool locked) {
+        return block.timestamp < accounts[user].unlockTime;
+    }
+
+    /// @notice Get time remaining until unlock for a user.
+    /// @param user Address to check.
+    /// @return timeRemaining Seconds until unlock (0 if already unlocked).
+    function timeUntilUnlock(address user) external view returns (uint256 timeRemaining) {
+        uint256 unlockTime = accounts[user].unlockTime;
+        if (block.timestamp >= unlockTime) return 0;
+        return unlockTime - block.timestamp;
+    }
+
     // ─── Admin ─────────────────────────────────────────────────────────────────
 
     /// @notice Pause the contract — halts deposits and lock extensions.
