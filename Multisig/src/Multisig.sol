@@ -299,3 +299,4 @@ contract Multisig is IMultisig {
 // Multisig fix 8: Add addToWhitelist() to IMultisig interface (was missing)
 // Multisig fix 9: Add removeFromWhitelist() to IMultisig interface (was missing)
 // Multisig fix 10: Add setWhitelistEnabled() to IMultisig interface (was missing)
+// Multisig fix 11: Add test_BatchConfirm_Success
