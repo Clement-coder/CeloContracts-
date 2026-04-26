@@ -338,3 +338,4 @@ contract ERC20Token is IERC20Token {
     // ERC20 Fix 10: Add blacklist functionality for compliance
     // ERC20 Fix 11: Optimize snapshot storage efficiency
     // ERC20 Fix 12: Add token metadata update capability
+    // ERC20 Fix 13: Implement permit functionality (EIP-2612)
