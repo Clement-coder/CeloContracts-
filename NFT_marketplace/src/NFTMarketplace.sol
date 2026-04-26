@@ -415,3 +415,4 @@ contract NFTMarketplace is INFTMarketplace {
 // NFT Marketplace fix 9: Add acceptOffer() to INFTMarketplace interface (was missing)
 // NFT Marketplace fix 10: Add cancelOffer() to INFTMarketplace interface (was missing)
 // NFT Marketplace fix 11: Add setFeeShareRate() to INFTMarketplace interface (was missing)
+// NFT Marketplace fix 12: Add setFeeShareRate() function to contract with MAX_FEE_SHARE_RATE guard
