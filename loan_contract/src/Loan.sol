@@ -449,3 +449,4 @@ contract Loan is ILoan {
 // Loan fix 15: Add EXTENSION_DURATION constant (7 days per extension)
 // Loan fix 16: Add extensionCount field to LoanRecord struct
 // Loan fix 17: Add getLoanInfo() view function exposing full loan details including extensionCount
+// Loan fix 18: Add getLoanInfo() to ILoan interface
