@@ -211,3 +211,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 33: Add test_TotalClaimed_StartsZero
 // Merkle Airdrop fix 34: Add test_TotalClaimed_IncrementsOnClaim
 // Merkle Airdrop fix 35: Add test_TotalClaimed_EqualsTotal_AfterAll
+// Merkle Airdrop fix 36: Add DeadlineExtended event mirror to test file
