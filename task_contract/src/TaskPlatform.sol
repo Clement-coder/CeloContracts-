@@ -84,6 +84,14 @@ contract TaskPlatform is ITaskPlatform {
     /// @notice Tasks by ID (1-indexed).
     mapping(uint256 => Task) public tasks;
 
+    /// @notice Worker reputation: address => (totalRating, completedTasks).
+    mapping(address => WorkerReputation) public workerReputation;
+
+    struct WorkerReputation {
+        uint256 totalRating;
+        uint256 completedTasks;
+    }
+
     // ─── Modifiers ─────────────────────────────────────────────────────────────
 
     /// @dev Reverts if caller is not the owner.
@@ -192,6 +200,13 @@ contract TaskPlatform is ITaskPlatform {
         t.rating = workerRating;
         totalBountyLocked -= bounty;
 
+        // Update worker reputation
+        if (workerRating > 0) {
+            WorkerReputation storage rep = workerReputation[worker];
+            rep.totalRating += workerRating;
+            rep.completedTasks += 1;
+        }
+
         emit TaskCompleted(id, worker, bounty);
         if (workerRating > 0) {
             emit TaskRated(id, worker, workerRating);
@@ -275,6 +290,20 @@ contract TaskPlatform is ITaskPlatform {
     ) {
         Task storage t = tasks[id];
         return (id, t.poster, t.worker, t.title, t.description, t.bounty, uint8(t.status), t.deadline, t.rating);
+    }
+
+    /// @notice Get worker reputation and average rating.
+    /// @param worker Worker address to query.
+    /// @return averageRating Average rating (scaled by 100, e.g., 450 = 4.5 stars).
+    /// @return completedTasks Number of completed tasks.
+    function getWorkerReputation(address worker) external view returns (uint256 averageRating, uint256 completedTasks) {
+        WorkerReputation storage rep = workerReputation[worker];
+        completedTasks = rep.completedTasks;
+        if (completedTasks > 0) {
+            averageRating = (rep.totalRating * 100) / completedTasks;
+        } else {
+            averageRating = 0;
+        }
     }
 
     // ─── Admin ─────────────────────────────────────────────────────────────────
