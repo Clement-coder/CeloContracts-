@@ -410,3 +410,4 @@ contract DAOGovernance is IDAOGovernance {
     // DAO Fix 21: Implement vote privacy features
     // DAO Fix 22: Add proposal amendment system
     // DAO Fix 23: Optimize event emission for indexing
+    // DAO Fix 24: Add proposal funding mechanism
