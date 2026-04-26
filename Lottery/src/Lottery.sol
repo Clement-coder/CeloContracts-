@@ -346,3 +346,4 @@ contract Lottery is ILottery {
 // Lottery fix 42: Add test_GetTickets_ReturnsZeroForNonBuyer
 // Lottery fix 43: Add test_Pause_RevertNotOwner
 // Lottery fix 44: Add test_Unpause_RevertNotOwner
+// Lottery fix 45: Add test_TransferOwnership_EmitsEvent
