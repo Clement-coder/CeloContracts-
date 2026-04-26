@@ -380,3 +380,4 @@ contract Crowdfunding is ICrowdfunding {
     // Improvement 5: Optimize gas usage in contribution tracking
     // Improvement 6: Improve error handling for edge cases
     // Improvement 7: Add bounds checking for campaign parameters
+    // Improvement 8: Enhance security in fund transfers
