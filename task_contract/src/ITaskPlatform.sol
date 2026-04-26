@@ -28,6 +28,7 @@ interface ITaskPlatform {
     event TaskCreated(uint256 indexed id, address indexed poster, uint256 bounty, string title, uint256 deadline);
     event TaskClaimed(uint256 indexed id, address indexed worker);
     event TaskCompleted(uint256 indexed id, address indexed worker, uint256 bounty);
+    event TaskRated(uint256 indexed id, address indexed worker, uint8 rating);
     event TaskCancelled(uint256 indexed id, address indexed poster, uint256 bountyRefunded);
     event TaskExpiredAndReclaimed(uint256 indexed id, address indexed poster, uint256 bountyRefunded);
     event TaskDisputed(uint256 indexed id, address indexed raisedBy);
@@ -40,14 +41,14 @@ interface ITaskPlatform {
     // ─── Functions ─────────────────────────────────────────────────────────────
     function createTask(string calldata title, string calldata description) external payable returns (uint256);
     function claimTask(uint256 id) external;
-    function approveCompletion(uint256 id) external;
+    function approveCompletion(uint256 id, uint8 workerRating) external;
     function cancelTask(uint256 id) external;
     function reclaimExpired(uint256 id) external;
     function disputeTask(uint256 id) external;
     function getTask(uint256 id) external view returns (
         uint256 taskId, address poster, address worker,
         string memory title, string memory description,
-        uint256 bounty, uint8 status, uint256 deadline
+        uint256 bounty, uint8 status, uint256 deadline, uint8 rating
     );
     function pause() external;
     function unpause() external;

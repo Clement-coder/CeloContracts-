@@ -57,6 +57,8 @@ contract TaskPlatform is ITaskPlatform {
         uint256 deadline;
         /// @dev Current lifecycle status.
         Status status;
+        /// @dev Rating given by poster (1-5, 0 = not rated).
+        uint8 rating;
     }
 
     // ─── State ─────────────────────────────────────────────────────────────────
@@ -147,7 +149,8 @@ contract TaskPlatform is ITaskPlatform {
             description: description,
             bounty: msg.value,
             deadline: deadline,
-            status: Status.Open
+            status: Status.Open,
+            rating: 0
         });
 
         totalBountyLocked += msg.value;
@@ -174,19 +177,25 @@ contract TaskPlatform is ITaskPlatform {
 
     /// @notice Poster approves task completion and releases bounty to worker.
     /// @param id Task ID to approve.
+    /// @param workerRating Rating for the worker (1-5, 0 to skip rating).
     /// @dev Emits {TaskCompleted}. Only callable by poster when task is InProgress.
-    function approveCompletion(uint256 id) external override onlyPoster(id) nonReentrant {
+    function approveCompletion(uint256 id, uint8 workerRating) external override onlyPoster(id) nonReentrant {
         Task storage t = tasks[id];
         if (t.status != Status.InProgress) revert TaskNotInProgress();
+        if (workerRating > 5) revert BountyTooLow(); // Reusing error for invalid rating
 
         address worker = t.worker;
         uint256 bounty = t.bounty;
 
         t.status = Status.Completed;
         t.bounty = 0;
+        t.rating = workerRating;
         totalBountyLocked -= bounty;
 
         emit TaskCompleted(id, worker, bounty);
+        if (workerRating > 0) {
+            emit TaskRated(id, worker, workerRating);
+        }
 
         (bool ok,) = worker.call{value: bounty}("");
         if (!ok) revert TransferFailed();
@@ -258,13 +267,14 @@ contract TaskPlatform is ITaskPlatform {
     /// @return bounty      Current bounty in wei.
     /// @return status      Current status as uint8.
     /// @return deadline    Expiry timestamp.
+    /// @return rating      Worker rating (1-5, 0 = not rated).
     function getTask(uint256 id) external view override returns (
         uint256 taskId, address poster, address worker,
         string memory title, string memory description,
-        uint256 bounty, uint8 status, uint256 deadline
+        uint256 bounty, uint8 status, uint256 deadline, uint8 rating
     ) {
         Task storage t = tasks[id];
-        return (id, t.poster, t.worker, t.title, t.description, t.bounty, uint8(t.status), t.deadline);
+        return (id, t.poster, t.worker, t.title, t.description, t.bounty, uint8(t.status), t.deadline, t.rating);
     }
 
     // ─── Admin ─────────────────────────────────────────────────────────────────
