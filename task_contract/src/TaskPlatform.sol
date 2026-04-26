@@ -17,6 +17,9 @@ contract TaskPlatform is ITaskPlatform {
     /// @notice Task expires and can be reclaimed after this duration.
     uint256 public constant TASK_DURATION = 7 days;
 
+    /// @notice Task completion timeout: 30 days.
+    uint256 public constant TASK_TIMEOUT = 30 days;
+
     /// @notice Maximum title length in bytes.
     uint256 public constant MAX_TITLE_LENGTH = 100;
 
