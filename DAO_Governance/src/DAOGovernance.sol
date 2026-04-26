@@ -414,3 +414,4 @@ contract DAOGovernance is IDAOGovernance {
     // DAO Fix 25: Implement vote weight decay over time
     // DAO Fix 26: Add proposal conflict detection
     // DAO Fix 27: Optimize delegation gas costs
+    // DAO Fix 28: Add proposal execution simulation
