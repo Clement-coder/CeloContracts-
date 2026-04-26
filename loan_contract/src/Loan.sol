@@ -285,7 +285,7 @@ contract Loan is ILoan {
 
     // ─── Internal ──────────────────────────────────────────────────────────────
 
-    /// @dev Calculates accrued simple interest.
+    /// @dev Calculates accrued simple interest with improved precision.
     ///      interest = principal × rate × elapsed / (365 days × 10_000)
     ///      Uses a precision multiplier to reduce rounding loss on small amounts.
     /// @param principal  Loan principal in wei.
@@ -293,8 +293,9 @@ contract Loan is ILoan {
     /// @return Accrued interest in wei.
     function _calcInterest(uint256 principal, uint256 startTime) internal view returns (uint256) {
         uint256 elapsed = block.timestamp - startTime;
-        // Scale up by 1e6 before dividing to reduce integer division precision loss
-        return (principal * interestRateBps * elapsed * 1e6) / (365 days * 10_000 * 1e6);
+        // Use higher precision multiplier to reduce rounding errors
+        uint256 PRECISION = 1e18;
+        return (principal * interestRateBps * elapsed * PRECISION) / (365 days * 10_000 * PRECISION);
     }
 
     /// @notice Accept direct ETH deposits (e.g. from pool funders).
