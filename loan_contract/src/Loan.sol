@@ -26,9 +26,6 @@ contract Loan is ILoan {
     /// @notice Maximum origination fee: 2% (200 bps).
     uint256 public constant MAX_ORIGINATION_FEE = 200;
 
-    /// @notice Loan origination fee in basis points.
-    uint256 public originationFeeBps;
-
     /// @notice Loan duration before liquidation is allowed: 30 days.
     uint256 public constant LOAN_DURATION = 30 days;
 
