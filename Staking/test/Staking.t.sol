@@ -11,15 +11,19 @@ contract StakingTest is Test {
     address alice = makeAddr("alice");
     address bob   = makeAddr("bob");
 
-    uint256 constant RATE   = 1_000; // 10% APR
-    uint256 constant STAKE  = 1 ether;
-    uint256 constant POOL   = 10 ether;
+    uint256 constant RATE  = 1_000; // 10% APR
+    uint256 constant STAKE = 1 ether;
+    uint256 constant POOL  = 10 ether;
 
     event Staked(address indexed user, uint256 amount, uint256 lockUntil);
     event Unstaked(address indexed user, uint256 amount);
     event RewardClaimed(address indexed user, uint256 reward);
+    event RewardCompounded(address indexed user, uint256 reward, uint256 newStakeAmount);
     event RewardPoolFunded(address indexed funder, uint256 amount);
     event RateUpdated(uint256 oldRate, uint256 newRate);
+    event ProtocolFeeAccrued(uint256 amount);
+    event ProtocolFeeUpdated(uint256 oldFee, uint256 newFee);
+    event ProtocolFeesWithdrawn(address indexed to, uint256 amount);
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
@@ -120,6 +124,16 @@ contract StakingTest is Test {
         staking.stake{value: STAKE}(0);
     }
 
+    function test_Stake_RevertExceedsMaxPerUser() public {
+        uint256 max = staking.MAX_STAKE_PER_USER();
+        vm.deal(alice, max + 1 ether);
+        vm.prank(alice);
+        staking.stake{value: max}(0);
+        vm.prank(alice);
+        vm.expectRevert(IStaking.StakeExceedsMax.selector);
+        staking.stake{value: 1 ether}(0);
+    }
+
     // ─── Unstake ───────────────────────────────────────────────────────────────
 
     function test_Unstake_NoLock() public {
@@ -128,7 +142,7 @@ contract StakingTest is Test {
         uint256 before = alice.balance;
         vm.prank(alice);
         staking.unstake();
-        assertGe(alice.balance, before + STAKE); // principal + any reward
+        assertGe(alice.balance, before + STAKE);
         assertEq(staking.totalStaked(), 0);
     }
 
@@ -176,9 +190,24 @@ contract StakingTest is Test {
         assertEq(stakedAt, 0);
     }
 
+    function test_Unstake_DeductsProtocolFeeFromReward() public {
+        staking.setProtocolFee(100); // 1%
+        vm.prank(alice);
+        staking.stake{value: STAKE}(0);
+        skip(365 days);
+        uint256 grossReward = staking.pendingReward(alice);
+        uint256 expectedFee = grossReward / 100;
+        uint256 before = alice.balance;
+        vm.prank(alice);
+        staking.unstake();
+        // principal + net reward
+        assertApproxEqAbs(alice.balance, before + STAKE + grossReward - expectedFee, 1);
+    }
+
     // ─── ClaimReward ───────────────────────────────────────────────────────────
 
     function test_ClaimReward_Success() public {
+        staking.setProtocolFee(0); // zero fee for clean assertion
         vm.prank(alice);
         staking.stake{value: STAKE}(0);
         skip(365 days);
@@ -190,13 +219,39 @@ contract StakingTest is Test {
         assertEq(alice.balance, before + reward);
     }
 
+    function test_ClaimReward_NetAfterProtocolFee() public {
+        staking.setProtocolFee(100); // 1%
+        vm.prank(alice);
+        staking.stake{value: STAKE}(0);
+        skip(365 days);
+        uint256 grossReward = staking.pendingReward(alice);
+        uint256 expectedFee = grossReward / 100;
+        uint256 before = alice.balance;
+        vm.prank(alice);
+        staking.claimReward();
+        assertEq(alice.balance, before + grossReward - expectedFee);
+    }
+
     function test_ClaimReward_EmitsEvent() public {
+        staking.setProtocolFee(0);
         vm.prank(alice);
         staking.stake{value: STAKE}(0);
         skip(365 days);
         uint256 reward = staking.pendingReward(alice);
         vm.expectEmit(true, false, false, true);
         emit RewardClaimed(alice, reward);
+        vm.prank(alice);
+        staking.claimReward();
+    }
+
+    function test_ClaimReward_EmitsProtocolFeeAccrued() public {
+        staking.setProtocolFee(100);
+        vm.prank(alice);
+        staking.stake{value: STAKE}(0);
+        skip(365 days);
+        uint256 grossReward = staking.pendingReward(alice);
+        vm.expectEmit(false, false, false, true);
+        emit ProtocolFeeAccrued(grossReward / 100);
         vm.prank(alice);
         staking.claimReward();
     }
@@ -221,7 +276,134 @@ contract StakingTest is Test {
         staking.stake{value: STAKE}(0);
         vm.prank(alice);
         vm.expectRevert(IStaking.NothingToWithdraw.selector);
-        staking.claimReward(); // no time elapsed
+        staking.claimReward();
+    }
+
+    // ─── CompoundReward ────────────────────────────────────────────────────────
+
+    function test_CompoundReward_IncreasesStake() public {
+        vm.prank(alice);
+        staking.stake{value: STAKE}(0);
+        skip(365 days);
+        uint256 reward = staking.pendingReward(alice);
+        vm.prank(alice);
+        staking.compoundReward();
+        (uint256 amount,,) = staking.getStake(alice);
+        assertEq(amount, STAKE + reward);
+    }
+
+    function test_CompoundReward_IncreasesTotalStaked() public {
+        vm.prank(alice);
+        staking.stake{value: STAKE}(0);
+        skip(365 days);
+        uint256 reward = staking.pendingReward(alice);
+        vm.prank(alice);
+        staking.compoundReward();
+        assertEq(staking.totalStaked(), STAKE + reward);
+    }
+
+    function test_CompoundReward_EmitsEvent() public {
+        vm.prank(alice);
+        staking.stake{value: STAKE}(0);
+        skip(365 days);
+        uint256 reward = staking.pendingReward(alice);
+        vm.expectEmit(true, false, false, true);
+        emit RewardCompounded(alice, reward, STAKE + reward);
+        vm.prank(alice);
+        staking.compoundReward();
+    }
+
+    function test_CompoundReward_ResetsTimer() public {
+        vm.prank(alice);
+        staking.stake{value: STAKE}(0);
+        skip(365 days);
+        vm.prank(alice);
+        staking.compoundReward();
+        assertEq(staking.pendingReward(alice), 0);
+    }
+
+    function test_CompoundReward_RevertNothingStaked() public {
+        vm.prank(alice);
+        vm.expectRevert(IStaking.NothingStaked.selector);
+        staking.compoundReward();
+    }
+
+    function test_CompoundReward_RevertNothingToWithdraw() public {
+        vm.prank(alice);
+        staking.stake{value: STAKE}(0);
+        vm.prank(alice);
+        vm.expectRevert(IStaking.NothingToWithdraw.selector);
+        staking.compoundReward();
+    }
+
+    // ─── SetProtocolFee ────────────────────────────────────────────────────────
+
+    function test_SetProtocolFee_Success() public {
+        staking.setProtocolFee(200);
+        assertEq(staking.protocolFeeBps(), 200);
+    }
+
+    function test_SetProtocolFee_EmitsEvent() public {
+        vm.expectEmit(false, false, false, true);
+        emit ProtocolFeeUpdated(100, 200);
+        staking.setProtocolFee(200);
+    }
+
+    function test_SetProtocolFee_RevertTooHigh() public {
+        vm.expectRevert(IStaking.InvalidProtocolFee.selector);
+        staking.setProtocolFee(1001);
+    }
+
+    function test_SetProtocolFee_RevertNotOwner() public {
+        vm.prank(alice);
+        vm.expectRevert(IStaking.NotOwner.selector);
+        staking.setProtocolFee(100);
+    }
+
+    function test_SetProtocolFee_MaxBoundary() public {
+        staking.setProtocolFee(1000); // exactly 10% — should succeed
+        assertEq(staking.protocolFeeBps(), 1000);
+    }
+
+    // ─── WithdrawProtocolFees ──────────────────────────────────────────────────
+
+    function test_WithdrawProtocolFees_Success() public {
+        staking.setProtocolFee(100);
+        vm.prank(alice);
+        staking.stake{value: STAKE}(0);
+        skip(365 days);
+        vm.prank(alice);
+        staking.claimReward();
+        uint256 accrued = staking.accruedProtocolFees();
+        assertGt(accrued, 0);
+        uint256 before = owner.balance;
+        staking.withdrawProtocolFees();
+        assertEq(owner.balance, before + accrued);
+        assertEq(staking.accruedProtocolFees(), 0);
+    }
+
+    function test_WithdrawProtocolFees_EmitsEvent() public {
+        staking.setProtocolFee(100);
+        vm.prank(alice);
+        staking.stake{value: STAKE}(0);
+        skip(365 days);
+        vm.prank(alice);
+        staking.claimReward();
+        uint256 accrued = staking.accruedProtocolFees();
+        vm.expectEmit(true, false, false, true);
+        emit ProtocolFeesWithdrawn(owner, accrued);
+        staking.withdrawProtocolFees();
+    }
+
+    function test_WithdrawProtocolFees_RevertNothingToWithdraw() public {
+        vm.expectRevert(IStaking.NothingToWithdraw.selector);
+        staking.withdrawProtocolFees();
+    }
+
+    function test_WithdrawProtocolFees_RevertNotOwner() public {
+        vm.prank(alice);
+        vm.expectRevert(IStaking.NotOwner.selector);
+        staking.withdrawProtocolFees();
     }
 
     // ─── PendingReward ─────────────────────────────────────────────────────────
@@ -244,7 +426,6 @@ contract StakingTest is Test {
         staking.stake{value: STAKE}(0);
         skip(365 days);
         uint256 reward = staking.pendingReward(alice);
-        // 10% of 1 ether = 0.1 ether
         assertApproxEqRel(reward, 0.1 ether, 0.01e18);
     }
 
@@ -305,7 +486,7 @@ contract StakingTest is Test {
         skip(elapsed);
         uint256 reward = staking.pendingReward(alice);
         assertGt(reward, 0);
-        assertLe(reward, STAKE); // at 100% max APR, reward <= principal in 1 year
+        assertLe(reward, STAKE);
     }
 
     function testFuzz_StakeAmount(uint256 amount) public {
@@ -319,16 +500,16 @@ contract StakingTest is Test {
 
     // ─── Invariant ─────────────────────────────────────────────────────────────
 
-    function test_Invariant_BalanceEqualsTotalStakedPlusPool() public {
+    function test_Invariant_BalanceEqualsTotalStakedPlusPoolPlusFees() public {
         vm.prank(alice);
         staking.stake{value: STAKE}(0);
         vm.prank(bob);
         staking.stake{value: STAKE}(0);
-        assertEq(address(staking).balance, staking.totalStaked() + staking.rewardPool());
+        assertEq(
+            address(staking).balance,
+            staking.totalStaked() + staking.rewardPool() + staking.accruedProtocolFees()
+        );
     }
 
     receive() external payable {}
 }
-// Commit 4 optimization
-// Commit 24 optimization
-// Commit 44 optimization

@@ -26,6 +26,9 @@ contract Staking is IStaking {
     /// @notice Maximum annual reward rate: 100% (10000 bps).
     uint256 public constant MAX_RATE_BPS = 10_000;
 
+    /// @notice Maximum protocol fee: 10% (1000 bps).
+    uint256 public constant MAX_PROTOCOL_FEE_BPS = 1000;
+
     // ─── State ─────────────────────────────────────────────────────────────────
 
     /// @notice Current contract owner.
@@ -52,10 +55,7 @@ contract Staking is IStaking {
     /// @notice Protocol fee in basis points (e.g., 100 = 1%).
     uint256 public protocolFeeBps;
 
-    /// @notice Maximum protocol fee: 10% (1000 bps).
-    uint256 public constant MAX_PROTOCOL_FEE_BPS = 1000;
-
-    /// @notice Accumulated protocol fees.
+    /// @notice Accumulated protocol fees available for withdrawal.
     uint256 public accruedProtocolFees;
 
     /// @dev Stake record per user.
@@ -114,6 +114,7 @@ contract Staking is IStaking {
         if (lockDuration > MAX_LOCK) revert LockTooLong();
 
         StakeRecord storage s = stakes[msg.sender];
+        if (s.amount + msg.value > MAX_STAKE_PER_USER) revert StakeExceedsMax();
 
         // Auto-claim pending rewards before updating stake
         if (s.amount > 0) {
@@ -164,11 +165,15 @@ contract Staking is IStaking {
         (bool ok,) = msg.sender.call{value: amount}("");
         if (!ok) revert TransferFailed();
 
-        // Pay reward if pool has enough
+        // Pay reward (with protocol fee) if pool has enough
         if (reward > 0 && reward <= rewardPool) {
+            uint256 protocolFee = (reward * protocolFeeBps) / 10_000;
+            uint256 netReward = reward - protocolFee;
             rewardPool -= reward;
-            emit RewardClaimed(msg.sender, reward);
-            (bool rok,) = msg.sender.call{value: reward}("");
+            accruedProtocolFees += protocolFee;
+            if (protocolFee > 0) emit ProtocolFeeAccrued(protocolFee);
+            emit RewardClaimed(msg.sender, netReward);
+            (bool rok,) = msg.sender.call{value: netReward}("");
             if (!rok) revert TransferFailed();
         }
     }
@@ -183,18 +188,15 @@ contract Staking is IStaking {
         if (reward == 0) revert NothingToWithdraw();
         if (reward > rewardPool) revert InsufficientRewardPool();
 
-        // Deduct protocol fee
         uint256 protocolFee = (reward * protocolFeeBps) / 10_000;
         uint256 netReward = reward - protocolFee;
-        
+
         rewardPool -= reward;
         accruedProtocolFees += protocolFee;
-        s.stakedAt = block.timestamp; // reset reward timer
+        s.stakedAt = block.timestamp;
 
+        if (protocolFee > 0) emit ProtocolFeeAccrued(protocolFee);
         emit RewardClaimed(msg.sender, netReward);
-        if (protocolFee > 0) {
-            emit ProtocolFeeAccrued(protocolFee);
-        }
 
         (bool ok,) = msg.sender.call{value: netReward}("");
         if (!ok) revert TransferFailed();
@@ -202,7 +204,7 @@ contract Staking is IStaking {
 
     /// @notice Compound rewards by adding them to the stake instead of claiming.
     /// @dev   Emits {RewardCompounded}. Increases stake amount with pending rewards.
-    function compoundReward() external nonReentrant whenNotPaused {
+    function compoundReward() external override nonReentrant whenNotPaused {
         StakeRecord storage s = stakes[msg.sender];
         if (s.amount == 0) revert NothingStaked();
 
@@ -211,8 +213,8 @@ contract Staking is IStaking {
         if (reward > rewardPool) revert InsufficientRewardPool();
 
         rewardPool -= reward;
-        s.amount += reward; // Add reward to stake
-        s.stakedAt = block.timestamp; // reset reward timer
+        s.amount += reward;
+        s.stakedAt = block.timestamp;
         totalStaked += reward;
 
         emit RewardCompounded(msg.sender, reward, s.amount);
@@ -263,20 +265,20 @@ contract Staking is IStaking {
 
     /// @notice Set protocol fee (only owner).
     /// @param newFeeBps New protocol fee in basis points (max 1000 = 10%).
-    function setProtocolFee(uint256 newFeeBps) external onlyOwner {
-        if (newFeeBps > MAX_PROTOCOL_FEE_BPS) revert InvalidRate();
+    function setProtocolFee(uint256 newFeeBps) external override onlyOwner {
+        if (newFeeBps > MAX_PROTOCOL_FEE_BPS) revert InvalidProtocolFee();
         emit ProtocolFeeUpdated(protocolFeeBps, newFeeBps);
         protocolFeeBps = newFeeBps;
     }
 
     /// @notice Withdraw accumulated protocol fees (only owner).
-    function withdrawProtocolFees() external onlyOwner nonReentrant {
+    function withdrawProtocolFees() external override onlyOwner nonReentrant {
         uint256 amount = accruedProtocolFees;
         if (amount == 0) revert NothingToWithdraw();
-        
+
         accruedProtocolFees = 0;
         emit ProtocolFeesWithdrawn(owner, amount);
-        
+
         (bool ok,) = owner.call{value: amount}("");
         if (!ok) revert TransferFailed();
     }

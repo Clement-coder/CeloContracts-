@@ -10,11 +10,13 @@ interface IStaking {
     error Paused();
     error Reentrancy();
     error AmountTooLow();
+    error StakeExceedsMax();
     error NothingStaked();
     error NothingToWithdraw();
     error LockNotExpired();
     error LockTooLong();
     error InvalidRate();
+    error InvalidProtocolFee();
     error TransferFailed();
     error InsufficientRewardPool();
 
@@ -35,10 +37,13 @@ interface IStaking {
     function stake(uint256 lockDuration) external payable;
     function unstake() external;
     function claimReward() external;
+    function compoundReward() external;
     function pendingReward(address user) external view returns (uint256);
     function getStake(address user) external view returns (uint256 amount, uint256 lockUntil, uint256 stakedAt);
     function fundRewardPool() external payable;
     function setRewardRate(uint256 newRateBps) external;
+    function setProtocolFee(uint256 newFeeBps) external;
+    function withdrawProtocolFees() external;
     function pause() external;
     function unpause() external;
     function transferOwnership(address newOwner) external;
