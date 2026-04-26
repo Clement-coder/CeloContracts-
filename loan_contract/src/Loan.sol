@@ -433,3 +433,4 @@ contract Loan is ILoan {
     }
 }
 // Loan fix 1: Define LIQUIDATION_THRESHOLD constant (was undefined, caused compile error)
+// Loan fix 2: Fix freePoolBalance calculation in borrow() - was double-subtracting msg.value
