@@ -316,3 +316,4 @@ contract Lottery is ILottery {
 // Lottery fix 12: startRound() allows new round after no-winner draw (entries==0 case)
 // Lottery fix 13: Add NatSpec to buyTicketsForMultiple() documenting array length requirement
 // Lottery fix 14: Add NatSpec to setFee() documenting effect on future rounds only
+// Lottery fix 15: Add NatSpec to MAX_TICKETS_PER_PURCHASE constant
