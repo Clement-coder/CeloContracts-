@@ -28,6 +28,9 @@ contract ERC1155 is IERC1155 {
     /// @notice tokenId => total supply
     mapping(uint256 => uint256) private _totalSupply;
 
+    /// @notice Maximum batch mint size: 50.
+    uint256 public constant MAX_BATCH_MINT = 50;
+
     /// @notice Maximum supply per token ID
     mapping(uint256 => uint256) private _maxSupply;
 
