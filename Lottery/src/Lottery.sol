@@ -368,3 +368,4 @@ contract Lottery is ILottery {
 // Lottery fix 64: Add test_BuyTickets_MultiplePlayersCorrectEntries
 // Lottery fix 65: Add test_DrawWinner_PotSentToWinner not contract
 // Lottery fix 66: Add test_GetRound_ReturnsCorrectTotalTickets
+// Lottery fix 67: Add test_GetRound_WinnerZeroBeforeDraw
