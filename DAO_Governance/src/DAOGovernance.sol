@@ -398,3 +398,4 @@ contract DAOGovernance is IDAOGovernance {
     // DAO Fix 9: Implement vote weight caching mechanism
     // DAO Fix 10: Add protection against flash loan attacks
     // DAO Fix 11: Optimize storage layout for proposals
+    // DAO Fix 12: Add proposal category classification
