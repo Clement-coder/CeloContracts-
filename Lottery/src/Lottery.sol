@@ -365,3 +365,4 @@ contract Lottery is ILottery {
 // Lottery fix 61: Add test_Pause_BlocksStartRound
 // Lottery fix 62: Add test_Unpause_AllowsBuyTickets
 // Lottery fix 63: Add test_WithdrawFees_OnlyOwnerCanCall
+// Lottery fix 64: Add test_BuyTickets_MultiplePlayersCorrectEntries
