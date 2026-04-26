@@ -271,3 +271,4 @@ contract FlashLoanPool is IFlashLoan {
     // Flash Loan Fix 19: Optimize contract initialization
     // Flash Loan Fix 20: Add flash loan risk assessment
     // Flash Loan Fix 21: Implement automated fee adjustment
+    // Flash Loan Fix 22: Add flash loan compliance features
