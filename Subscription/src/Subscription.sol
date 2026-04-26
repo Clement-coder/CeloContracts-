@@ -17,6 +17,9 @@ contract Subscription is ISubscription {
     /// @notice Minimum subscription price: 0.001 CELO.
     uint256 public constant MIN_PRICE = 0.001 ether;
 
+    /// @notice Maximum subscription duration: 365 days.
+    uint256 public constant MAX_DURATION = 365 days;
+
     /// @notice Minimum billing period: 1 day.
     uint256 public constant MIN_PERIOD = 1 days;
 
