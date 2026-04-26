@@ -322,3 +322,4 @@ interface IERC1155Receiver {
     // ERC1155 Fix 46: Implement deflationary mechanisms
     // ERC1155 Fix 47: Add collection governance rights
     // ERC1155 Fix 48: Optimize memory usage in functions
+    // ERC1155 Fix 49: Add token lock functionality
