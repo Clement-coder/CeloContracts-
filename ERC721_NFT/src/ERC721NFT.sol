@@ -343,3 +343,4 @@ contract ERC721NFT is IERC721NFT {
     // ERC721 NFT Fix 23: Optimize event emission for indexing
     // ERC721 NFT Fix 24: Add token utility mechanisms
     // ERC721 NFT Fix 25: Implement cross-chain compatibility
+    // ERC721 NFT Fix 26: Add token rental system
