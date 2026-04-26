@@ -415,6 +415,217 @@ contract NFTMarketplaceTest is Test {
     }
 
     receive() external payable {}
+
+    event OfferMade(address indexed nft, uint256 indexed tokenId, address indexed buyer, uint256 amount, uint256 expiry);
+    event OfferAccepted(address indexed nft, uint256 indexed tokenId, address indexed buyer, address seller, uint256 amount);
+    event OfferCancelled(address indexed nft, uint256 indexed tokenId, address indexed buyer, uint256 amount);
+
+    // ─── MakeOffer ─────────────────────────────────────────────────────────────
+
+    function test_MakeOffer_Success() public {
+        uint256 id = _listToken(alice, PRICE);
+        uint256 expiry = block.timestamp + 1 days;
+        vm.prank(bob);
+        market.makeOffer{value: 0.5 ether}(address(nft), id, expiry);
+        (address buyer, uint256 amount,, bool active) = market.offers(address(nft), id, bob);
+        assertEq(buyer, bob);
+        assertEq(amount, 0.5 ether);
+        assertTrue(active);
+    }
+
+    function test_MakeOffer_EmitsEvent() public {
+        uint256 id = _listToken(alice, PRICE);
+        uint256 expiry = block.timestamp + 1 days;
+        vm.expectEmit(true, true, true, false);
+        emit OfferMade(address(nft), id, bob, 0.5 ether, expiry);
+        vm.prank(bob);
+        market.makeOffer{value: 0.5 ether}(address(nft), id, expiry);
+    }
+
+    function test_MakeOffer_RevertInvalidExpiry() public {
+        uint256 id = _listToken(alice, PRICE);
+        vm.prank(bob);
+        vm.expectRevert(INFTMarketplace.InvalidExpiry.selector);
+        market.makeOffer{value: 0.5 ether}(address(nft), id, block.timestamp);
+    }
+
+    function test_MakeOffer_RevertPriceTooLow() public {
+        uint256 id = _listToken(alice, PRICE);
+        vm.prank(bob);
+        vm.expectRevert(INFTMarketplace.PriceTooLow.selector);
+        market.makeOffer{value: 1}(address(nft), id, block.timestamp + 1 days);
+    }
+
+    function test_MakeOffer_ReplacesExistingOffer() public {
+        uint256 id = _listToken(alice, PRICE);
+        uint256 expiry = block.timestamp + 1 days;
+        vm.prank(bob);
+        market.makeOffer{value: 0.5 ether}(address(nft), id, expiry);
+        uint256 bobBefore = bob.balance;
+        vm.prank(bob);
+        market.makeOffer{value: 0.8 ether}(address(nft), id, expiry);
+        // Old offer refunded
+        assertEq(bob.balance, bobBefore - 0.8 ether + 0.5 ether);
+        (, uint256 amount,,) = market.offers(address(nft), id, bob);
+        assertEq(amount, 0.8 ether);
+    }
+
+    function test_MakeOffer_RevertWhenPaused() public {
+        uint256 id = _listToken(alice, PRICE);
+        market.pause();
+        vm.prank(bob);
+        vm.expectRevert(INFTMarketplace.Paused.selector);
+        market.makeOffer{value: 0.5 ether}(address(nft), id, block.timestamp + 1 days);
+    }
+
+    // ─── AcceptOffer ───────────────────────────────────────────────────────────
+
+    function test_AcceptOffer_Success() public {
+        uint256 id = _mintAndApprove(alice);
+        uint256 expiry = block.timestamp + 1 days;
+        vm.prank(bob);
+        market.makeOffer{value: 0.5 ether}(address(nft), id, expiry);
+        vm.prank(alice);
+        market.acceptOffer(address(nft), id, bob);
+        assertEq(nft.ownerOf(id), bob);
+        assertGt(market.earnings(alice), 0);
+    }
+
+    function test_AcceptOffer_EmitsEvent() public {
+        uint256 id = _mintAndApprove(alice);
+        uint256 expiry = block.timestamp + 1 days;
+        vm.prank(bob);
+        market.makeOffer{value: 0.5 ether}(address(nft), id, expiry);
+        vm.expectEmit(true, true, true, false);
+        emit OfferAccepted(address(nft), id, bob, alice, 0.5 ether);
+        vm.prank(alice);
+        market.acceptOffer(address(nft), id, bob);
+    }
+
+    function test_AcceptOffer_RevertNotTokenOwner() public {
+        uint256 id = _mintAndApprove(alice);
+        uint256 expiry = block.timestamp + 1 days;
+        vm.prank(bob);
+        market.makeOffer{value: 0.5 ether}(address(nft), id, expiry);
+        vm.prank(carol);
+        vm.expectRevert(INFTMarketplace.NotTokenOwner.selector);
+        market.acceptOffer(address(nft), id, bob);
+    }
+
+    function test_AcceptOffer_RevertOfferNotActive() public {
+        uint256 id = _mintAndApprove(alice);
+        vm.prank(alice);
+        vm.expectRevert(INFTMarketplace.OfferNotActive.selector);
+        market.acceptOffer(address(nft), id, bob);
+    }
+
+    function test_AcceptOffer_RevertOfferExpired() public {
+        uint256 id = _mintAndApprove(alice);
+        uint256 expiry = block.timestamp + 1 days;
+        vm.prank(bob);
+        market.makeOffer{value: 0.5 ether}(address(nft), id, expiry);
+        skip(2 days);
+        vm.prank(alice);
+        vm.expectRevert(INFTMarketplace.OfferExpired.selector);
+        market.acceptOffer(address(nft), id, bob);
+    }
+
+    function test_AcceptOffer_CancelsActiveListing() public {
+        uint256 id = _listToken(alice, PRICE);
+        uint256 expiry = block.timestamp + 1 days;
+        vm.prank(bob);
+        market.makeOffer{value: 0.5 ether}(address(nft), id, expiry);
+        vm.prank(alice);
+        market.acceptOffer(address(nft), id, bob);
+        (,, bool active) = market.getListing(address(nft), id);
+        assertFalse(active);
+    }
+
+    // ─── CancelOffer ───────────────────────────────────────────────────────────
+
+    function test_CancelOffer_Success() public {
+        uint256 id = _listToken(alice, PRICE);
+        uint256 expiry = block.timestamp + 1 days;
+        vm.prank(bob);
+        market.makeOffer{value: 0.5 ether}(address(nft), id, expiry);
+        uint256 bobBefore = bob.balance;
+        vm.prank(bob);
+        market.cancelOffer(address(nft), id);
+        assertEq(bob.balance, bobBefore + 0.5 ether);
+        (,,, bool active) = market.offers(address(nft), id, bob);
+        assertFalse(active);
+    }
+
+    function test_CancelOffer_EmitsEvent() public {
+        uint256 id = _listToken(alice, PRICE);
+        vm.prank(bob);
+        market.makeOffer{value: 0.5 ether}(address(nft), id, block.timestamp + 1 days);
+        vm.expectEmit(true, true, true, true);
+        emit OfferCancelled(address(nft), id, bob, 0.5 ether);
+        vm.prank(bob);
+        market.cancelOffer(address(nft), id);
+    }
+
+    function test_CancelOffer_RevertOfferNotActive() public {
+        uint256 id = _listToken(alice, PRICE);
+        vm.prank(bob);
+        vm.expectRevert(INFTMarketplace.OfferNotActive.selector);
+        market.cancelOffer(address(nft), id);
+    }
+
+    // ─── SetFeeShareRate ───────────────────────────────────────────────────────
+
+    function test_SetFeeShareRate_Success() public {
+        market.setFeeShareRate(3000);
+        assertEq(market.feeShareRate(), 3000);
+    }
+
+    function test_SetFeeShareRate_RevertTooHigh() public {
+        vm.expectRevert(INFTMarketplace.FeeTooHigh.selector);
+        market.setFeeShareRate(5001);
+    }
+
+    function test_SetFeeShareRate_RevertNotOwner() public {
+        vm.prank(alice);
+        vm.expectRevert(INFTMarketplace.NotOwner.selector);
+        market.setFeeShareRate(1000);
+    }
+
+    // ─── Extra coverage ────────────────────────────────────────────────────────
+
+    function test_Constructor_ZeroFeeAllowed() public {
+        NFTMarketplace m = new NFTMarketplace(0);
+        assertEq(m.feeBps(), 0);
+    }
+
+    function test_Unpause_RevertNotOwner() public {
+        market.pause();
+        vm.prank(alice);
+        vm.expectRevert(INFTMarketplace.NotOwner.selector);
+        market.unpause();
+    }
+
+    function test_UpdatePrice_RevertWhenPaused() public {
+        uint256 id = _listToken(alice, PRICE);
+        market.pause();
+        vm.prank(alice);
+        vm.expectRevert(INFTMarketplace.Paused.selector);
+        market.updatePrice(address(nft), id, 2 ether);
+    }
+
+    function test_BuyNFT_ZeroFee() public {
+        market.setFee(0);
+        uint256 id = _listToken(alice, PRICE);
+        vm.prank(bob);
+        market.buyNFT{value: PRICE}(address(nft), id);
+        assertEq(market.earnings(alice), PRICE);
+        assertEq(market.accruedFees(), 0);
+    }
+
+    function testFuzz_SetFeeShareRate(uint256 rate) public {
+        rate = bound(rate, 0, market.MAX_FEE_SHARE_RATE());
+        market.setFeeShareRate(rate);
+        assertEq(market.feeShareRate(), rate);
+    }
+
 }
-// Commit 11 optimization
-// Commit 31 optimization

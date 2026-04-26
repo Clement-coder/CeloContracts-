@@ -21,6 +21,9 @@ interface INFTMarketplace {
     error InvalidToken();
     error CannotBuyOwnListing();
     error NoEarnings();
+    error OfferNotActive();
+    error OfferExpired();
+    error InvalidExpiry();
 
     // ─── Events ────────────────────────────────────────────────────────────────
     event Listed(address indexed nft, uint256 indexed tokenId, address indexed seller, uint256 price);
@@ -51,4 +54,8 @@ interface INFTMarketplace {
     function unpause() external;
     function transferOwnership(address newOwner) external;
     function acceptOwnership() external;
+    function makeOffer(address nft, uint256 tokenId, uint256 expiry) external payable;
+    function acceptOffer(address nft, uint256 tokenId, address buyer) external;
+    function cancelOffer(address nft, uint256 tokenId) external;
+    function setFeeShareRate(uint256 newRate) external;
 }

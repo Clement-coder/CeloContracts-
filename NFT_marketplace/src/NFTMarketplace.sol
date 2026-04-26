@@ -229,7 +229,7 @@ contract NFTMarketplace is INFTMarketplace {
     {
         if (nft == address(0)) revert ZeroAddress();
         if (msg.value < MIN_PRICE) revert PriceTooLow();
-        if (expiry <= block.timestamp) revert PriceTooLow(); // Reusing error for invalid expiry
+        if (expiry <= block.timestamp) revert InvalidExpiry();
         
         // Cancel existing offer if any
         Offer storage existingOffer = offers[nft][tokenId][msg.sender];
@@ -262,8 +262,8 @@ contract NFTMarketplace is INFTMarketplace {
         if (token.ownerOf(tokenId) != msg.sender) revert NotTokenOwner();
         
         Offer storage offer = offers[nft][tokenId][buyer];
-        if (!offer.active) revert NotListed(); // Reusing error for inactive offer
-        if (block.timestamp > offer.expiry) revert NotListed(); // Offer expired
+        if (!offer.active) revert OfferNotActive();
+        if (block.timestamp > offer.expiry) revert OfferExpired();
         
         if (
             token.getApproved(tokenId) != address(this) &&
@@ -302,7 +302,7 @@ contract NFTMarketplace is INFTMarketplace {
     /// @dev Emits {OfferCancelled}.
     function cancelOffer(address nft, uint256 tokenId) external nonReentrant {
         Offer storage offer = offers[nft][tokenId][msg.sender];
-        if (!offer.active) revert NotListed(); // Reusing error for inactive offer
+        if (!offer.active) revert OfferNotActive();
         
         uint256 amount = offer.amount;
         offer.active = false;
@@ -392,8 +392,16 @@ contract NFTMarketplace is INFTMarketplace {
         pendingOwner = address(0);
     }
 
+    /// @notice Update the fee share rate (portion of fees going to fee pool).
+    /// @param newRate New rate in basis points. Must be <= MAX_FEE_SHARE_RATE.
+    function setFeeShareRate(uint256 newRate) external onlyOwner {
+        if (newRate > MAX_FEE_SHARE_RATE) revert FeeTooHigh();
+        feeShareRate = newRate;
+    }
+
     /// @notice Reject accidental direct ETH sends.
     receive() external payable {
         revert TransferFailed();
     }
 }
+// NFT Marketplace fix 1: makeOffer() used PriceTooLow for invalid expiry - replaced with InvalidExpiry
