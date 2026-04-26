@@ -15,9 +15,6 @@ contract Savings is ISavings {
     /// @notice Maximum lock duration: 5 years.
     uint256 public constant MAX_LOCK_DURATION = 5 * 365 days;
 
-    /// @notice Interest rate for locked funds in basis points.
-    uint256 public lockBonusRate;
-
     /// @notice Minimum deposit amount: 0.0001 CELO.
     uint256 public constant MIN_DEPOSIT = 0.0001 ether;
 
@@ -26,6 +23,12 @@ contract Savings is ISavings {
 
     /// @notice Sentinel value meaning "no lock".
     uint256 public constant NO_LOCK = 0;
+
+    /// @notice Maximum withdrawal fee: 5% (500 bps).
+    uint256 public constant MAX_WITHDRAWAL_FEE_BPS = 500;
+
+    /// @notice Emergency withdrawal fee: 10% (1000 bps).
+    uint256 public constant EMERGENCY_FEE_BPS = 1000;
 
     // ─── State ─────────────────────────────────────────────────────────────────
 
@@ -52,9 +55,6 @@ contract Savings is ISavings {
 
     /// @notice Withdrawal fee in basis points (e.g., 100 = 1%).
     uint256 public withdrawalFeeBps;
-
-    /// @notice Maximum withdrawal fee: 5% (500 bps).
-    uint256 public constant MAX_WITHDRAWAL_FEE_BPS = 500;
 
     /// @dev Savings account per user.
     struct Account {
@@ -104,7 +104,7 @@ contract Savings is ISavings {
     ///        Emits {Deposited} with isNewAccount=true on first deposit.
     function deposit(uint256 lockDuration) external payable override whenNotPaused nonReentrant {
         if (msg.value < MIN_DEPOSIT) revert ZeroValue();
-        if (msg.value > MAX_DEPOSIT) revert AmountExceedsBalance();
+        if (msg.value > MAX_DEPOSIT) revert DepositTooLarge();
         if (lockDuration > MAX_LOCK_DURATION) revert LockTooLong();
 
         Account storage acc = accounts[msg.sender];
@@ -139,19 +139,16 @@ contract Savings is ISavings {
 
         uint256 fee = (amount * withdrawalFeeBps) / 10_000;
         uint256 netAmount = amount - fee;
-        
+
         acc.balance -= amount;
         totalDeposited -= amount;
 
-        // Reset unlockTime only when fully withdrawn
         if (acc.balance == 0) acc.unlockTime = NO_LOCK;
 
         uint256 remaining = acc.balance;
 
         emit Withdrawn(msg.sender, netAmount, remaining);
-        if (fee > 0) {
-            emit WithdrawalFeeCharged(msg.sender, fee);
-        }
+        if (fee > 0) emit WithdrawalFeeCharged(msg.sender, fee);
 
         (bool ok,) = msg.sender.call{value: netAmount}("");
         if (!ok) revert TransferFailed();
@@ -159,17 +156,17 @@ contract Savings is ISavings {
 
     /// @notice Emergency withdraw ignoring lock (only when enabled by owner).
     /// @param amount Amount to withdraw.
-    /// @dev Higher fee applies for emergency withdrawals.
-    function emergencyWithdraw(uint256 amount) external nonReentrant {
-        if (!emergencyWithdrawEnabled) revert NotOwner(); // Reusing error
-        
+    /// @dev 10% emergency fee applies.
+    function emergencyWithdraw(uint256 amount) external override nonReentrant {
+        if (!emergencyWithdrawEnabled) revert EmergencyWithdrawDisabled();
+
         Account storage acc = accounts[msg.sender];
         if (acc.balance == 0) revert NothingToWithdraw();
         if (amount == 0 || amount > acc.balance) revert AmountExceedsBalance();
 
-        uint256 emergencyFee = (amount * 1000) / 10_000; // 10% emergency fee
+        uint256 emergencyFee = (amount * EMERGENCY_FEE_BPS) / 10_000;
         uint256 netAmount = amount - emergencyFee;
-        
+
         acc.balance -= amount;
         totalDeposited -= amount;
 
@@ -213,14 +210,14 @@ contract Savings is ISavings {
     /// @notice Check if funds are currently locked for a user.
     /// @param user Address to check.
     /// @return locked True if funds are locked, false otherwise.
-    function isLocked(address user) external view returns (bool locked) {
+    function isLocked(address user) external view override returns (bool locked) {
         return block.timestamp < accounts[user].unlockTime;
     }
 
     /// @notice Get time remaining until unlock for a user.
     /// @param user Address to check.
     /// @return timeRemaining Seconds until unlock (0 if already unlocked).
-    function timeUntilUnlock(address user) external view returns (uint256 timeRemaining) {
+    function timeUntilUnlock(address user) external view override returns (uint256 timeRemaining) {
         uint256 unlockTime = accounts[user].unlockTime;
         if (block.timestamp >= unlockTime) return 0;
         return unlockTime - block.timestamp;
@@ -262,15 +259,15 @@ contract Savings is ISavings {
 
     /// @notice Set withdrawal fee (only owner).
     /// @param newFeeBps New fee in basis points (max 500 = 5%).
-    function setWithdrawalFee(uint256 newFeeBps) external onlyOwner {
-        if (newFeeBps > MAX_WITHDRAWAL_FEE_BPS) revert AmountExceedsBalance();
+    function setWithdrawalFee(uint256 newFeeBps) external override onlyOwner {
+        if (newFeeBps > MAX_WITHDRAWAL_FEE_BPS) revert FeeTooHigh();
         emit WithdrawalFeeUpdated(withdrawalFeeBps, newFeeBps);
         withdrawalFeeBps = newFeeBps;
     }
 
     /// @notice Enable/disable emergency withdrawals (only owner).
     /// @param enabled Whether to enable emergency withdrawals.
-    function setEmergencyWithdrawEnabled(bool enabled) external onlyOwner {
+    function setEmergencyWithdrawEnabled(bool enabled) external override onlyOwner {
         emergencyWithdrawEnabled = enabled;
         emit EmergencyWithdrawToggled(enabled);
     }

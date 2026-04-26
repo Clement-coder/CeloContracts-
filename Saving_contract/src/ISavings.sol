@@ -16,6 +16,9 @@ interface ISavings {
     error LockTooLong();
     error AmountExceedsBalance();
     error Reentrancy();
+    error EmergencyWithdrawDisabled();
+    error FeeTooHigh();
+    error DepositTooLarge();
 
     // ─── Events ────────────────────────────────────────────────────────────────
     event Deposited(address indexed user, uint256 amount, uint256 unlockTime, bool isNewAccount);
@@ -34,10 +37,15 @@ interface ISavings {
     // ─── Functions ─────────────────────────────────────────────────────────────
     function deposit(uint256 lockDuration) external payable;
     function withdraw(uint256 amount) external;
+    function emergencyWithdraw(uint256 amount) external;
     function extendLock(uint256 additionalSeconds) external;
     function getAccount(address user) external view returns (uint256 balance, uint256 unlockTime);
+    function isLocked(address user) external view returns (bool locked);
+    function timeUntilUnlock(address user) external view returns (uint256 timeRemaining);
     function pause() external;
     function unpause() external;
     function transferOwnership(address newOwner) external;
     function acceptOwnership() external;
+    function setWithdrawalFee(uint256 newFeeBps) external;
+    function setEmergencyWithdrawEnabled(bool enabled) external;
 }
