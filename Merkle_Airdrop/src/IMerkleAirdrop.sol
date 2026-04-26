@@ -11,6 +11,10 @@ interface IMerkleAirdrop {
     error AirdropEnded();     // airdrop window has closed
     error NotOwner();
     error TransferFailed();   // ERC20 transfer returned false
+    error ClaimingNotStarted();
+    error ClaimingEnded();
+    error ClaimingNotEnded();
+    error InvalidTimeWindow();
 
     // ─── Events ────────────────────────────────────────────────────────────────
     /// @dev Emitted when a recipient successfully claims their tokens.
@@ -19,6 +23,7 @@ interface IMerkleAirdrop {
     event MerkleRootUpdated(bytes32 oldRoot, bytes32 newRoot);
     /// @dev Emitted when the owner sweeps remaining tokens after the airdrop.
     event Swept(address indexed to, uint256 amount);
+    event DeadlineExtended(uint256 oldDeadline, uint256 newDeadline);
 
     // ─── Functions ─────────────────────────────────────────────────────────────
     function claim(uint256 amount, bytes32[] calldata proof) external;

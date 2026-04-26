@@ -27,6 +27,15 @@ contract MerkleAirdrop is IMerkleAirdrop {
     /// @notice Contract owner — can update root and sweep tokens.
     address public owner;
 
+    /// @notice Airdrop start time.
+    uint256 public startTime;
+
+    /// @notice Airdrop end time.
+    uint256 public endTime;
+
+    /// @notice Total tokens claimed so far.
+    uint256 public totalClaimed;
+
     /// @notice Tracks which addresses have already claimed.
     mapping(address => bool) private _claimed;
 
@@ -42,11 +51,18 @@ contract MerkleAirdrop is IMerkleAirdrop {
     /// @dev    Token is stored as immutable and cannot be changed after deploy.
     /// @param _token      Address of the ERC20 token to distribute.
     /// @param _merkleRoot Initial Merkle root of the claim tree.
-    constructor(address _token, bytes32 _merkleRoot) {
+    /// @param _startTime  Timestamp when claiming begins.
+    /// @param _endTime    Timestamp when claiming ends.
+    constructor(address _token, bytes32 _merkleRoot, uint256 _startTime, uint256 _endTime) {
         if (_token == address(0)) revert ZeroAddress();
+        if (_startTime >= _endTime) revert InvalidTimeWindow();
+        if (_startTime < block.timestamp) revert InvalidTimeWindow();
+        
         token = AirdropToken(_token);
         merkleRoot = _merkleRoot;
         owner = msg.sender;
+        startTime = _startTime;
+        endTime = _endTime;
     }
 
     // ─── Core ──────────────────────────────────────────────────────────────────
@@ -56,6 +72,8 @@ contract MerkleAirdrop is IMerkleAirdrop {
     /// @param amount Amount of tokens to claim (must match the committed amount).
     /// @param proof  Merkle proof path from leaf to root.
     function claim(uint256 amount, bytes32[] calldata proof) external override {
+        if (block.timestamp < startTime) revert ClaimingNotStarted();
+        if (block.timestamp > endTime) revert ClaimingEnded();
         if (_claimed[msg.sender]) revert AlreadyClaimed();
 
         bytes32 leaf = _leaf(msg.sender, amount);
@@ -63,6 +81,7 @@ contract MerkleAirdrop is IMerkleAirdrop {
 
         // Mark claimed before transfer to prevent reentrancy
         _claimed[msg.sender] = true;
+        totalClaimed += amount;
         emit Claimed(msg.sender, amount);
 
         bool ok = token.transfer(msg.sender, amount);
@@ -92,10 +111,22 @@ contract MerkleAirdrop is IMerkleAirdrop {
     /// @param to Recipient of remaining tokens.
     function sweep(address to) external override onlyOwner {
         if (to == address(0)) revert ZeroAddress();
+        if (block.timestamp <= endTime) revert ClaimingNotEnded();
+        
         uint256 bal = token.balanceOf(address(this));
         emit Swept(to, bal);
         bool ok = token.transfer(to, bal);
         if (!ok) revert TransferFailed();
+    }
+
+    /// @notice Extend the claiming deadline (only owner).
+    /// @param newEndTime New end time (must be in the future).
+    function extendDeadline(uint256 newEndTime) external onlyOwner {
+        if (newEndTime <= endTime) revert InvalidTimeWindow();
+        if (newEndTime <= block.timestamp) revert InvalidTimeWindow();
+        
+        emit DeadlineExtended(endTime, newEndTime);
+        endTime = newEndTime;
     }
 
     // ─── Internal ──────────────────────────────────────────────────────────────
