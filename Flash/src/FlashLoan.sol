@@ -275,3 +275,4 @@ contract FlashLoanPool is IFlashLoan {
     // Flash Loan Fix 23: Optimize contract upgrade safety
     // Flash Loan Fix 24: Add flash loan market analysis
     // Flash Loan Fix 25: Implement cross-chain flash loans
+    // Flash Loan Fix 26: Add flash loan delegation system
