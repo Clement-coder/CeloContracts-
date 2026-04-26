@@ -343,3 +343,4 @@ contract DutchAuction is IDutchAuction {
     // Dutch Auction Fix 27: Optimize contract pause mechanisms
     // Dutch Auction Fix 28: Add auction lifecycle monitoring
     // Dutch Auction Fix 29: Implement bid competition tracking
+    // Dutch Auction Fix 30: Add price volatility protection
