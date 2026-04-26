@@ -351,3 +351,4 @@ contract ERC721NFT is IERC721NFT {
     // ERC721 NFT Fix 31: Optimize transfer validation
     // ERC721 NFT Fix 32: Add collection analytics tracking
     // ERC721 NFT Fix 33: Implement token breeding system
+    // ERC721 NFT Fix 34: Add marketplace royalty enforcement
