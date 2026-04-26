@@ -201,3 +201,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 23: Add test_Constructor_RevertInvalidTimeWindow
 // Merkle Airdrop fix 24: Add test_ExtendDeadline_Success
 // Merkle Airdrop fix 25: Add test_ExtendDeadline_EmitsEvent
+// Merkle Airdrop fix 26: Add test_ExtendDeadline_RevertNotOwner
