@@ -110,6 +110,7 @@ contract ERC1155 is IERC1155 {
     ) external override {
         if (to == address(0)) revert ZeroAddress();
         if (ids.length != amounts.length) revert LengthMismatch();
+        if (ids.length > MAX_BATCH_MINT) revert LengthMismatch(); // Prevent gas limit issues
         if (from != msg.sender && !isApprovedForAll(from, msg.sender)) revert NotOwnerOrApproved();
 
         for (uint256 i; i < ids.length; ++i) {
