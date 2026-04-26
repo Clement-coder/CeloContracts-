@@ -321,3 +321,4 @@ contract Multisig is IMultisig {
 // Multisig fix 30: Add WhitelistToggled event mirror to test file
 // Multisig fix 31: Add _enableWhitelist helper to test file
 // Multisig fix 32: Add NatSpec to batchConfirmTx() documenting skip behaviour
+// Multisig fix 33: Add NatSpec to addOwner() documenting MAX_OWNERS guard
