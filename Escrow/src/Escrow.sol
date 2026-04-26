@@ -351,3 +351,4 @@ contract Escrow is IEscrow {
         pendingOwner = address(0);
     }
 }
+    // Escrow Fix 4: Add escrow cancellation by mutual consent
