@@ -329,3 +329,4 @@ contract Lottery is ILottery {
 // Lottery fix 25: Add test_DrawWinner_RevertNoRound
 // Lottery fix 26: Add test_SetFee_Success
 // Lottery fix 27: Add test_SetFee_RevertTooHigh
+// Lottery fix 28: Add test_SetFee_RevertNotOwner
