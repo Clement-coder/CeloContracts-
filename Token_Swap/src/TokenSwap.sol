@@ -22,9 +22,6 @@ contract TokenSwap is ITokenSwap {
     /// @notice Maximum swap fee: 3% (300 bps).
     uint256 public constant MAX_FEE_BPS = 300;
 
-    /// @notice Minimum swap amount: 0.001 CELO.
-    uint256 public constant MIN_SWAP = 0.001 ether;
-
     // ─── State ─────────────────────────────────────────────────────────────────
 
     /// @notice ERC20 token paired with CELO.
@@ -270,7 +267,7 @@ contract TokenSwap is ITokenSwap {
 
     /// @notice Add address to blacklist (only owner).
     /// @param account Address to blacklist.
-    function addToBlacklist(address account) external onlyOwner {
+    function addToBlacklist(address account) external override onlyOwner {
         if (account == address(0)) revert ZeroAddress();
         blacklisted[account] = true;
         emit BlacklistUpdated(account, true);
@@ -278,7 +275,7 @@ contract TokenSwap is ITokenSwap {
 
     /// @notice Remove address from blacklist (only owner).
     /// @param account Address to remove from blacklist.
-    function removeFromBlacklist(address account) external onlyOwner {
+    function removeFromBlacklist(address account) external override onlyOwner {
         blacklisted[account] = false;
         emit BlacklistUpdated(account, false);
     }

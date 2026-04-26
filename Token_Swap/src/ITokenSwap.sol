@@ -35,6 +35,8 @@ interface ITokenSwap {
     function swapTokenForCelo(uint256 tokenIn, uint256 minCeloOut) external returns (uint256 celoOut);
     function getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut) external view returns (uint256);
     function setFee(uint256 newFeeBps) external;
+    function addToBlacklist(address account) external;
+    function removeFromBlacklist(address account) external;
     function pause() external;
     function unpause() external;
     function transferOwnership(address newOwner) external;
