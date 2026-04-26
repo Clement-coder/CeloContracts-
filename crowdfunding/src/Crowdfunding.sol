@@ -385,3 +385,4 @@ contract Crowdfunding is ICrowdfunding {
     // Improvement 10: Add overflow protection in calculations
     // Improvement 11: Improve event emission consistency
     // Improvement 12: Add validation for campaign state transitions
+    // Improvement 13: Optimize referral reward calculations
