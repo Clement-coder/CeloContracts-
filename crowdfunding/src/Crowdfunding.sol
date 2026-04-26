@@ -222,6 +222,32 @@ contract Crowdfunding is ICrowdfunding {
         emit CampaignCancelled(id, msg.sender);
     }
 
+    /// @notice Creator extends campaign deadline (only if goal not yet met).
+    /// @param id Campaign ID to extend.
+    /// @param additionalTime Additional time in seconds to add to deadline.
+    /// @dev   Emits {CampaignExtended}. Cannot extend beyond MAX_DURATION from original start.
+    function extendCampaign(uint256 id, uint256 additionalTime)
+        external campaignExists(id)
+    {
+        Campaign storage c = campaigns[id];
+        if (msg.sender != c.creator) revert NotCreator();
+        if (c.cancelled) revert CampaignAlreadyEnded();
+        if (c.claimed) revert AlreadyClaimed();
+        if (c.raised >= c.goal) revert GoalAlreadyMet();
+        if (additionalTime == 0) revert DeadlineTooShort();
+        
+        uint256 originalStart = c.deadline - MAX_DURATION; // Approximate original start
+        uint256 newDeadline = c.deadline + additionalTime;
+        
+        // Ensure total duration doesn't exceed MAX_DURATION from original start
+        if (newDeadline > originalStart + MAX_DURATION) revert DeadlineTooLong();
+        
+        uint256 oldDeadline = c.deadline;
+        c.deadline = newDeadline;
+        
+        emit CampaignExtended(id, oldDeadline, newDeadline);
+    }
+
     // ─── Views ─────────────────────────────────────────────────────────────────
 
     /// @notice Returns full details of a campaign.
