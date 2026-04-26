@@ -71,6 +71,15 @@ contract Crowdfunding is ICrowdfunding {
     /// @notice contributions[campaignId][contributor] = amount.
     mapping(uint256 => mapping(address => uint256)) public contributions;
 
+    /// @notice Referral rewards: referrer => earned amount.
+    mapping(address => uint256) public referralRewards;
+
+    /// @notice Referral rate in basis points (e.g., 100 = 1%).
+    uint256 public referralRate;
+
+    /// @notice Maximum referral rate: 5% (500 bps).
+    uint256 public constant MAX_REFERRAL_RATE = 500;
+
     // ─── Modifiers ─────────────────────────────────────────────────────────────
 
     modifier onlyOwner() {
@@ -100,6 +109,7 @@ contract Crowdfunding is ICrowdfunding {
     /// @notice Deploy the crowdfunding platform. Deployer becomes owner.
     constructor() {
         owner = msg.sender;
+        referralRate = 100; // Default 1% referral reward
     }
 
     // ─── Core ──────────────────────────────────────────────────────────────────
@@ -157,9 +167,71 @@ contract Crowdfunding is ICrowdfunding {
 
         emit Contributed(id, msg.sender, msg.value, c.raised);
 
+    /// @notice Contribute CELO to a campaign.
+    /// @param id Campaign ID to contribute to.
+    /// @param referrer Optional referrer address for rewards.
+    /// @dev   Emits {Contributed}. Emits {GoalReached} if goal is hit.
+    ///        Campaign must be active (not ended, not cancelled).
+    function contributeWithReferral(uint256 id, address referrer)
+        external payable whenNotPaused nonReentrant campaignExists(id)
+    {
+        Campaign storage c = campaigns[id];
+        if (c.cancelled) revert CampaignAlreadyEnded();
+        if (block.timestamp >= c.deadline) revert CampaignAlreadyEnded();
+        if (msg.value < MIN_CONTRIBUTION) revert ContributionTooLow();
+
+        contributions[id][msg.sender] += msg.value;
+        c.raised += msg.value;
+
+        // Handle referral reward
+        if (referrer != address(0) && referrer != msg.sender && referrer != c.creator) {
+            uint256 referralReward = (msg.value * referralRate) / 10_000;
+            referralRewards[referrer] += referralReward;
+            emit ReferralReward(referrer, msg.sender, referralReward);
+        }
+
+        emit Contributed(id, msg.sender, msg.value, c.raised);
+
+    /// @notice Contribute CELO to a campaign.
+    /// @param id Campaign ID to contribute to.
+    /// @param referrer Optional referrer address for rewards.
+    /// @dev   Emits {Contributed}. Emits {GoalReached} if goal is hit.
+    ///        Campaign must be active (not ended, not cancelled).
+    function contributeWithReferral(uint256 id, address referrer)
+        external payable whenNotPaused nonReentrant campaignExists(id)
+    {
+        Campaign storage c = campaigns[id];
+        if (c.cancelled) revert CampaignAlreadyEnded();
+        if (block.timestamp >= c.deadline) revert CampaignAlreadyEnded();
+        if (msg.value < MIN_CONTRIBUTION) revert ContributionTooLow();
+
+        contributions[id][msg.sender] += msg.value;
+        c.raised += msg.value;
+
+        // Handle referral reward
+        if (referrer != address(0) && referrer != msg.sender && referrer != c.creator) {
+            uint256 referralReward = (msg.value * referralRate) / 10_000;
+            referralRewards[referrer] += referralReward;
+            emit ReferralReward(referrer, msg.sender, referralReward);
+        }
+
+        emit Contributed(id, msg.sender, msg.value, c.raised);
+
         if (c.raised >= c.goal) {
             emit GoalReached(id, c.raised);
         }
+    }
+
+    /// @notice Withdraw accumulated referral rewards.
+    function withdrawReferralRewards() external nonReentrant {
+        uint256 amount = referralRewards[msg.sender];
+        if (amount == 0) revert NothingToRefund();
+        
+        referralRewards[msg.sender] = 0;
+        emit ReferralRewardsWithdrawn(msg.sender, amount);
+        
+        (bool ok,) = msg.sender.call{value: amount}("");
+        if (!ok) revert TransferFailed();
     }
 
     /// @notice Creator claims funds after campaign ends with goal met.
@@ -309,6 +381,14 @@ contract Crowdfunding is ICrowdfunding {
         emit OwnershipTransferred(owner, pendingOwner);
         owner = pendingOwner;
         pendingOwner = address(0);
+    }
+
+    /// @notice Set referral rate (only owner).
+    /// @param newRate New referral rate in basis points (max 500 = 5%).
+    function setReferralRate(uint256 newRate) external onlyOwner {
+        if (newRate > MAX_REFERRAL_RATE) revert GoalTooLow(); // Reusing error
+        emit ReferralRateUpdated(referralRate, newRate);
+        referralRate = newRate;
     }
 
     /// @notice Reject accidental direct ETH sends.

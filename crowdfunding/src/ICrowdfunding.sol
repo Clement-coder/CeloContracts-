@@ -34,6 +34,9 @@ interface ICrowdfunding {
     event Refunded(uint256 indexed id, address indexed contributor, uint256 amount);
     event CampaignCancelled(uint256 indexed id, address indexed creator);
     event CampaignExtended(uint256 indexed id, uint256 oldDeadline, uint256 newDeadline);
+    event ReferralReward(address indexed referrer, address indexed contributor, uint256 reward);
+    event ReferralRewardsWithdrawn(address indexed referrer, uint256 amount);
+    event ReferralRateUpdated(uint256 oldRate, uint256 newRate);
     event ContractPaused(address indexed by);
     event ContractUnpaused(address indexed by);
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
