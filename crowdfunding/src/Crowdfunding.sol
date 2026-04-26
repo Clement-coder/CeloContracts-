@@ -22,6 +22,9 @@ contract Crowdfunding is ICrowdfunding {
     /// @notice Minimum campaign duration: 1 day.
     uint256 public constant MIN_DURATION = 1 days;
 
+    /// @notice Maximum campaign duration: 365 days.
+    uint256 public constant MAX_DURATION = 365 days;
+
     /// @notice Maximum campaign duration: 90 days.
     uint256 public constant MAX_DURATION = 90 days;
 
