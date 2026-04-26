@@ -486,3 +486,4 @@ contract Loan is ILoan {
 // Loan fix 52: Add test_SetInterestRate_RevertNotOwner
 // Loan fix 53: Add test_Unpause_RevertNotOwner
 // Loan fix 54: Add test_WithdrawPool_RevertZeroAmount
+// Loan fix 55: Add test_HealthFactor_InitiallyAboveThreshold
