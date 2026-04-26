@@ -238,3 +238,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 60: Add test_Token_Transfer_RevertInsufficientBalance
 // Merkle Airdrop fix 61: Add test_Token_Transfer_RevertZeroAddress
 // Merkle Airdrop fix 62: Add test_Token_Approve_And_TransferFrom
+// Merkle Airdrop fix 63: Add test_Token_Approve_EmitsApprovalEvent
