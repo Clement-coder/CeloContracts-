@@ -28,6 +28,9 @@ contract ERC20Token is IERC20Token {
     /// @notice Current total supply.
     uint256 public totalSupply;
 
+    /// @notice Minimum mint amount: 1 token.
+    uint256 public constant MIN_MINT = 1 ether;
+
     // ─── State ─────────────────────────────────────────────────────────────────
 
     /// @notice Current owner.
