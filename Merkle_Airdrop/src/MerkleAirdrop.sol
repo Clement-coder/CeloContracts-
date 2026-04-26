@@ -227,3 +227,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 49: Add test_Claim_OrderIndependent ordering test
 // Merkle Airdrop fix 50: Add testFuzz_Claim_InvalidAmount fuzz test
 // Merkle Airdrop fix 51: Add testFuzz_HasClaimed_RandomAddress fuzz test
+// Merkle Airdrop fix 52: Add testFuzz_Token_Transfer fuzz test
