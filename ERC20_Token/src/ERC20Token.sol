@@ -31,6 +31,9 @@ contract ERC20Token is IERC20Token {
     /// @notice Minimum mint amount: 1 token.
     uint256 public constant MIN_MINT = 1 ether;
 
+    /// @notice Maximum transfer amount per transaction.
+    uint256 public constant MAX_TRANSFER = 1_000_000 ether;
+
     // ─── State ─────────────────────────────────────────────────────────────────
 
     /// @notice Current owner.
