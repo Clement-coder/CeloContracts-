@@ -226,7 +226,7 @@ contract ERC721NFT is IERC721NFT {
     /// @param bps Royalty percentage in basis points (max 1000 = 10%).
     function setDefaultRoyalty(address recipient, uint256 bps) external onlyOwner {
         if (recipient == address(0)) revert ZeroAddress();
-        if (bps > MAX_ROYALTY_BPS) revert ZeroAmount(); // Reusing error for invalid bps
+        if (bps > MAX_ROYALTY_BPS) revert InvalidRecipient(); // Use proper error for invalid bps
         royaltyRecipient = recipient;
         royaltyBps = bps;
         emit DefaultRoyaltySet(recipient, bps);
@@ -239,7 +239,7 @@ contract ERC721NFT is IERC721NFT {
     function setTokenRoyalty(uint256 tokenId, address recipient, uint256 bps) external onlyOwner {
         if (_owners[tokenId] == address(0)) revert TokenNotFound();
         if (recipient == address(0)) revert ZeroAddress();
-        if (bps > MAX_ROYALTY_BPS) revert ZeroAmount(); // Reusing error for invalid bps
+        if (bps > MAX_ROYALTY_BPS) revert InvalidRecipient(); // Use proper error for invalid bps
         
         _tokenRoyalties[tokenId] = RoyaltyInfo(recipient, bps);
         emit TokenRoyaltySet(tokenId, recipient, bps);
