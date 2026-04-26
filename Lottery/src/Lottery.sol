@@ -320,3 +320,4 @@ contract Lottery is ILottery {
 // Lottery fix 16: Add test_Constructor_ZeroFeeAllowed boundary test
 // Lottery fix 17: Add test_Constructor_MaxFeeAllowed boundary test
 // Lottery fix 18: Add test_StartRound_CanStartAfterNoWinnerDraw
+// Lottery fix 19: Add test_BuyTickets_RevertExceedsMaxPerPurchase
