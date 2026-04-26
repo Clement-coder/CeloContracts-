@@ -22,6 +22,9 @@ contract TokenSwap is ITokenSwap {
     /// @notice Maximum swap fee: 3% (300 bps).
     uint256 public constant MAX_FEE_BPS = 300;
 
+    /// @notice Minimum swap amount: 0.001 CELO.
+    uint256 public constant MIN_SWAP = 0.001 ether;
+
     // ─── State ─────────────────────────────────────────────────────────────────
 
     /// @notice ERC20 token paired with CELO.
