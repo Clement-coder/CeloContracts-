@@ -332,3 +332,4 @@ contract DutchAuction is IDutchAuction {
     // Dutch Auction Fix 16: Add auction duration extension limits
     // Dutch Auction Fix 17: Implement price floor protection
     // Dutch Auction Fix 18: Add seller reputation tracking
+    // Dutch Auction Fix 19: Optimize refund mechanism security
