@@ -327,3 +327,4 @@ contract Multisig is IMultisig {
 // Multisig fix 36: Add test_Constructor_SetsOwners coverage
 // Multisig fix 37: Add test_Constructor_RevertInvalidThreshold coverage
 // Multisig fix 38: Add test_Constructor_RevertZeroThreshold coverage
+// Multisig fix 39: Add test_Constructor_RevertDuplicateOwner coverage
