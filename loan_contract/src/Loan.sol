@@ -458,3 +458,4 @@ contract Loan is ILoan {
 // Loan fix 24: Fix getHealthFactor() - guard against totalDebt==0 division by zero
 // Loan fix 25: freePoolBalance() now excludes accumulatedFees from available pool
 // Loan fix 26: extendLoan() resets startTime so interest clock restarts after extension
+// Loan fix 27: extendLoan() refunds overpayment back to borrower
