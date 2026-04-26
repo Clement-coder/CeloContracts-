@@ -418,3 +418,4 @@ contract DAOGovernance is IDAOGovernance {
     // DAO Fix 29: Implement vote commitment schemes
     // DAO Fix 30: Add proposal priority system
     // DAO Fix 31: Optimize vote tallying algorithms
+    // DAO Fix 32: Add proposal review period
