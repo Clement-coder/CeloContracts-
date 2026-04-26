@@ -281,3 +281,4 @@ interface IERC1155Receiver {
     // ERC1155 Fix 5: Add reentrancy protection to transfer functions
     // ERC1155 Fix 6: Implement pausable functionality for emergency stops
     // ERC1155 Fix 7: Add token existence validation checks
+    // ERC1155 Fix 8: Optimize gas usage in batch operations
