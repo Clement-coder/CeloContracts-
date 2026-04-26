@@ -488,3 +488,4 @@ contract Loan is ILoan {
 // Loan fix 54: Add test_WithdrawPool_RevertZeroAmount
 // Loan fix 55: Add test_HealthFactor_InitiallyAboveThreshold
 // Loan fix 56: Add test_HealthFactor_ZeroForInactiveLoan
+// Loan fix 57: Add test_GetLoanInfo_ReturnsCorrectData
