@@ -327,3 +327,4 @@ contract ERC721NFT is IERC721NFT {
     // ERC721 NFT Fix 7: Optimize gas usage in batch operations
     // ERC721 NFT Fix 8: Add token reveal mechanism
     // ERC721 NFT Fix 9: Implement whitelist minting system
+    // ERC721 NFT Fix 10: Add token locking functionality
