@@ -314,3 +314,4 @@ contract Multisig is IMultisig {
 // Multisig fix 23: Add test_GetTx_RevertNotFound
 // Multisig fix 24: Add test_GetTx_ReturnsCorrectData
 // Multisig fix 25: Add test_Revoke_RevertAlreadyExecuted
+// Multisig fix 26: Add test_ChangeThreshold_RevertDirectCall
