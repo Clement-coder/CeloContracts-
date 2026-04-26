@@ -451,3 +451,4 @@ contract Loan is ILoan {
 // Loan fix 17: Add getLoanInfo() view function exposing full loan details including extensionCount
 // Loan fix 18: Add getLoanInfo() to ILoan interface
 // Loan fix 19: Add extendLoan() to ILoan interface
+// Loan fix 20: Add withdrawFees() to ILoan interface
