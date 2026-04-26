@@ -294,3 +294,4 @@ contract Multisig is IMultisig {
 // Multisig fix 3: Add NotWhitelisted error to IMultisig interface
 // Multisig fix 4: Add MaxOwnersReached error to IMultisig interface
 // Multisig fix 5: Add batchConfirmTx() to IMultisig interface (was missing)
+// Multisig fix 6: Add getOwners() to IMultisig interface (was missing)
