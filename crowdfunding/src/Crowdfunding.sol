@@ -414,3 +414,4 @@ contract Crowdfunding is ICrowdfunding {
     // Improvement 39: Improve deadline extension logic
     // Improvement 40: Add referral rate validation
     // Improvement 41: Optimize function modifier usage
+    // Improvement 42: Add campaign creator validation
