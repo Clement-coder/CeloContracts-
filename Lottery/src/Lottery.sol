@@ -350,3 +350,4 @@ contract Lottery is ILottery {
 // Lottery fix 46: Add test_AcceptOwnership_EmitsEvent
 // Lottery fix 47: Add testFuzz_TicketFeeAlwaysCorrect fuzz test
 // Lottery fix 48: Add testFuzz_SetFee fuzz test
+// Lottery fix 49: Add test_Invariant_BalanceEqualsPotPlusFees after draw
