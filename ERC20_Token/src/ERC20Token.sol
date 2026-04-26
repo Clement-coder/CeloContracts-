@@ -349,3 +349,4 @@ contract ERC20Token is IERC20Token {
     // ERC20 Fix 21: Implement delegation for governance
     // ERC20 Fix 22: Add supply inflation controls
     // ERC20 Fix 23: Optimize event emission efficiency
+    // ERC20 Fix 24: Add token lock functionality
