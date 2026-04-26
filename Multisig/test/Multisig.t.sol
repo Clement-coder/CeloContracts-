@@ -329,6 +329,202 @@ contract MultisigTest is Test {
     }
 
     receive() external payable {}
+
+    event WhitelistUpdated(address indexed target, bool enabled);
+    event WhitelistToggled(bool enabled);
+
+    // ─── BatchConfirmTx ────────────────────────────────────────────────────────
+
+    function test_BatchConfirm_Success() public {
+        uint256 id0 = _submit();
+        vm.prank(alice); ms.submitTx(dave, 0, ""); // id1
+        uint256[] memory ids = new uint256[](2);
+        ids[0] = id0; ids[1] = 1;
+        vm.prank(alice);
+        ms.batchConfirmTx(ids);
+        assertTrue(ms.isConfirmed(id0, alice));
+        assertTrue(ms.isConfirmed(1, alice));
+    }
+
+    function test_BatchConfirm_SkipsInvalid() public {
+        _submit(); // id 0
+        uint256[] memory ids = new uint256[](2);
+        ids[0] = 0; ids[1] = 99; // 99 doesn't exist
+        vm.prank(alice);
+        ms.batchConfirmTx(ids); // should not revert
+        assertTrue(ms.isConfirmed(0, alice));
+    }
+
+    function test_BatchConfirm_SkipsAlreadyConfirmed() public {
+        uint256 id = _submit();
+        vm.prank(alice); ms.confirmTx(id);
+        uint256[] memory ids = new uint256[](1);
+        ids[0] = id;
+        vm.prank(alice);
+        ms.batchConfirmTx(ids); // should not revert or double-count
+        (,,,, uint256 confs) = ms.getTx(id);
+        assertEq(confs, 1);
+    }
+
+    function test_BatchConfirm_RevertNotOwner() public {
+        _submit();
+        uint256[] memory ids = new uint256[](1);
+        ids[0] = 0;
+        vm.prank(dave);
+        vm.expectRevert(IMultisig.NotOwner.selector);
+        ms.batchConfirmTx(ids);
+    }
+
+    // ─── GetOwners / TxCount ───────────────────────────────────────────────────
+
+    function test_GetOwners_ReturnsAll() public view {
+        address[] memory o = ms.getOwners();
+        assertEq(o.length, 3);
+    }
+
+    function test_TxCount_StartsZero() public view {
+        assertEq(ms.txCount(), 0);
+    }
+
+    function test_TxCount_IncrementsOnSubmit() public {
+        _submit();
+        assertEq(ms.txCount(), 1);
+        _submit();
+        assertEq(ms.txCount(), 2);
+    }
+
+    // ─── Whitelist ─────────────────────────────────────────────────────────────
+
+    function _enableWhitelist(address target) internal {
+        // addToWhitelist via self-call
+        bytes memory data = abi.encodeWithSignature("addToWhitelist(address)", target);
+        vm.prank(alice); uint256 id = ms.submitTx(address(ms), 0, data);
+        vm.prank(alice); ms.confirmTx(id);
+        vm.prank(bob);   ms.confirmTx(id);
+        vm.prank(alice); ms.executeTx(id);
+
+        // setWhitelistEnabled(true) via self-call
+        bytes memory data2 = abi.encodeWithSignature("setWhitelistEnabled(bool)", true);
+        vm.prank(alice); uint256 id2 = ms.submitTx(address(ms), 0, data2);
+        vm.prank(alice); ms.confirmTx(id2);
+        vm.prank(bob);   ms.confirmTx(id2);
+        vm.prank(alice); ms.executeTx(id2);
+    }
+
+    function test_Whitelist_AllowsWhitelistedTarget() public {
+        _enableWhitelist(dave);
+        vm.prank(alice);
+        uint256 id = ms.submitTx(dave, 0, ""); // should not revert
+        assertEq(id, 2);
+    }
+
+    function test_Whitelist_RevertNotWhitelisted() public {
+        _enableWhitelist(dave);
+        address stranger = makeAddr("stranger");
+        vm.prank(alice);
+        vm.expectRevert(IMultisig.NotWhitelisted.selector);
+        ms.submitTx(stranger, 0, "");
+    }
+
+    function test_Whitelist_RemoveFromWhitelist() public {
+        _enableWhitelist(dave);
+        bytes memory data = abi.encodeWithSignature("removeFromWhitelist(address)", dave);
+        vm.prank(alice); uint256 id = ms.submitTx(address(ms), 0, data);
+        vm.prank(alice); ms.confirmTx(id);
+        vm.prank(bob);   ms.confirmTx(id);
+        vm.prank(alice); ms.executeTx(id);
+        assertFalse(ms.whitelist(dave));
+    }
+
+    function test_Whitelist_DirectCallReverts() public {
+        vm.prank(alice);
+        vm.expectRevert(IMultisig.NotOwner.selector);
+        ms.addToWhitelist(dave);
+    }
+
+    // ─── MaxOwners ─────────────────────────────────────────────────────────────
+
+    function test_AddOwner_RevertMaxOwners() public {
+        // Fill up to MAX_OWNERS (50) via self-calls
+        // We already have 3; add 47 more to hit 50, then try one more
+        uint256 max = ms.MAX_OWNERS();
+        for (uint256 i = 3; i < max; i++) {
+            address newOwner = address(uint160(0xDEAD0000 + i));
+            bytes memory data = abi.encodeWithSignature("addOwner(address)", newOwner);
+            vm.prank(alice); uint256 id = ms.submitTx(address(ms), 0, data);
+            vm.prank(alice); ms.confirmTx(id);
+            vm.prank(bob);   ms.confirmTx(id);
+            vm.prank(alice); ms.executeTx(id);
+        }
+        assertEq(ms.getOwners().length, max);
+        address oneMore = address(uint160(0xDEAD9999));
+        bytes memory data = abi.encodeWithSignature("addOwner(address)", oneMore);
+        vm.prank(alice); uint256 id = ms.submitTx(address(ms), 0, data);
+        vm.prank(alice); ms.confirmTx(id);
+        vm.prank(bob);   ms.confirmTx(id);
+        vm.expectRevert(); // MaxOwnersReached inside executeTx -> TransferFailed
+        vm.prank(alice); ms.executeTx(id);
+    }
+
+    // ─── GetTx ─────────────────────────────────────────────────────────────────
+
+    function test_GetTx_RevertNotFound() public {
+        vm.expectRevert(IMultisig.TxNotFound.selector);
+        ms.getTx(0);
+    }
+
+    function test_GetTx_ReturnsCorrectData() public {
+        vm.prank(alice);
+        ms.submitTx(dave, 1 ether, hex"1234");
+        (address to, uint256 val, bytes memory data, bool exec, uint256 confs) = ms.getTx(0);
+        assertEq(to, dave);
+        assertEq(val, 1 ether);
+        assertEq(data, hex"1234");
+        assertFalse(exec);
+        assertEq(confs, 0);
+    }
+
+    // ─── Revoke after execute ──────────────────────────────────────────────────
+
+    function test_Revoke_RevertAlreadyExecuted() public {
+        uint256 id = _submitAndConfirm2();
+        vm.prank(alice); ms.executeTx(id);
+        vm.prank(alice);
+        vm.expectRevert(IMultisig.AlreadyExecuted.selector);
+        ms.revokeTx(id);
+    }
+
+    // ─── ChangeThreshold edge cases ────────────────────────────────────────────
+
+    function test_ChangeThreshold_RevertDirectCall() public {
+        vm.prank(alice);
+        vm.expectRevert(IMultisig.NotOwner.selector);
+        ms.changeThreshold(1);
+    }
+
+    function test_ChangeThreshold_RevertZero() public {
+        bytes memory data = abi.encodeWithSignature("changeThreshold(uint256)", 0);
+        vm.prank(alice); uint256 id = ms.submitTx(address(ms), 0, data);
+        vm.prank(alice); ms.confirmTx(id);
+        vm.prank(bob);   ms.confirmTx(id);
+        vm.expectRevert(); // InvalidThreshold inside executeTx -> TransferFailed
+        vm.prank(alice); ms.executeTx(id);
+    }
+
+    // ─── Fuzz ──────────────────────────────────────────────────────────────────
+
+    function testFuzz_ConfirmCount(uint8 n) public {
+        n = uint8(bound(n, 1, 3));
+        uint256 id = _submit();
+        address[3] memory o = [alice, bob, carol];
+        for (uint256 i = 0; i < n; i++) {
+            vm.prank(o[i]);
+            ms.confirmTx(id);
+        }
+        (,,,, uint256 confs) = ms.getTx(id);
+        assertEq(confs, n);
+    }
+
 }
 
 /// @dev Simple counter for calldata execution test.

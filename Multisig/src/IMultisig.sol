@@ -18,6 +18,8 @@ interface IMultisig {
     error NotEnoughConfirmations();
     error TransferFailed();
     error DuplicateOwner();
+    error NotWhitelisted();
+    error MaxOwnersReached();
 
     // ─── Events ────────────────────────────────────────────────────────────────
     event Deposit(address indexed sender, uint256 amount, uint256 balance);
@@ -41,4 +43,10 @@ interface IMultisig {
     function changeThreshold(uint256 newThreshold) external;
     function getTx(uint256 txId) external view returns (address to, uint256 value, bytes memory data, bool executed, uint256 confirmations);
     function isConfirmed(uint256 txId, address owner) external view returns (bool);
+    function batchConfirmTx(uint256[] calldata txIds) external;
+    function getOwners() external view returns (address[] memory);
+    function txCount() external view returns (uint256);
+    function addToWhitelist(address target) external;
+    function removeFromWhitelist(address target) external;
+    function setWhitelistEnabled(bool enabled) external;
 }

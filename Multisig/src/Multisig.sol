@@ -109,7 +109,7 @@ contract Multisig is IMultisig {
     function submitTx(address to, uint256 value, bytes calldata data)
         external override onlyOwner returns (uint256 txId)
     {
-        if (whitelistEnabled && !whitelist[to]) revert NotOwner(); // Reusing error for not whitelisted
+        if (whitelistEnabled && !whitelist[to]) revert NotWhitelisted();
         
         txId = transactions.length;
         transactions.push(Transaction({to: to, value: value, data: data, executed: false, confirmations: 0}));
@@ -181,6 +181,7 @@ contract Multisig is IMultisig {
         if (msg.sender != address(this)) revert NotOwner();
         if (owner == address(0)) revert ZeroAddress();
         if (isOwner[owner]) revert AlreadyOwner();
+        if (owners.length >= MAX_OWNERS) revert MaxOwnersReached();
         isOwner[owner] = true;
         owners.push(owner);
         emit OwnerAdded(owner);
@@ -288,3 +289,4 @@ contract Multisig is IMultisig {
         emit Deposit(msg.sender, msg.value, address(this).balance);
     }
 }
+// Multisig fix 1: submitTx whitelist rejection used NotOwner - replaced with NotWhitelisted
