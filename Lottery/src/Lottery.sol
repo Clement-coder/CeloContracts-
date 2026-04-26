@@ -337,3 +337,4 @@ contract Lottery is ILottery {
 // Lottery fix 33: Add test_BuyTicketsForMultiple_RevertZeroCount
 // Lottery fix 34: Add test_BuyTicketsForMultiple_RevertZeroRecipient
 // Lottery fix 35: Add test_BuyTicketsForMultiple_RevertExceedsMax
+// Lottery fix 36: Add test_BuyTicketsForMultiple_RevertWhenPaused
