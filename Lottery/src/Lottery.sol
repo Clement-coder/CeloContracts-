@@ -304,3 +304,4 @@ contract Lottery is ILottery {
 }
 // Lottery fix 1: Enforce MAX_TICKETS_PER_PURCHASE in buyTickets() - constant was unused
 // Lottery fix 2: Add InvalidAmount error to ILottery for zero-fee withdrawal
+// Lottery fix 3: withdrawFees() revert with InvalidAmount not NoTickets (wrong error)
