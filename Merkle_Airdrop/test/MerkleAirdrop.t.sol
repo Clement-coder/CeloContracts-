@@ -506,3 +506,4 @@ contract MerkleAirdropTest is Test {
         assertFalse(airdrop.hasClaimed(rando));
     }
 }
+// Commit 18 optimization
