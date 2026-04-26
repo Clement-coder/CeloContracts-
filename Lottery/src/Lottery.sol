@@ -20,6 +20,9 @@ contract Lottery is ILottery {
     /// @notice Minimum ticket price: 0.001 CELO.
     uint256 public constant MIN_TICKET_PRICE = 0.001 ether;
 
+    /// @notice Maximum tickets per purchase: 100.
+    uint256 public constant MAX_TICKETS_PER_PURCHASE = 100;
+
     /// @notice Minimum round duration: 1 hour.
     uint256 public constant MIN_DURATION = 1 hours;
 
