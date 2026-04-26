@@ -306,3 +306,4 @@ contract Multisig is IMultisig {
 // Multisig fix 15: Add test_GetOwners_ReturnsAll
 // Multisig fix 16: Add test_TxCount_StartsZero
 // Multisig fix 17: Add test_TxCount_IncrementsOnSubmit
+// Multisig fix 18: Add test_Whitelist_AllowsWhitelistedTarget
