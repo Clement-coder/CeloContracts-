@@ -448,3 +448,4 @@ contract NFTMarketplace is INFTMarketplace {
 // NFT Marketplace fix 42: Add NatSpec to cancelOffer() documenting refund behaviour
 // NFT Marketplace fix 43: Add NatSpec to setFeeShareRate() documenting pool split
 // NFT Marketplace fix 44: Add test_ListNFT_Success coverage
+// NFT Marketplace fix 45: Add test_ListNFT_EmitsEvent coverage
