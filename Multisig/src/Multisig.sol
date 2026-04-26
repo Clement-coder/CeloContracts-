@@ -343,3 +343,4 @@ contract Multisig is IMultisig {
 // Multisig fix 52: Add test_Revoke_RevertNotConfirmed coverage
 // Multisig fix 53: Add test_Execute_Success coverage
 // Multisig fix 54: Add test_Execute_EmitsEvent coverage
+// Multisig fix 55: Add test_Execute_RevertNotEnoughConfirmations coverage
