@@ -310,3 +310,4 @@ contract Multisig is IMultisig {
 // Multisig fix 19: Add test_Whitelist_RevertNotWhitelisted
 // Multisig fix 20: Add test_Whitelist_RemoveFromWhitelist
 // Multisig fix 21: Add test_Whitelist_DirectCallReverts
+// Multisig fix 22: Add test_AddOwner_RevertMaxOwners
