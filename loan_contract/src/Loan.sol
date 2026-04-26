@@ -477,3 +477,4 @@ contract Loan is ILoan {
 // Loan fix 43: Add test_ExtendLoan_RevertWhenPaused
 // Loan fix 44: Add test_WithdrawFees_Success
 // Loan fix 45: Add test_WithdrawFees_EmitsEvent
+// Loan fix 46: Add test_WithdrawFees_RevertNoFees
