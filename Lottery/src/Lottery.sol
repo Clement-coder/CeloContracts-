@@ -343,3 +343,4 @@ contract Lottery is ILottery {
 // Lottery fix 39: Add test_WithdrawFees_ResetsAccruedFees
 // Lottery fix 40: Add test_GetRound_RevertRoundZero
 // Lottery fix 41: Add test_GetRound_RevertFutureRound
+// Lottery fix 42: Add test_GetTickets_ReturnsZeroForNonBuyer
