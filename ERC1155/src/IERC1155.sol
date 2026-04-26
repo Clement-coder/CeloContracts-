@@ -11,6 +11,7 @@ interface IERC1155 {
     error InsufficientBalance();
     error UnsafeRecipient();      // contract recipient did not return correct ERC1155Receiver selector
     error NotOwner();
+    error ExceedsMaxSupply();
 
     // ─── Events ────────────────────────────────────────────────────────────────
     /// @dev Emitted on single-token transfer or mint/burn.
@@ -20,6 +21,7 @@ interface IERC1155 {
     /// @dev Emitted when an operator is approved or revoked for all tokens.
     event ApprovalForAll(address indexed account, address indexed operator, bool approved);
     event URI(string value, uint256 indexed id);
+    event MaxSupplySet(uint256 indexed id, uint256 maxSupply);
 
     // ─── Functions ─────────────────────────────────────────────────────────────
     function balanceOf(address account, uint256 id) external view returns (uint256);

@@ -25,6 +25,12 @@ contract ERC1155 is IERC1155 {
     /// @notice account => operator => isApproved for all tokens
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
+    /// @notice tokenId => total supply
+    mapping(uint256 => uint256) private _totalSupply;
+
+    /// @notice Maximum supply per token ID
+    mapping(uint256 => uint256) private _maxSupply;
+
     // ─── Modifiers ─────────────────────────────────────────────────────────────
 
     modifier onlyOwner() {
@@ -117,7 +123,10 @@ contract ERC1155 is IERC1155 {
     /// @notice Mint `amount` of token `id` to `to`. Only owner.
     function mint(address to, uint256 id, uint256 amount, bytes calldata data) external onlyOwner {
         if (to == address(0)) revert ZeroAddress();
+        if (_maxSupply[id] > 0 && _totalSupply[id] + amount > _maxSupply[id]) revert ExceedsMaxSupply();
+        
         _balances[to][id] += amount;
+        _totalSupply[id] += amount;
         emit TransferSingle(msg.sender, address(0), to, id, amount);
         _checkOnERC1155Received(msg.sender, address(0), to, id, amount, data);
     }
@@ -128,8 +137,11 @@ contract ERC1155 is IERC1155 {
     function mintBatch(address to, uint256[] calldata ids, uint256[] calldata amounts, bytes calldata data) external onlyOwner {
         if (to == address(0)) revert ZeroAddress();
         if (ids.length != amounts.length) revert LengthMismatch();
+        
         for (uint256 i; i < ids.length; ++i) {
+            if (_maxSupply[ids[i]] > 0 && _totalSupply[ids[i]] + amounts[i] > _maxSupply[ids[i]]) revert ExceedsMaxSupply();
             _balances[to][ids[i]] += amounts[i];
+            _totalSupply[ids[i]] += amounts[i];
         }
         emit TransferBatch(msg.sender, address(0), to, ids, amounts);
         _checkOnERC1155BatchReceived(msg.sender, address(0), to, ids, amounts, data);
@@ -141,6 +153,7 @@ contract ERC1155 is IERC1155 {
         if (from != msg.sender && !isApprovedForAll(from, msg.sender)) revert NotOwnerOrApproved();
         // Underflow reverts automatically on insufficient balance
         _balances[from][id] -= amount;
+        _totalSupply[id] -= amount;
         emit TransferSingle(msg.sender, from, address(0), id, amount);
     }
 
@@ -151,6 +164,7 @@ contract ERC1155 is IERC1155 {
         if (ids.length != amounts.length) revert LengthMismatch();
         for (uint256 i; i < ids.length; ++i) {
             _balances[from][ids[i]] -= amounts[i];
+            _totalSupply[ids[i]] -= amounts[i];
         }
         emit TransferBatch(msg.sender, from, address(0), ids, amounts);
     }
@@ -166,6 +180,28 @@ contract ERC1155 is IERC1155 {
     /// @dev    Does not emit URI event per token — caller should emit off-chain if needed.
     function setBaseURI(string calldata newURI) external onlyOwner {
         baseURI = newURI;
+    }
+
+    /// @notice Set maximum supply for a token ID. Only owner.
+    /// @param id Token ID to set max supply for.
+    /// @param maxSupply Maximum supply (0 = unlimited).
+    function setMaxSupply(uint256 id, uint256 maxSupply) external onlyOwner {
+        _maxSupply[id] = maxSupply;
+        emit MaxSupplySet(id, maxSupply);
+    }
+
+    /// @notice Get total supply of a token ID.
+    /// @param id Token ID to query.
+    /// @return Total supply of the token.
+    function totalSupply(uint256 id) external view returns (uint256) {
+        return _totalSupply[id];
+    }
+
+    /// @notice Get maximum supply of a token ID.
+    /// @param id Token ID to query.
+    /// @return Maximum supply of the token (0 = unlimited).
+    function maxSupply(uint256 id) external view returns (uint256) {
+        return _maxSupply[id];
     }
 
     // ─── ERC-165 ───────────────────────────────────────────────────────────────
