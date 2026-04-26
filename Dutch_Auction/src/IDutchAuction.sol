@@ -26,6 +26,7 @@ interface IDutchAuction {
     event AuctionCancelled(uint256 indexed id, address indexed seller);
     event AuctionExpiredReclaimed(uint256 indexed id, address indexed seller);
     event FeeWithdrawn(address indexed to, uint256 amount);
+    event FeeUpdated(uint256 oldFee, uint256 newFee);
     event ContractPaused(address indexed by);
     event ContractUnpaused(address indexed by);
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
