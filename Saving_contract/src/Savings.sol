@@ -15,6 +15,9 @@ contract Savings is ISavings {
     /// @notice Maximum lock duration: 5 years.
     uint256 public constant MAX_LOCK_DURATION = 5 * 365 days;
 
+    /// @notice Interest rate for locked funds in basis points.
+    uint256 public lockBonusRate;
+
     /// @notice Minimum deposit amount: 0.0001 CELO.
     uint256 public constant MIN_DEPOSIT = 0.0001 ether;
 
