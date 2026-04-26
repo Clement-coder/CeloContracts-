@@ -430,3 +430,4 @@ contract DAOGovernance is IDAOGovernance {
     // DAO Fix 41: Implement vote verification system
     // DAO Fix 42: Add proposal execution rollback
     // DAO Fix 43: Optimize quorum threshold updates
+    // DAO Fix 44: Add proposal lifecycle tracking
