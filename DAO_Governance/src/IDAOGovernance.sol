@@ -31,6 +31,8 @@ interface IDAOGovernance {
     event ProposalCancelled(uint256 indexed id);
     event QuorumUpdated(uint256 oldQuorum, uint256 newQuorum);
     event VotingPeriodUpdated(uint256 oldPeriod, uint256 newPeriod);
+    event EmergencyPauseActivated(uint256 pauseUntil);
+    event EmergencyPauseCancelled();
     event ContractPaused(address indexed by);
     event ContractUnpaused(address indexed by);
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);

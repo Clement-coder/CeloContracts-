@@ -95,6 +95,12 @@ contract DAOGovernance is IDAOGovernance {
     /// @notice delegations[delegator] = delegate address (0 = no delegation).
     mapping(address => address) public delegations;
 
+    /// @notice Emergency pause timestamp (0 = not paused).
+    uint256 public emergencyPauseUntil;
+
+    /// @notice Maximum emergency pause duration: 7 days.
+    uint256 public constant MAX_EMERGENCY_PAUSE = 7 days;
+
     // ─── Modifiers ─────────────────────────────────────────────────────────────
 
     modifier onlyOwner() {
@@ -104,6 +110,7 @@ contract DAOGovernance is IDAOGovernance {
 
     modifier whenNotPaused() {
         if (paused) revert Paused();
+        if (block.timestamp < emergencyPauseUntil) revert Paused();
         _;
     }
 
@@ -359,5 +366,20 @@ contract DAOGovernance is IDAOGovernance {
         emit OwnershipTransferred(owner, pendingOwner);
         owner = pendingOwner;
         pendingOwner = address(0);
+    }
+
+    /// @notice Emergency pause for a limited time (only owner).
+    /// @param duration Pause duration in seconds (max MAX_EMERGENCY_PAUSE).
+    function emergencyPause(uint256 duration) external onlyOwner {
+        if (duration > MAX_EMERGENCY_PAUSE) revert VotingPeriodTooLong(); // Reusing error
+        
+        emergencyPauseUntil = block.timestamp + duration;
+        emit EmergencyPauseActivated(emergencyPauseUntil);
+    }
+
+    /// @notice Cancel emergency pause early (only owner).
+    function cancelEmergencyPause() external onlyOwner {
+        emergencyPauseUntil = 0;
+        emit EmergencyPauseCancelled();
     }
 }
