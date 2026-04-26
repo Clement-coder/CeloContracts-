@@ -307,3 +307,4 @@ contract Lottery is ILottery {
 // Lottery fix 3: withdrawFees() revert with InvalidAmount not NoTickets (wrong error)
 // Lottery fix 4: Add buyTicketsForMultiple() to ILottery interface (was missing)
 // Lottery fix 5: Add setFee() to ILottery interface (was missing)
+// Lottery fix 6: Add FeeUpdated event to ILottery interface (was missing)
