@@ -139,6 +139,7 @@ contract ERC1155 is IERC1155 {
     function mintBatch(address to, uint256[] calldata ids, uint256[] calldata amounts, bytes calldata data) external onlyOwner {
         if (to == address(0)) revert ZeroAddress();
         if (ids.length != amounts.length) revert LengthMismatch();
+        if (ids.length > MAX_BATCH_MINT) revert LengthMismatch(); // Prevent gas limit issues
         
         for (uint256 i; i < ids.length; ++i) {
             if (_maxSupply[ids[i]] > 0 && _totalSupply[ids[i]] + amounts[i] > _maxSupply[ids[i]]) revert ExceedsMaxSupply();
