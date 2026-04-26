@@ -457,3 +457,4 @@ contract Loan is ILoan {
 // Loan fix 23: Add getHealthFactor() to ILoan interface (was missing)
 // Loan fix 24: Fix getHealthFactor() - guard against totalDebt==0 division by zero
 // Loan fix 25: freePoolBalance() now excludes accumulatedFees from available pool
+// Loan fix 26: extendLoan() resets startTime so interest clock restarts after extension
