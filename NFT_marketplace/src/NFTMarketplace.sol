@@ -427,3 +427,4 @@ contract NFTMarketplace is INFTMarketplace {
 // NFT Marketplace fix 21: Add test_AcceptOffer_EmitsEvent
 // NFT Marketplace fix 22: Add test_AcceptOffer_RevertNotTokenOwner
 // NFT Marketplace fix 23: Add test_AcceptOffer_RevertOfferNotActive
+// NFT Marketplace fix 24: Add test_AcceptOffer_RevertOfferExpired
