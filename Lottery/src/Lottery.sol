@@ -235,6 +235,14 @@ contract Lottery is ILottery {
         if (!ok) revert TransferFailed();
     }
 
+    /// @notice Update platform fee (only owner).
+    /// @param newFeeBps New fee in basis points (max 1000 = 10%).
+    function setFee(uint256 newFeeBps) external onlyOwner {
+        if (newFeeBps > MAX_FEE_BPS) revert InvalidFee();
+        emit FeeUpdated(feeBps, newFeeBps);
+        feeBps = newFeeBps;
+    }
+
     /// @notice Pause the contract.
     function pause() external override onlyOwner {
         paused = true;

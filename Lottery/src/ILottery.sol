@@ -25,6 +25,7 @@ interface ILottery {
     event WinnerDrawn(uint256 indexed round, address indexed winner, uint256 prize);
     event NoWinner(uint256 indexed round);
     event FeeWithdrawn(address indexed to, uint256 amount);
+    event FeeUpdated(uint256 oldFee, uint256 newFee);
     event ContractPaused(address indexed by);
     event ContractUnpaused(address indexed by);
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
