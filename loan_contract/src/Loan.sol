@@ -491,3 +491,4 @@ contract Loan is ILoan {
 // Loan fix 57: Add test_GetLoanInfo_ReturnsCorrectData
 // Loan fix 58: Add testFuzz_OriginationFee fuzz test
 // Loan fix 59: Add test_Invariant_FreePoolNeverNegative
+// Loan fix 60: Add test_Invariant_MultipleLoans
