@@ -24,6 +24,7 @@ interface ISubscription {
     event Subscribed(uint256 indexed planId, address indexed subscriber, uint256 nextPayment);
     event PaymentProcessed(uint256 indexed planId, address indexed subscriber, uint256 amount, uint256 nextPayment);
     event Unsubscribed(uint256 indexed planId, address indexed subscriber);
+    event SubscriptionCancelled(uint256 indexed planId, address indexed subscriber, address indexed cancelledBy);
     event EarningsWithdrawn(address indexed provider, uint256 amount);
     event ContractPaused(address indexed by);
     event ContractUnpaused(address indexed by);

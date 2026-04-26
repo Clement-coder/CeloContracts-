@@ -20,6 +20,9 @@ contract Subscription is ISubscription {
     /// @notice Minimum billing period: 1 day.
     uint256 public constant MIN_PERIOD = 1 days;
 
+    /// @notice Grace period after missed payment: 3 days.
+    uint256 public constant GRACE_PERIOD = 3 days;
+
     // ─── State ─────────────────────────────────────────────────────────────────
 
     /// @notice Current contract owner.
@@ -177,6 +180,23 @@ contract Subscription is ISubscription {
         earnings[p.provider] += msg.value;
 
         emit PaymentProcessed(planId, subscriber, msg.value, s.nextPayment);
+    }
+
+    /// @notice Cancel a subscription due to non-payment after grace period.
+    /// @param planId Plan ID.
+    /// @param subscriber Address of the subscriber to cancel.
+    /// @dev Anyone can call this if payment is overdue by more than GRACE_PERIOD.
+    function cancelForNonPayment(uint256 planId, address subscriber)
+        external planExists(planId)
+    {
+        Sub storage s = subscriptions[planId][subscriber];
+        if (!s.active) revert NotSubscribed();
+        if (block.timestamp < s.nextPayment + GRACE_PERIOD) revert PaymentNotDue();
+
+        s.active = false;
+        s.nextPayment = 0;
+        
+        emit SubscriptionCancelled(planId, subscriber, msg.sender);
     }
 
     /// @notice Cancel your subscription to a plan.
