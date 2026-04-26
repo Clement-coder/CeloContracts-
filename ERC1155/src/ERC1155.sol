@@ -166,6 +166,7 @@ contract ERC1155 is IERC1155 {
     function burnBatch(address from, uint256[] calldata ids, uint256[] calldata amounts) external {
         if (from != msg.sender && !isApprovedForAll(from, msg.sender)) revert NotOwnerOrApproved();
         if (ids.length != amounts.length) revert LengthMismatch();
+        if (ids.length > MAX_BATCH_MINT) revert LengthMismatch(); // Prevent gas limit issues
         for (uint256 i; i < ids.length; ++i) {
             _balances[from][ids[i]] -= amounts[i];
             _totalSupply[ids[i]] -= amounts[i];
