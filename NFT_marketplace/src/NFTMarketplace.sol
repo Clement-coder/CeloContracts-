@@ -436,3 +436,4 @@ contract NFTMarketplace is INFTMarketplace {
 // NFT Marketplace fix 30: Add test_SetFeeShareRate_RevertTooHigh
 // NFT Marketplace fix 31: Add test_SetFeeShareRate_RevertNotOwner
 // NFT Marketplace fix 32: Add test_Constructor_ZeroFeeAllowed
+// NFT Marketplace fix 33: Add test_Unpause_RevertNotOwner
