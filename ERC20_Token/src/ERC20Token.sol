@@ -365,3 +365,4 @@ contract ERC20Token is IERC20Token {
     // ERC20 Fix 37: Implement supply adjustment controls
     // ERC20 Fix 38: Add emergency freeze functionality
     // ERC20 Fix 39: Optimize snapshot query performance
+    // ERC20 Fix 40: Add token swap integration
