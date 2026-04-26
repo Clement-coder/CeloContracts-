@@ -326,3 +326,4 @@ interface IERC1155Receiver {
     // ERC1155 Fix 50: Implement automatic royalty distribution
     // ERC1155 Fix 51: Add token reveal mechanism
     // ERC1155 Fix 52: Optimize contract pause mechanisms
+    // ERC1155 Fix 53: Add token whitelist functionality
