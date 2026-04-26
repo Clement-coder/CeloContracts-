@@ -316,3 +316,4 @@ contract Multisig is IMultisig {
 // Multisig fix 25: Add test_Revoke_RevertAlreadyExecuted
 // Multisig fix 26: Add test_ChangeThreshold_RevertDirectCall
 // Multisig fix 27: Add test_ChangeThreshold_RevertZero
+// Multisig fix 28: Add testFuzz_ConfirmCount fuzz test
