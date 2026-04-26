@@ -406,3 +406,4 @@ contract Crowdfunding is ICrowdfunding {
     // Improvement 31: Improve referral system security
     // Improvement 32: Add campaign cancellation protection
     // Improvement 33: Optimize contract initialization
+    // Improvement 34: Add contribution withdrawal limits
