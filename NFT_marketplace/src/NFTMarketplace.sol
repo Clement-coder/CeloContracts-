@@ -450,3 +450,4 @@ contract NFTMarketplace is INFTMarketplace {
 // NFT Marketplace fix 44: Add test_ListNFT_Success coverage
 // NFT Marketplace fix 45: Add test_ListNFT_EmitsEvent coverage
 // NFT Marketplace fix 46: Add test_ListNFT_RevertNotTokenOwner coverage
+// NFT Marketplace fix 47: Add test_ListNFT_RevertNotApproved coverage
