@@ -394,3 +394,4 @@ contract Crowdfunding is ICrowdfunding {
     // Improvement 19: Improve refund mechanism security
     // Improvement 20: Add rate limiting for campaign creation
     // Improvement 21: Optimize goal achievement detection
+    // Improvement 22: Add contribution limit validation
