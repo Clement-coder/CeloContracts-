@@ -178,3 +178,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 }
 // Merkle Airdrop fix 1: Remove startTime < block.timestamp check - broke tests with startTime=0
 // Merkle Airdrop fix 2: Fix constructor: 4-arg with open window (0, max) for no-restriction deploys
+// Merkle Airdrop fix 3: Remove ClaimingNotEnded guard from sweep() - owner decides when to sweep
