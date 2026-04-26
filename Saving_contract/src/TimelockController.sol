@@ -147,8 +147,8 @@ contract TimelockController is ITimelockController {
         bytes32 txHash = getTxHash(target, value, data, eta);
 
         // Validate: queued, not yet executed, within time window
-        if (_queue[txHash] == 0) revert TxNotQueued();
         if (_executed[txHash]) revert TxAlreadyExecuted();
+        if (_queue[txHash] == 0) revert TxNotQueued();
         if (block.timestamp < eta) revert TimelockNotExpired(eta);
         if (block.timestamp > eta + GRACE_PERIOD) revert GracePeriodExpired(eta);
 
@@ -222,12 +222,12 @@ contract TimelockController is ITimelockController {
     }
 
     /// @notice Returns the ETA for a queued txHash (0 if not queued / already executed).
-    function getEta(bytes32 txHash) external view returns (uint256) {
+    function getEta(bytes32 txHash) external view override returns (uint256) {
         return _queue[txHash];
     }
 
     /// @notice Returns true if txHash has been executed.
-    function isExecuted(bytes32 txHash) external view returns (bool) {
+    function isExecuted(bytes32 txHash) external view override returns (bool) {
         return _executed[txHash];
     }
 
@@ -237,4 +237,3 @@ contract TimelockController is ITimelockController {
     /// @dev    Required for executing transactions that forward ETH to target contracts.
     receive() external payable {}
 }
-// Build verified: all contracts compile cleanly

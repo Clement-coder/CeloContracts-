@@ -46,4 +46,6 @@ interface ITimelockController {
     function setExecutor(address account, bool status) external; // grant/revoke executor role
     function getTxHash(address target, uint256 value, bytes calldata data, uint256 eta) external pure returns (bytes32);
     function isQueued(bytes32 txHash) external view returns (bool); // true if queued and not yet executed/cancelled
+    function getEta(bytes32 txHash) external view returns (uint256);
+    function isExecuted(bytes32 txHash) external view returns (bool);
 }
