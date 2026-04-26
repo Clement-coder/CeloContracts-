@@ -466,3 +466,4 @@ contract NFTMarketplace is INFTMarketplace {
 // NFT Marketplace fix 60: Add test_WithdrawEarnings_Success coverage
 // NFT Marketplace fix 61: Add test_WithdrawFees_Success coverage
 // NFT Marketplace fix 62: Add test_SetFee_Success coverage
+// NFT Marketplace fix 63: Add test_TwoStepOwnership coverage
