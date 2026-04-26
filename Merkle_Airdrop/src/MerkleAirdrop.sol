@@ -231,3 +231,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 53: Add testFuzz_Token_TransferFrom fuzz test
 // Merkle Airdrop fix 54: Add test_Token_MaxAllowance_NotDecremented
 // Merkle Airdrop fix 55: Add test_Token_Approve_ZeroResetsAllowance
+// Merkle Airdrop fix 56: Add test_Token_Approve_RevertZeroAddress
