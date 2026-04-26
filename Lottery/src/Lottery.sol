@@ -353,3 +353,4 @@ contract Lottery is ILottery {
 // Lottery fix 49: Add test_Invariant_BalanceEqualsPotPlusFees after draw
 // Lottery fix 50: Add test_Invariant_AccruedFeesNeverExceedsBalance
 // Lottery fix 51: Add test_MultipleRounds_IndependentPots
+// Lottery fix 52: Add test_MultipleRounds_TicketsNotCarryOver
