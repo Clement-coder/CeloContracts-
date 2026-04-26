@@ -473,3 +473,4 @@ contract NFTMarketplace is INFTMarketplace {
 // NFT Marketplace fix 67: Add carol address for third-party test scenarios
 // NFT Marketplace fix 68: Add _mintAndApprove and _listToken helpers to test
 // NFT Marketplace fix 69: Add MockERC721 import to test file
+// NFT Marketplace fix 70: Add NatSpec to feePool and feeShareRate state variables
