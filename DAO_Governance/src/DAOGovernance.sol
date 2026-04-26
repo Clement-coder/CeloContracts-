@@ -404,3 +404,4 @@ contract DAOGovernance is IDAOGovernance {
     // DAO Fix 15: Optimize delegation chain resolution
     // DAO Fix 16: Add voting period extension mechanism
     // DAO Fix 17: Implement proposal batching functionality
+    // DAO Fix 18: Add vote delegation history tracking
