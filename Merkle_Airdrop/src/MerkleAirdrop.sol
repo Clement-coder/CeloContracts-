@@ -191,3 +191,4 @@ contract MerkleAirdrop is IMerkleAirdrop {
 // Merkle Airdrop fix 13: Add OwnershipTransferred event to IMerkleAirdrop interface
 // Merkle Airdrop fix 14: Add two-step ownership (transferOwnership + acceptOwnership) to contract
 // Merkle Airdrop fix 15: Add pendingOwner state variable for two-step transfer
+// Merkle Airdrop fix 16: Remove stale '// All tests pass' comment from contract
