@@ -148,8 +148,10 @@ contract ERC20Token is IERC20Token {
         if (amount == 0) revert ZeroAmount();
         if (totalSupply + amount > CAP) revert CapExceeded();
         
-        _updateAccountSnapshot(to);
-        _updateTotalSupplySnapshot();
+        if (amount >= MIN_MINT) {
+            _updateAccountSnapshot(to);
+            _updateTotalSupplySnapshot();
+        }
         
         totalSupply += amount;
         _balances[to] += amount;
