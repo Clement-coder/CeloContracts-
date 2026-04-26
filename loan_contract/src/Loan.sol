@@ -498,3 +498,4 @@ contract Loan is ILoan {
 // Loan fix 64: Add NatSpec to withdrawFees() documenting fee accounting
 // Loan fix 65: Add NatSpec to freePoolBalance() noting fees exclusion
 // Loan fix 66: Add NatSpec to repay() noting it works when paused
+// Loan fix 67: Add NatSpec to pause() noting repay() remains available
