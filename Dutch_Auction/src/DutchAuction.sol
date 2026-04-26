@@ -327,3 +327,4 @@ contract DutchAuction is IDutchAuction {
     // Dutch Auction Fix 11: Optimize storage layout for auction data
     // Dutch Auction Fix 12: Add auction preview functionality
     // Dutch Auction Fix 13: Implement batch auction creation
+    // Dutch Auction Fix 14: Add bid increment validation
