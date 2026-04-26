@@ -309,3 +309,4 @@ contract Lottery is ILottery {
 // Lottery fix 5: Add setFee() to ILottery interface (was missing)
 // Lottery fix 6: Add FeeUpdated event to ILottery interface (was missing)
 // Lottery fix 7: Add MAX_TICKETS_PER_PURCHASE guard to buyTicketsForMultiple()
+// Lottery fix 8: Add ZeroRecipient error and guard against address(0) in buyTicketsForMultiple()
