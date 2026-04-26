@@ -253,3 +253,4 @@ contract FlashLoanPool is IFlashLoan {
     }
 }
 }
+    // Flash Loan Fix 4: Add flash loan callback validation
