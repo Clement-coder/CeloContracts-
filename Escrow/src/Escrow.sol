@@ -168,6 +168,30 @@ contract Escrow is IEscrow {
         if (!ok) revert TransferFailed();
     }
 
+    /// @notice Depositor releases a partial amount to beneficiary.
+    /// @param id Escrow ID to partially release.
+    /// @param amount Amount to release (must be <= current escrow amount).
+    /// @dev Emits {EscrowPartiallyReleased}. Escrow remains active if amount > 0 left.
+    function partialRelease(uint256 id, uint256 amount)
+        external nonReentrant escrowExists(id) onlyActive(id)
+    {
+        EscrowRecord storage e = escrows[id];
+        if (msg.sender != e.depositor) revert NotDepositor();
+        if (amount == 0 || amount > e.amount) revert AmountTooLow();
+
+        e.amount -= amount;
+        
+        // If fully released, mark as released
+        if (e.amount == 0) {
+            e.status = STATUS_RELEASED;
+        }
+
+        emit EscrowPartiallyReleased(id, e.beneficiary, amount, e.amount);
+
+        (bool ok,) = e.beneficiary.call{value: amount}("");
+        if (!ok) revert TransferFailed();
+    }
+
     /// @notice Depositor reclaims funds after deadline passes (if not released).
     /// @param id Escrow ID to reclaim.
     /// @dev Emits {EscrowRefunded}.

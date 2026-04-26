@@ -27,6 +27,7 @@ interface IEscrow {
 
     event EscrowCreated(uint256 indexed id, address indexed depositor, address indexed beneficiary, uint256 amount, uint256 deadline);
     event EscrowReleased(uint256 indexed id, address indexed beneficiary, uint256 amount);
+    event EscrowPartiallyReleased(uint256 indexed id, address indexed beneficiary, uint256 amount, uint256 remaining);
     event EscrowRefunded(uint256 indexed id, address indexed depositor, uint256 amount);
     event EscrowDisputed(uint256 indexed id, address indexed raisedBy);
     event DisputeResolved(uint256 indexed id, address indexed winner, uint256 amount);
