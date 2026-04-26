@@ -304,3 +304,4 @@ interface IERC1155Receiver {
     // ERC1155 Fix 28: Optimize transfer validation
     // ERC1155 Fix 29: Add collection analytics tracking
     // ERC1155 Fix 30: Implement token breeding system
+    // ERC1155 Fix 31: Add marketplace royalty enforcement
