@@ -19,6 +19,9 @@ contract FlashLoanPool is IFlashLoan {
     /// @notice Minimum loan amount: 0.001 CELO.
     uint256 public constant MIN_AMOUNT = 0.001 ether;
 
+    /// @notice Maximum loan amount: 10,000 CELO.
+    uint256 public constant MAX_AMOUNT = 10_000 ether;
+
     // ─── State ─────────────────────────────────────────────────────────────────
 
     /// @notice Current contract owner.
