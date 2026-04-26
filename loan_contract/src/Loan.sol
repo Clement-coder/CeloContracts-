@@ -501,3 +501,4 @@ contract Loan is ILoan {
 // Loan fix 67: Add NatSpec to pause() noting repay() remains available
 // Loan fix 68: Document LIQUIDATION_THRESHOLD constant with NatSpec
 // Loan fix 69: Document MAX_EXTENSIONS and EXTENSION_DURATION constants
+// Loan fix 70: Clean up stale comments at bottom of test file
