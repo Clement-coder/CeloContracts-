@@ -409,3 +409,4 @@ contract NFTMarketplace is INFTMarketplace {
 // NFT Marketplace fix 3: acceptOffer() used NotListed for expired offer - replaced with OfferExpired
 // NFT Marketplace fix 4: cancelOffer() used NotListed for inactive offer - replaced with OfferNotActive
 // NFT Marketplace fix 5: Add OfferNotActive error to INFTMarketplace interface
+// NFT Marketplace fix 6: Add OfferExpired error to INFTMarketplace interface
