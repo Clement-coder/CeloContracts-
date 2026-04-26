@@ -308,3 +308,4 @@ contract Multisig is IMultisig {
 // Multisig fix 17: Add test_TxCount_IncrementsOnSubmit
 // Multisig fix 18: Add test_Whitelist_AllowsWhitelistedTarget
 // Multisig fix 19: Add test_Whitelist_RevertNotWhitelisted
+// Multisig fix 20: Add test_Whitelist_RemoveFromWhitelist
