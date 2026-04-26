@@ -301,3 +301,4 @@ interface IERC1155Receiver {
     // ERC1155 Fix 25: Add token insurance features
     // ERC1155 Fix 26: Implement governance integration
     // ERC1155 Fix 27: Add token fractionalization support
+    // ERC1155 Fix 28: Optimize transfer validation
