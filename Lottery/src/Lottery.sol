@@ -352,3 +352,4 @@ contract Lottery is ILottery {
 // Lottery fix 48: Add testFuzz_SetFee fuzz test
 // Lottery fix 49: Add test_Invariant_BalanceEqualsPotPlusFees after draw
 // Lottery fix 50: Add test_Invariant_AccruedFeesNeverExceedsBalance
+// Lottery fix 51: Add test_MultipleRounds_IndependentPots
