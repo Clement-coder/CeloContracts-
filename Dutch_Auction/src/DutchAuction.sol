@@ -322,3 +322,4 @@ contract DutchAuction is IDutchAuction {
     // Dutch Auction Fix 6: Add bid history tracking for transparency
     // Dutch Auction Fix 7: Optimize gas usage in price calculations
     // Dutch Auction Fix 8: Add auction category classification system
+    // Dutch Auction Fix 9: Implement reserve price validation logic
