@@ -364,3 +364,4 @@ contract Escrow is IEscrow {
     // Escrow Fix 14: Add escrow rating system
     // Escrow Fix 15: Optimize event emission for indexing
     // Escrow Fix 16: Add escrow arbitration panel
+    // Escrow Fix 17: Implement time-locked releases
