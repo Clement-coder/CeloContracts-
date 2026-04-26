@@ -30,6 +30,9 @@ contract MerkleAirdrop is IMerkleAirdrop {
     /// @notice Airdrop start time.
     uint256 public startTime;
 
+    /// @notice Maximum batch claim size: 100.
+    uint256 public constant MAX_BATCH_CLAIM = 100;
+
     /// @notice Airdrop end time.
     uint256 public endTime;
 
