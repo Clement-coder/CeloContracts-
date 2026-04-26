@@ -16,6 +16,9 @@ contract Multisig is IMultisig {
     /// @notice List of current owners.
     address[] public owners;
 
+    /// @notice Maximum number of owners allowed.
+    uint256 public constant MAX_OWNERS = 50;
+
     /// @notice Number of confirmations required to execute a transaction.
     uint256 public threshold;
 
