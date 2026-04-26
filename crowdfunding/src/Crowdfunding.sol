@@ -421,3 +421,4 @@ contract Crowdfunding is ICrowdfunding {
     // Improvement 46: Add campaign goal validation
     // Improvement 47: Improve refund calculation accuracy
     // Improvement 48: Add contribution limit enforcement
+    // Improvement 49: Optimize event data structure
