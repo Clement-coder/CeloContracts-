@@ -20,6 +20,7 @@ interface IERC20Token {
     event Approval(address indexed owner, address indexed spender, uint256 amount);
     event Minted(address indexed to, uint256 amount);
     event Burned(address indexed from, uint256 amount);
+    event Snapshot(uint256 id);
     event ContractPaused(address indexed by);
     event ContractUnpaused(address indexed by);
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);

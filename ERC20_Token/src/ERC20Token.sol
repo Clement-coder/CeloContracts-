@@ -48,6 +48,21 @@ contract ERC20Token is IERC20Token {
     /// @notice Spending allowances.
     mapping(address => mapping(address => uint256)) private _allowances;
 
+    /// @notice Snapshot counter for voting power tracking.
+    uint256 private _currentSnapshotId;
+
+    /// @notice Balance snapshots by account and snapshot ID.
+    mapping(address => mapping(uint256 => uint256)) private _accountBalanceSnapshots;
+
+    /// @notice Total supply snapshots by snapshot ID.
+    mapping(uint256 => uint256) private _totalSupplySnapshots;
+
+    /// @notice Snapshot IDs when account balance changed.
+    mapping(address => uint256[]) private _accountSnapshotIds;
+
+    /// @notice Snapshot IDs when total supply changed.
+    uint256[] private _totalSupplySnapshotIds;
+
     // ─── Modifiers ─────────────────────────────────────────────────────────────
 
     modifier onlyOwner() {
@@ -126,6 +141,10 @@ contract ERC20Token is IERC20Token {
         if (to == address(0)) revert ZeroAddress();
         if (amount == 0) revert ZeroAmount();
         if (totalSupply + amount > CAP) revert CapExceeded();
+        
+        _updateAccountSnapshot(to);
+        _updateTotalSupplySnapshot();
+        
         totalSupply += amount;
         _balances[to] += amount;
         emit Transfer(address(0), to, amount);
@@ -137,6 +156,10 @@ contract ERC20Token is IERC20Token {
     function burn(uint256 amount) external override whenNotPaused {
         if (amount == 0) revert ZeroAmount();
         if (_balances[msg.sender] < amount) revert InsufficientBalance();
+        
+        _updateAccountSnapshot(msg.sender);
+        _updateTotalSupplySnapshot();
+        
         _balances[msg.sender] -= amount;
         totalSupply -= amount;
         emit Transfer(msg.sender, address(0), amount);
@@ -190,14 +213,106 @@ contract ERC20Token is IERC20Token {
         return true;
     }
 
+    // ─── Snapshots ─────────────────────────────────────────────────────────────
+
+    /// @notice Create a new snapshot and return its ID.
+    /// @return The new snapshot ID.
+    function snapshot() external onlyOwner returns (uint256) {
+        _currentSnapshotId += 1;
+        emit Snapshot(_currentSnapshotId);
+        return _currentSnapshotId;
+    }
+
+    /// @notice Get balance of account at a specific snapshot.
+    /// @param account The account to query.
+    /// @param snapshotId The snapshot ID.
+    /// @return The balance at the snapshot.
+    function balanceOfAt(address account, uint256 snapshotId) external view returns (uint256) {
+        require(snapshotId > 0 && snapshotId <= _currentSnapshotId, "Invalid snapshot");
+        return _valueAt(snapshotId, _accountSnapshotIds[account], _accountBalanceSnapshots[account]);
+    }
+
+    /// @notice Get total supply at a specific snapshot.
+    /// @param snapshotId The snapshot ID.
+    /// @return The total supply at the snapshot.
+    function totalSupplyAt(uint256 snapshotId) external view returns (uint256) {
+        require(snapshotId > 0 && snapshotId <= _currentSnapshotId, "Invalid snapshot");
+        return _valueAt(snapshotId, _totalSupplySnapshotIds, _totalSupplySnapshots);
+    }
+
+    /// @notice Get the current snapshot ID.
+    function getCurrentSnapshotId() external view returns (uint256) {
+        return _currentSnapshotId;
+    }
+
     // ─── Internal ──────────────────────────────────────────────────────────────
 
     function _transfer(address from, address to, uint256 amount) internal {
         if (to == address(0)) revert ZeroAddress();
         if (amount == 0) revert ZeroAmount();
         if (_balances[from] < amount) revert InsufficientBalance();
+        
+        _updateAccountSnapshot(from);
+        _updateAccountSnapshot(to);
+        
         _balances[from] -= amount;
         _balances[to] += amount;
         emit Transfer(from, to, amount);
+    }
+
+    function _updateAccountSnapshot(address account) internal {
+        _updateSnapshot(_accountSnapshotIds[account], _accountBalanceSnapshots[account], _balances[account]);
+    }
+
+    function _updateTotalSupplySnapshot() internal {
+        _updateSnapshot(_totalSupplySnapshotIds, _totalSupplySnapshots, totalSupply);
+    }
+
+    function _updateSnapshot(
+        uint256[] storage snapshotIds,
+        mapping(uint256 => uint256) storage snapshots,
+        uint256 currentValue
+    ) internal {
+        uint256 currentId = _currentSnapshotId;
+        if (_lastSnapshotId(snapshotIds) < currentId) {
+            snapshotIds.push(currentId);
+            snapshots[currentId] = currentValue;
+        }
+    }
+
+    function _valueAt(
+        uint256 snapshotId,
+        uint256[] storage snapshotIds,
+        mapping(uint256 => uint256) storage snapshots
+    ) internal view returns (uint256) {
+        require(snapshotId > 0, "Invalid snapshot ID");
+        
+        uint256 index = _findSnapshot(snapshotIds, snapshotId);
+        if (index == snapshotIds.length) {
+            return 0;
+        }
+        return snapshots[snapshotIds[index]];
+    }
+
+    function _lastSnapshotId(uint256[] storage snapshotIds) internal view returns (uint256) {
+        if (snapshotIds.length == 0) {
+            return 0;
+        }
+        return snapshotIds[snapshotIds.length - 1];
+    }
+
+    function _findSnapshot(uint256[] storage snapshotIds, uint256 snapshotId) internal view returns (uint256) {
+        uint256 low = 0;
+        uint256 high = snapshotIds.length;
+
+        while (low < high) {
+            uint256 mid = (low + high) / 2;
+            if (snapshotIds[mid] > snapshotId) {
+                high = mid;
+            } else {
+                low = mid + 1;
+            }
+        }
+        return high == 0 ? 0 : high - 1;
     }
 }
