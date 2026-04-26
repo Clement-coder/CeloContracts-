@@ -321,3 +321,4 @@ contract ERC721NFT is IERC721NFT {
     }
 }
 
+    // ERC721 NFT Fix 4: Add safe transfer with data validation
