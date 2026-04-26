@@ -21,6 +21,7 @@ interface IStaking {
     event Staked(address indexed user, uint256 amount, uint256 lockUntil);
     event Unstaked(address indexed user, uint256 amount);
     event RewardClaimed(address indexed user, uint256 reward);
+    event RewardCompounded(address indexed user, uint256 reward, uint256 newStakeAmount);
     event RewardPoolFunded(address indexed funder, uint256 amount);
     event RateUpdated(uint256 oldRate, uint256 newRate);
     event ContractPaused(address indexed by);

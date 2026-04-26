@@ -179,6 +179,24 @@ contract Staking is IStaking {
         if (!ok) revert TransferFailed();
     }
 
+    /// @notice Compound rewards by adding them to the stake instead of claiming.
+    /// @dev   Emits {RewardCompounded}. Increases stake amount with pending rewards.
+    function compoundReward() external nonReentrant whenNotPaused {
+        StakeRecord storage s = stakes[msg.sender];
+        if (s.amount == 0) revert NothingStaked();
+
+        uint256 reward = _calcReward(s);
+        if (reward == 0) revert NothingToWithdraw();
+        if (reward > rewardPool) revert InsufficientRewardPool();
+
+        rewardPool -= reward;
+        s.amount += reward; // Add reward to stake
+        s.stakedAt = block.timestamp; // reset reward timer
+        totalStaked += reward;
+
+        emit RewardCompounded(msg.sender, reward, s.amount);
+    }
+
     // ─── Views ─────────────────────────────────────────────────────────────────
 
     /// @notice Returns the pending reward for a user at current timestamp.
