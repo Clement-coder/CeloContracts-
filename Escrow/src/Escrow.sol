@@ -271,7 +271,23 @@ contract Escrow is IEscrow {
         if (!ok) revert TransferFailed();
     }
 
-    // ─── Views ─────────────────────────────────────────────────────────────────
+    /// @notice Extend escrow deadline (only by depositor before current deadline).
+    /// @param id Escrow ID to extend.
+    /// @param newDeadline New deadline timestamp.
+    /// @dev Emits {EscrowExtended}.
+    function extendDeadline(uint256 id, uint256 newDeadline)
+        external escrowExists(id) onlyActive(id)
+    {
+        EscrowRecord storage e = escrows[id];
+        if (msg.sender != e.depositor) revert NotDepositor();
+        if (newDeadline <= e.deadline) revert DeadlineTooShort();
+        if (newDeadline > block.timestamp + MAX_DEADLINE) revert DeadlineTooLong();
+        
+        uint256 oldDeadline = e.deadline;
+        e.deadline = newDeadline;
+        
+        emit EscrowExtended(id, oldDeadline, newDeadline);
+    }
 
     /// @notice Returns full details of an escrow.
     /// @param id Escrow ID to query.
