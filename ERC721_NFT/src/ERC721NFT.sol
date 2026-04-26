@@ -345,3 +345,4 @@ contract ERC721NFT is IERC721NFT {
     // ERC721 NFT Fix 25: Implement cross-chain compatibility
     // ERC721 NFT Fix 26: Add token rental system
     // ERC721 NFT Fix 27: Optimize contract initialization
+    // ERC721 NFT Fix 28: Add token insurance features
