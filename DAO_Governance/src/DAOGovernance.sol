@@ -426,3 +426,4 @@ contract DAOGovernance is IDAOGovernance {
     // DAO Fix 37: Implement vote weight multipliers
     // DAO Fix 38: Add proposal execution monitoring
     // DAO Fix 39: Optimize delegation tree traversal
+    // DAO Fix 40: Add proposal success metrics
