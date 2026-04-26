@@ -412,3 +412,4 @@ contract NFTMarketplace is INFTMarketplace {
 // NFT Marketplace fix 6: Add OfferExpired error to INFTMarketplace interface
 // NFT Marketplace fix 7: Add InvalidExpiry error to INFTMarketplace interface
 // NFT Marketplace fix 8: Add makeOffer() to INFTMarketplace interface (was missing)
+// NFT Marketplace fix 9: Add acceptOffer() to INFTMarketplace interface (was missing)
