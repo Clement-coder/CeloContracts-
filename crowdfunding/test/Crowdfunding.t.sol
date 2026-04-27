@@ -1276,6 +1276,21 @@ contract CrowdfundingTest is Test {
         assertEq(bob.balance, bobBefore + 0.1 ether);
     }
 
+
+    function test_Integration_ReferralFullCycle() public {
+        // Create → ContributeWithReferral → WithdrawReferralRewards
+        vm.prank(alice);
+        uint256 id = cf.createCampaign("Referral", "desc", GOAL, DURATION);
+        vm.prank(bob);
+        cf.contributeWithReferral{value: 1 ether}(id, dave);
+        uint256 reward = cf.referralRewards(dave);
+        assertGt(reward, 0);
+        uint256 daveBefore = dave.balance;
+        vm.prank(dave);
+        cf.withdrawReferralRewards();
+        assertEq(dave.balance, daveBefore + reward);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
