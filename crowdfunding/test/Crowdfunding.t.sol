@@ -741,6 +741,11 @@ contract CrowdfundingTest is Test {
         cf.contribute{value: CONTRIB}(0);
     }
 
+
+    function test_GetContribution_NonExistentCampaign_ReturnsZero() public view {
+        assertEq(cf.getContribution(999, bob), 0);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
