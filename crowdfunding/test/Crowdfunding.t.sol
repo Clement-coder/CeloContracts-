@@ -678,6 +678,24 @@ contract CrowdfundingTest is Test {
         assertEq(id, 1);
     }
 
+
+    function test_Refund_MultipleContributors_EachGetsOwn() public {
+        _create();
+        vm.prank(bob);
+        cf.contribute{value: 0.3 ether}(1);
+        vm.prank(carol);
+        cf.contribute{value: 0.4 ether}(1);
+        skip(DURATION + 1);
+        uint256 bobBefore = bob.balance;
+        uint256 carolBefore = carol.balance;
+        vm.prank(bob);
+        cf.refund(1);
+        vm.prank(carol);
+        cf.refund(1);
+        assertEq(bob.balance, bobBefore + 0.3 ether);
+        assertEq(carol.balance, carolBefore + 0.4 ether);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
