@@ -652,9 +652,11 @@ contract CrowdfundingTest is Test {
 
     function test_Contribute_AtExactMinimum_Succeeds() public {
         _create();
+        uint256 minContrib = cf.MIN_CONTRIBUTION();
+        vm.deal(bob, minContrib);
         vm.prank(bob);
-        cf.contribute{value: cf.MIN_CONTRIBUTION()}(1);
-        assertEq(cf.getContribution(1, bob), cf.MIN_CONTRIBUTION());
+        cf.contribute{value: minContrib}(1);
+        assertEq(cf.getContribution(1, bob), minContrib);
     }
 
 
