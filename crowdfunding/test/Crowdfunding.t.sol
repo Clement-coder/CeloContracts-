@@ -640,6 +640,15 @@ contract CrowdfundingTest is Test {
         assertEq(id, 1);
     }
 
+
+    function test_Create_TitleOverMaxLength_Reverts() public {
+        bytes memory b = new bytes(101);
+        for (uint i = 0; i < 101; i++) b[i] = 'a';
+        vm.prank(alice);
+        vm.expectRevert(ICrowdfunding.TitleTooLong.selector);
+        cf.createCampaign(string(b), "desc", GOAL, DURATION);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
