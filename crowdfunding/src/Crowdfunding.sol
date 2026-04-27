@@ -338,7 +338,7 @@ contract Crowdfunding is ICrowdfunding {
         emit OwnershipTransferStarted(owner, newOwner);
     }
 
-    /// @notice Accept ownership (must be called by pendingOwner).
+    /// @notice Complete the ownership transfer. Must be called by the pending owner.
     function acceptOwnership() external override {
         if (msg.sender != pendingOwner) revert NotPendingOwner();
         emit OwnershipTransferred(owner, pendingOwner);
