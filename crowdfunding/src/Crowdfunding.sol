@@ -75,7 +75,7 @@ contract Crowdfunding is ICrowdfunding {
         bool cancelled;
     }
 
-    /// @notice Campaigns by ID (1-indexed).
+    /// @notice Campaigns by ID (1-indexed). ID 0 is always invalid.
     mapping(uint256 => Campaign) public campaigns;
 
     /// @notice contributions[campaignId][contributor] = amount.
