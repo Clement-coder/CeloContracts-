@@ -1065,6 +1065,15 @@ contract CrowdfundingTest is Test {
         cf.getCampaign(1);
     }
 
+
+    function test_Contribute_GoalReachedExactly() public {
+        _create();
+        vm.prank(bob);
+        cf.contribute{value: GOAL}(1);
+        (,,,,uint256 raised,,) = cf.getCampaign(1);
+        assertEq(raised, GOAL);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
