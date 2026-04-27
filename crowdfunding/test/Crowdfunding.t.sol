@@ -1209,6 +1209,16 @@ contract CrowdfundingTest is Test {
         cf.createCampaign("title", "desc", GOAL, DURATION);
     }
 
+
+    function test_Unpause_AllowsContribute() public {
+        _create();
+        cf.pause();
+        cf.unpause();
+        vm.prank(bob);
+        cf.contribute{value: CONTRIB}(1);
+        assertEq(cf.getContribution(1, bob), CONTRIB);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
