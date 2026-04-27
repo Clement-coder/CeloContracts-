@@ -754,6 +754,17 @@ contract CrowdfundingTest is Test {
         cf.unpause();
     }
 
+
+    function test_ContributeWithReferral_MultipleReferrals_Accumulate() public {
+        _create();
+        vm.prank(bob);
+        cf.contributeWithReferral{value: 1 ether}(1, dave);
+        vm.prank(carol);
+        cf.contributeWithReferral{value: 1 ether}(1, dave);
+        // 1% of 2 ether = 0.02 ether
+        assertEq(cf.referralRewards(dave), 0.02 ether);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
