@@ -260,7 +260,7 @@ contract Crowdfunding is ICrowdfunding {
         if (!ok) revert TransferFailed();
     }
 
-    /// @notice Creator cancels an active campaign. All contributors can refund.
+    /// @notice Creator cancels an active campaign before the deadline. All contributors may then refund.
     /// @param id Campaign ID to cancel.
     /// @dev   Emits {CampaignCancelled}. Only works before deadline and before claimed.
     function cancelCampaign(uint256 id)
