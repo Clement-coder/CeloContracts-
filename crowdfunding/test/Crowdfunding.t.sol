@@ -721,6 +721,19 @@ contract CrowdfundingTest is Test {
         assertEq(bob.balance, bobBefore + CONTRIB);
     }
 
+
+    function test_ClaimFunds_RevertCancelled() public {
+        _create();
+        vm.prank(bob);
+        cf.contribute{value: GOAL}(1);
+        vm.prank(alice);
+        cf.cancelCampaign(1);
+        skip(DURATION + 1);
+        vm.prank(alice);
+        vm.expectRevert(ICrowdfunding.CampaignAlreadyEnded.selector);
+        cf.claimFunds(1);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
