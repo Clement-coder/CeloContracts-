@@ -310,7 +310,7 @@ contract Crowdfunding is ICrowdfunding {
         return (c.creator, c.title, c.goal, c.deadline, c.raised, c.claimed, c.cancelled);
     }
 
-    /// @notice Returns a contributor's contribution to a campaign.
+    /// @notice Returns the total amount contributed by a specific address to a campaign.
     function getContribution(uint256 id, address contributor)
         external view override returns (uint256)
     {
