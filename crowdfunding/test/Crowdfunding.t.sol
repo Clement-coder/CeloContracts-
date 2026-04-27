@@ -796,6 +796,16 @@ contract CrowdfundingTest is Test {
         cf.extendCampaign(1, 1 days);
     }
 
+
+    function test_Contribute_ExactlyAtDeadline_Reverts() public {
+        _create();
+        (,,,uint256 deadline,,,) = cf.getCampaign(1);
+        vm.warp(deadline);
+        vm.prank(bob);
+        vm.expectRevert(ICrowdfunding.CampaignAlreadyEnded.selector);
+        cf.contribute{value: CONTRIB}(1);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
