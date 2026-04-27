@@ -1039,6 +1039,13 @@ contract CrowdfundingTest is Test {
         assertEq(raised, 0);
     }
 
+
+    function test_Create_ClaimedStartsFalse() public {
+        _create();
+        (,,,,,bool claimed,) = cf.getCampaign(1);
+        assertFalse(claimed);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
