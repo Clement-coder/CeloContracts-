@@ -1053,6 +1053,12 @@ contract CrowdfundingTest is Test {
         assertFalse(cancelled);
     }
 
+
+    function test_GetCampaign_RevertInvalidId() public {
+        vm.expectRevert(ICrowdfunding.InvalidCampaign.selector);
+        cf.getCampaign(0);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
