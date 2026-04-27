@@ -995,6 +995,16 @@ contract CrowdfundingTest is Test {
         assertFalse(cancelled2);
     }
 
+
+    function test_Ownership_NewOwnerCanPause() public {
+        cf.transferOwnership(alice);
+        vm.prank(alice);
+        cf.acceptOwnership();
+        vm.prank(alice);
+        cf.pause();
+        assertTrue(cf.paused());
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
