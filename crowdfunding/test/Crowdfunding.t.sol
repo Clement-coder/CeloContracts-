@@ -942,6 +942,20 @@ contract CrowdfundingTest is Test {
         cf.setReferralRate(rate);
     }
 
+
+    function test_Fuzz_Refund(uint256 amount) public {
+        _create();
+        amount = bound(amount, cf.MIN_CONTRIBUTION(), 5 ether);
+        vm.deal(bob, amount);
+        vm.prank(bob);
+        cf.contribute{value: amount}(1);
+        skip(DURATION + 1);
+        uint256 bobBefore = bob.balance;
+        vm.prank(bob);
+        cf.refund(1);
+        assertEq(bob.balance, bobBefore + amount);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
