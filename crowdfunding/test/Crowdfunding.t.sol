@@ -916,6 +916,18 @@ contract CrowdfundingTest is Test {
         assertLe(reward, 1 ether);
     }
 
+
+    function test_Fuzz_ExtendCampaign(uint256 extra) public {
+        _create();
+        // max additional = MAX_DURATION - DURATION = 83 days
+        extra = bound(extra, 1, 83 days);
+        (,,,uint256 oldDeadline,,,) = cf.getCampaign(1);
+        vm.prank(alice);
+        cf.extendCampaign(1, extra);
+        (,,,uint256 newDeadline,,,) = cf.getCampaign(1);
+        assertEq(newDeadline, oldDeadline + extra);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
