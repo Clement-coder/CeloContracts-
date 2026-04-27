@@ -1014,6 +1014,16 @@ contract CrowdfundingTest is Test {
         cf.pause();
     }
 
+
+    function test_Ownership_NewOwnerCanSetReferralRate() public {
+        cf.transferOwnership(alice);
+        vm.prank(alice);
+        cf.acceptOwnership();
+        vm.prank(alice);
+        cf.setReferralRate(200);
+        assertEq(cf.referralRate(), 200);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
