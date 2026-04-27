@@ -1192,6 +1192,15 @@ contract CrowdfundingTest is Test {
         cf.setReferralRate(300);
     }
 
+
+    function test_Pause_ContributeWithReferral_Blocked() public {
+        _create();
+        cf.pause();
+        vm.prank(bob);
+        vm.expectRevert(ICrowdfunding.Paused.selector);
+        cf.contributeWithReferral{value: CONTRIB}(1, dave);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
