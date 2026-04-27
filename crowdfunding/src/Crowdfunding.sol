@@ -287,6 +287,7 @@ contract Crowdfunding is ICrowdfunding {
         if (msg.sender != c.creator) revert NotCreator();
         if (c.cancelled) revert CampaignAlreadyEnded();
         if (c.claimed) revert AlreadyClaimed();
+        if (block.timestamp >= c.deadline) revert CampaignAlreadyEnded();
         if (c.raised >= c.goal) revert GoalAlreadyMet();
         if (additionalTime == 0) revert DeadlineTooShort();
 
