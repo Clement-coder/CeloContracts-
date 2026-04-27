@@ -620,6 +620,16 @@ contract CrowdfundingTest is Test {
         assertEq(cf.campaignCount(), 2);
     }
 
+
+    function test_Contribute_AccumulatesForSameContributor() public {
+        _create();
+        vm.prank(bob);
+        cf.contribute{value: 0.3 ether}(1);
+        vm.prank(bob);
+        cf.contribute{value: 0.2 ether}(1);
+        assertEq(cf.getContribution(1, bob), 0.5 ether);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
