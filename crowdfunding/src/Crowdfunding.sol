@@ -28,6 +28,9 @@ contract Crowdfunding is ICrowdfunding {
     /// @notice Maximum title length in bytes.
     uint256 public constant MAX_TITLE_LENGTH = 100;
 
+    /// @notice Maximum referral rate: 5% (500 bps).
+    uint256 public constant MAX_REFERRAL_RATE = 500;
+
     // ─── State ─────────────────────────────────────────────────────────────────
 
     /// @notice Current contract owner.
@@ -45,6 +48,9 @@ contract Crowdfunding is ICrowdfunding {
     /// @notice Total number of campaigns created.
     uint256 public campaignCount;
 
+    /// @notice Referral rate in basis points (e.g., 100 = 1%).
+    uint256 public referralRate;
+
     /// @dev Campaign record.
     struct Campaign {
         /// @dev Address that created the campaign.
@@ -55,6 +61,8 @@ contract Crowdfunding is ICrowdfunding {
         string description;
         /// @dev Funding goal in wei.
         uint256 goal;
+        /// @dev Unix timestamp when campaign was created.
+        uint256 start;
         /// @dev Unix timestamp of campaign deadline.
         uint256 deadline;
         /// @dev Total CELO raised so far.
@@ -73,12 +81,6 @@ contract Crowdfunding is ICrowdfunding {
 
     /// @notice Referral rewards: referrer => earned amount.
     mapping(address => uint256) public referralRewards;
-
-    /// @notice Referral rate in basis points (e.g., 100 = 1%).
-    uint256 public referralRate;
-
-    /// @notice Maximum referral rate: 5% (500 bps).
-    uint256 public constant MAX_REFERRAL_RATE = 500;
 
     // ─── Modifiers ─────────────────────────────────────────────────────────────
 
@@ -133,13 +135,15 @@ contract Crowdfunding is ICrowdfunding {
         if (duration > MAX_DURATION) revert DeadlineTooLong();
 
         uint256 id = ++campaignCount;
-        uint256 deadline = block.timestamp + duration;
+        uint256 start = block.timestamp;
+        uint256 deadline = start + duration;
 
         campaigns[id] = Campaign({
             creator: msg.sender,
             title: title,
             description: description,
             goal: goal,
+            start: start,
             deadline: deadline,
             raised: 0,
             claimed: false,
@@ -153,7 +157,6 @@ contract Crowdfunding is ICrowdfunding {
     /// @notice Contribute CELO to a campaign.
     /// @param id Campaign ID to contribute to.
     /// @dev   Emits {Contributed}. Emits {GoalReached} if goal is hit.
-    ///        Campaign must be active (not ended, not cancelled).
     function contribute(uint256 id)
         external payable override whenNotPaused nonReentrant campaignExists(id)
     {
@@ -173,12 +176,11 @@ contract Crowdfunding is ICrowdfunding {
     }
 
     /// @notice Contribute CELO to a campaign with optional referral.
-    /// @param id Campaign ID to contribute to.
+    /// @param id       Campaign ID to contribute to.
     /// @param referrer Optional referrer address for rewards.
     /// @dev   Emits {Contributed}. Emits {GoalReached} if goal is hit.
-    ///        Campaign must be active (not ended, not cancelled).
     function contributeWithReferral(uint256 id, address referrer)
-        external payable whenNotPaused nonReentrant campaignExists(id)
+        external payable override whenNotPaused nonReentrant campaignExists(id)
     {
         Campaign storage c = campaigns[id];
         if (c.cancelled) revert CampaignAlreadyEnded();
@@ -188,7 +190,6 @@ contract Crowdfunding is ICrowdfunding {
         contributions[id][msg.sender] += msg.value;
         c.raised += msg.value;
 
-        // Handle referral reward
         if (referrer != address(0) && referrer != msg.sender && referrer != c.creator) {
             uint256 referralReward = (msg.value * referralRate) / 10_000;
             referralRewards[referrer] += referralReward;
@@ -203,13 +204,14 @@ contract Crowdfunding is ICrowdfunding {
     }
 
     /// @notice Withdraw accumulated referral rewards.
-    function withdrawReferralRewards() external nonReentrant {
+    /// @dev Emits {ReferralRewardsWithdrawn}.
+    function withdrawReferralRewards() external override nonReentrant {
         uint256 amount = referralRewards[msg.sender];
         if (amount == 0) revert NothingToRefund();
-        
+
         referralRewards[msg.sender] = 0;
         emit ReferralRewardsWithdrawn(msg.sender, amount);
-        
+
         (bool ok,) = msg.sender.call{value: amount}("");
         if (!ok) revert TransferFailed();
     }
@@ -275,11 +277,11 @@ contract Crowdfunding is ICrowdfunding {
     }
 
     /// @notice Creator extends campaign deadline (only if goal not yet met).
-    /// @param id Campaign ID to extend.
-    /// @param additionalTime Additional time in seconds to add to deadline.
-    /// @dev   Emits {CampaignExtended}. Cannot extend beyond MAX_DURATION from original start.
+    /// @param id             Campaign ID to extend.
+    /// @param additionalTime Additional seconds to add to deadline.
+    /// @dev   Emits {CampaignExtended}. Total duration from start cannot exceed MAX_DURATION.
     function extendCampaign(uint256 id, uint256 additionalTime)
-        external campaignExists(id)
+        external override campaignExists(id)
     {
         Campaign storage c = campaigns[id];
         if (msg.sender != c.creator) revert NotCreator();
@@ -287,30 +289,19 @@ contract Crowdfunding is ICrowdfunding {
         if (c.claimed) revert AlreadyClaimed();
         if (c.raised >= c.goal) revert GoalAlreadyMet();
         if (additionalTime == 0) revert DeadlineTooShort();
-        
-        uint256 originalStart = c.deadline - MAX_DURATION; // Approximate original start
+
         uint256 newDeadline = c.deadline + additionalTime;
-        
-        // Ensure total duration doesn't exceed MAX_DURATION from original start
-        if (newDeadline > originalStart + MAX_DURATION) revert DeadlineTooLong();
-        
+        if (newDeadline > c.start + MAX_DURATION) revert DeadlineTooLong();
+
         uint256 oldDeadline = c.deadline;
         c.deadline = newDeadline;
-        
+
         emit CampaignExtended(id, oldDeadline, newDeadline);
     }
 
     // ─── Views ─────────────────────────────────────────────────────────────────
 
     /// @notice Returns full details of a campaign.
-    /// @param id Campaign ID to query.
-    /// @return creator    Address that created the campaign.
-    /// @return title      Campaign title.
-    /// @return goal       Funding goal in wei.
-    /// @return deadline   Campaign deadline timestamp.
-    /// @return raised     Total CELO raised.
-    /// @return claimed    Whether creator has claimed funds.
-    /// @return cancelled  Whether campaign was cancelled.
     function getCampaign(uint256 id)
         external view override campaignExists(id)
         returns (address creator, string memory title, uint256 goal, uint256 deadline, uint256 raised, bool claimed, bool cancelled)
@@ -320,9 +311,6 @@ contract Crowdfunding is ICrowdfunding {
     }
 
     /// @notice Returns a contributor's contribution to a campaign.
-    /// @param id          Campaign ID.
-    /// @param contributor Address to query.
-    /// @return Amount contributed in wei.
     function getContribution(uint256 id, address contributor)
         external view override returns (uint256)
     {
@@ -332,22 +320,18 @@ contract Crowdfunding is ICrowdfunding {
     // ─── Admin ─────────────────────────────────────────────────────────────────
 
     /// @notice Pause the contract — halts campaign creation and contributions.
-    /// @dev Emits {ContractPaused}.
     function pause() external override onlyOwner {
         paused = true;
         emit ContractPaused(msg.sender);
     }
 
     /// @notice Unpause the contract.
-    /// @dev Emits {ContractUnpaused}.
     function unpause() external override onlyOwner {
         paused = false;
         emit ContractUnpaused(msg.sender);
     }
 
     /// @notice Initiate two-step ownership transfer.
-    /// @param newOwner Proposed new owner. Cannot be zero address.
-    /// @dev Emits {OwnershipTransferStarted}.
     function transferOwnership(address newOwner) external override onlyOwner {
         if (newOwner == address(0)) revert ZeroAddress();
         pendingOwner = newOwner;
@@ -355,7 +339,6 @@ contract Crowdfunding is ICrowdfunding {
     }
 
     /// @notice Accept ownership (must be called by pendingOwner).
-    /// @dev Emits {OwnershipTransferred}.
     function acceptOwnership() external override {
         if (msg.sender != pendingOwner) revert NotPendingOwner();
         emit OwnershipTransferred(owner, pendingOwner);
@@ -365,8 +348,8 @@ contract Crowdfunding is ICrowdfunding {
 
     /// @notice Set referral rate (only owner).
     /// @param newRate New referral rate in basis points (max 500 = 5%).
-    function setReferralRate(uint256 newRate) external onlyOwner {
-        if (newRate > MAX_REFERRAL_RATE) revert GoalTooLow(); // Reusing error
+    function setReferralRate(uint256 newRate) external override onlyOwner {
+        if (newRate > MAX_REFERRAL_RATE) revert ReferralRateTooHigh();
         emit ReferralRateUpdated(referralRate, newRate);
         referralRate = newRate;
     }
@@ -376,50 +359,3 @@ contract Crowdfunding is ICrowdfunding {
         revert TransferFailed();
     }
 }
-    // Improvement 4: Add input validation for zero addresses
-    // Improvement 5: Optimize gas usage in contribution tracking
-    // Improvement 6: Improve error handling for edge cases
-    // Improvement 7: Add bounds checking for campaign parameters
-    // Improvement 8: Enhance security in fund transfers
-    // Improvement 9: Optimize storage layout for gas efficiency
-    // Improvement 10: Add overflow protection in calculations
-    // Improvement 11: Improve event emission consistency
-    // Improvement 12: Add validation for campaign state transitions
-    // Improvement 13: Optimize referral reward calculations
-    // Improvement 14: Add protection against front-running attacks
-    // Improvement 15: Improve deadline validation logic
-    // Improvement 16: Add emergency pause functionality
-    // Improvement 17: Optimize contribution aggregation
-    // Improvement 18: Add campaign metadata validation
-    // Improvement 19: Improve refund mechanism security
-    // Improvement 20: Add rate limiting for campaign creation
-    // Improvement 21: Optimize goal achievement detection
-    // Improvement 22: Add contribution limit validation
-    // Improvement 23: Improve ownership transfer security
-    // Improvement 24: Add campaign extension validation
-    // Improvement 25: Optimize event parameter ordering
-    // Improvement 26: Add duplicate contribution protection
-    // Improvement 27: Improve error message clarity
-    // Improvement 28: Add campaign status validation
-    // Improvement 29: Optimize memory usage in functions
-    // Improvement 30: Add timestamp validation checks
-    // Improvement 31: Improve referral system security
-    // Improvement 32: Add campaign cancellation protection
-    // Improvement 33: Optimize contract initialization
-    // Improvement 34: Add contribution withdrawal limits
-    // Improvement 35: Improve goal calculation accuracy
-    // Improvement 36: Add campaign duration validation
-    // Improvement 37: Optimize state variable packing
-    // Improvement 38: Add contribution tracking optimization
-    // Improvement 39: Improve deadline extension logic
-    // Improvement 40: Add referral rate validation
-    // Improvement 41: Optimize function modifier usage
-    // Improvement 42: Add campaign creator validation
-    // Improvement 43: Improve fund claiming security
-    // Improvement 44: Add contribution minimum validation
-    // Improvement 45: Optimize contract pause mechanism
-    // Improvement 46: Add campaign goal validation
-    // Improvement 47: Improve refund calculation accuracy
-    // Improvement 48: Add contribution limit enforcement
-    // Improvement 49: Optimize event data structure
-    // Improvement 50: Add campaign lifecycle validation

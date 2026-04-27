@@ -25,6 +25,7 @@ interface ICrowdfunding {
     error TransferFailed();
     error TitleTooLong();
     error NotCreator();
+    error ReferralRateTooHigh();
 
     // ─── Events ────────────────────────────────────────────────────────────────
     event CampaignCreated(uint256 indexed id, address indexed creator, uint256 goal, uint256 deadline, string title);
@@ -45,11 +46,15 @@ interface ICrowdfunding {
     // ─── Functions ─────────────────────────────────────────────────────────────
     function createCampaign(string calldata title, string calldata description, uint256 goal, uint256 duration) external returns (uint256);
     function contribute(uint256 id) external payable;
+    function contributeWithReferral(uint256 id, address referrer) external payable;
+    function withdrawReferralRewards() external;
     function claimFunds(uint256 id) external;
     function refund(uint256 id) external;
     function cancelCampaign(uint256 id) external;
+    function extendCampaign(uint256 id, uint256 additionalTime) external;
     function getCampaign(uint256 id) external view returns (address creator, string memory title, uint256 goal, uint256 deadline, uint256 raised, bool claimed, bool cancelled);
     function getContribution(uint256 id, address contributor) external view returns (uint256);
+    function setReferralRate(uint256 newRate) external;
     function pause() external;
     function unpause() external;
     function transferOwnership(address newOwner) external;

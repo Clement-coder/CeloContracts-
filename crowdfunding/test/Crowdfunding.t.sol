@@ -11,6 +11,7 @@ contract CrowdfundingTest is Test {
     address alice = makeAddr("alice"); // creator
     address bob   = makeAddr("bob");   // contributor
     address carol = makeAddr("carol"); // contributor
+    address dave  = makeAddr("dave");  // referrer
 
     uint256 constant GOAL     = 1 ether;
     uint256 constant DURATION = 7 days;
@@ -23,6 +24,10 @@ contract CrowdfundingTest is Test {
     event FundsClaimed(uint256 indexed id, address indexed creator, uint256 amount);
     event Refunded(uint256 indexed id, address indexed contributor, uint256 amount);
     event CampaignCancelled(uint256 indexed id, address indexed creator);
+    event CampaignExtended(uint256 indexed id, uint256 oldDeadline, uint256 newDeadline);
+    event ReferralReward(address indexed referrer, address indexed contributor, uint256 reward);
+    event ReferralRewardsWithdrawn(address indexed referrer, uint256 amount);
+    event ReferralRateUpdated(uint256 oldRate, uint256 newRate);
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
@@ -31,6 +36,7 @@ contract CrowdfundingTest is Test {
         vm.deal(alice, 10 ether);
         vm.deal(bob,   10 ether);
         vm.deal(carol, 10 ether);
+        vm.deal(dave,  10 ether);
     }
 
     // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -44,6 +50,10 @@ contract CrowdfundingTest is Test {
 
     function test_Constructor_SetsOwner() public view {
         assertEq(cf.owner(), owner);
+    }
+
+    function test_Constructor_SetsDefaultReferralRate() public view {
+        assertEq(cf.referralRate(), 100);
     }
 
     // ─── CreateCampaign ────────────────────────────────────────────────────────
@@ -170,6 +180,84 @@ contract CrowdfundingTest is Test {
         vm.prank(bob);
         vm.expectRevert(ICrowdfunding.Paused.selector);
         cf.contribute{value: CONTRIB}(1);
+    }
+
+    // ─── ContributeWithReferral ────────────────────────────────────────────────
+
+    function test_ContributeWithReferral_AccruesToReferrer() public {
+        _create();
+        vm.prank(bob);
+        cf.contributeWithReferral{value: 1 ether}(1, dave);
+        // 1% of 1 ether = 0.01 ether
+        assertEq(cf.referralRewards(dave), 0.01 ether);
+    }
+
+    function test_ContributeWithReferral_EmitsReferralReward() public {
+        _create();
+        uint256 expectedReward = (1 ether * 100) / 10_000; // 1%
+        vm.expectEmit(true, true, false, true);
+        emit ReferralReward(dave, bob, expectedReward);
+        vm.prank(bob);
+        cf.contributeWithReferral{value: 1 ether}(1, dave);
+    }
+
+    function test_ContributeWithReferral_ZeroAddressReferrer_NoReward() public {
+        _create();
+        vm.prank(bob);
+        cf.contributeWithReferral{value: 1 ether}(1, address(0));
+        assertEq(cf.referralRewards(address(0)), 0);
+    }
+
+    function test_ContributeWithReferral_SelfReferral_NoReward() public {
+        _create();
+        vm.prank(bob);
+        cf.contributeWithReferral{value: 1 ether}(1, bob);
+        assertEq(cf.referralRewards(bob), 0);
+    }
+
+    function test_ContributeWithReferral_CreatorReferral_NoReward() public {
+        _create();
+        vm.prank(bob);
+        cf.contributeWithReferral{value: 1 ether}(1, alice);
+        assertEq(cf.referralRewards(alice), 0);
+    }
+
+    function test_ContributeWithReferral_StillContributes() public {
+        _create();
+        vm.prank(bob);
+        cf.contributeWithReferral{value: CONTRIB}(1, dave);
+        assertEq(cf.getContribution(1, bob), CONTRIB);
+    }
+
+    // ─── WithdrawReferralRewards ───────────────────────────────────────────────
+
+    function test_WithdrawReferralRewards_Success() public {
+        _create();
+        vm.prank(bob);
+        cf.contributeWithReferral{value: 1 ether}(1, dave);
+        uint256 reward = cf.referralRewards(dave);
+        uint256 daveBefore = dave.balance;
+        vm.prank(dave);
+        cf.withdrawReferralRewards();
+        assertEq(dave.balance, daveBefore + reward);
+        assertEq(cf.referralRewards(dave), 0);
+    }
+
+    function test_WithdrawReferralRewards_EmitsEvent() public {
+        _create();
+        vm.prank(bob);
+        cf.contributeWithReferral{value: 1 ether}(1, dave);
+        uint256 reward = cf.referralRewards(dave);
+        vm.expectEmit(true, false, false, true);
+        emit ReferralRewardsWithdrawn(dave, reward);
+        vm.prank(dave);
+        cf.withdrawReferralRewards();
+    }
+
+    function test_WithdrawReferralRewards_RevertNothingToRefund() public {
+        vm.prank(dave);
+        vm.expectRevert(ICrowdfunding.NothingToRefund.selector);
+        cf.withdrawReferralRewards();
     }
 
     // ─── ClaimFunds ────────────────────────────────────────────────────────────
@@ -343,6 +431,91 @@ contract CrowdfundingTest is Test {
         cf.cancelCampaign(1);
     }
 
+    // ─── ExtendCampaign ────────────────────────────────────────────────────────
+
+    function test_Extend_Success() public {
+        _create();
+        (,,,uint256 oldDeadline,,,) = cf.getCampaign(1);
+        vm.prank(alice);
+        cf.extendCampaign(1, 1 days);
+        (,,,uint256 newDeadline,,,) = cf.getCampaign(1);
+        assertEq(newDeadline, oldDeadline + 1 days);
+    }
+
+    function test_Extend_EmitsEvent() public {
+        _create();
+        (,,,uint256 oldDeadline,,,) = cf.getCampaign(1);
+        vm.expectEmit(true, false, false, true);
+        emit CampaignExtended(1, oldDeadline, oldDeadline + 1 days);
+        vm.prank(alice);
+        cf.extendCampaign(1, 1 days);
+    }
+
+    function test_Extend_RevertExceedsMaxDuration() public {
+        _create();
+        // Campaign has 7 days duration; max is 90 days from start → can add at most 83 days
+        vm.prank(alice);
+        vm.expectRevert(ICrowdfunding.DeadlineTooLong.selector);
+        cf.extendCampaign(1, 84 days);
+    }
+
+    function test_Extend_RevertNotCreator() public {
+        _create();
+        vm.prank(bob);
+        vm.expectRevert(ICrowdfunding.NotCreator.selector);
+        cf.extendCampaign(1, 1 days);
+    }
+
+    function test_Extend_RevertCancelled() public {
+        _create();
+        vm.prank(alice);
+        cf.cancelCampaign(1);
+        vm.prank(alice);
+        vm.expectRevert(ICrowdfunding.CampaignAlreadyEnded.selector);
+        cf.extendCampaign(1, 1 days);
+    }
+
+    function test_Extend_RevertGoalAlreadyMet() public {
+        _create();
+        vm.prank(bob);
+        cf.contribute{value: GOAL}(1);
+        vm.prank(alice);
+        vm.expectRevert(ICrowdfunding.GoalAlreadyMet.selector);
+        cf.extendCampaign(1, 1 days);
+    }
+
+    function test_Extend_RevertZeroTime() public {
+        _create();
+        vm.prank(alice);
+        vm.expectRevert(ICrowdfunding.DeadlineTooShort.selector);
+        cf.extendCampaign(1, 0);
+    }
+
+    // ─── SetReferralRate ───────────────────────────────────────────────────────
+
+    function test_SetReferralRate_Success() public {
+        vm.expectEmit(false, false, false, true);
+        emit ReferralRateUpdated(100, 200);
+        cf.setReferralRate(200);
+        assertEq(cf.referralRate(), 200);
+    }
+
+    function test_SetReferralRate_RevertTooHigh() public {
+        vm.expectRevert(ICrowdfunding.ReferralRateTooHigh.selector);
+        cf.setReferralRate(501);
+    }
+
+    function test_SetReferralRate_RevertNotOwner() public {
+        vm.prank(alice);
+        vm.expectRevert(ICrowdfunding.NotOwner.selector);
+        cf.setReferralRate(200);
+    }
+
+    function test_SetReferralRate_MaxAllowed() public {
+        cf.setReferralRate(500);
+        assertEq(cf.referralRate(), 500);
+    }
+
     // ─── Pause ─────────────────────────────────────────────────────────────────
 
     function test_Pause_Unpause() public {
@@ -410,6 +583,18 @@ contract CrowdfundingTest is Test {
         assertEq(id, 1);
     }
 
+    function testFuzz_ReferralReward(uint256 amount, uint256 rate) public {
+        rate   = bound(rate, 0, cf.MAX_REFERRAL_RATE());
+        amount = bound(amount, cf.MIN_CONTRIBUTION(), 5 ether);
+        cf.setReferralRate(rate);
+        _create();
+        vm.deal(bob, amount);
+        vm.prank(bob);
+        cf.contributeWithReferral{value: amount}(1, dave);
+        uint256 expectedReward = (amount * rate) / 10_000;
+        assertEq(cf.referralRewards(dave), expectedReward);
+    }
+
     // ─── Invariant ─────────────────────────────────────────────────────────────
 
     function test_Invariant_BalanceEqualsRaised() public {
@@ -424,6 +609,3 @@ contract CrowdfundingTest is Test {
 
     receive() external payable {}
 }
-// Commit 3 optimization
-// Commit 23 optimization
-// Commit 43 optimization
