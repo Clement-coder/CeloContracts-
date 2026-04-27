@@ -971,6 +971,18 @@ contract CrowdfundingTest is Test {
         assertEq(alice.balance, aliceBefore + amount);
     }
 
+
+    function test_MultipleCampaigns_ContributionsIsolated() public {
+        vm.prank(alice);
+        cf.createCampaign("Camp 1", "desc", GOAL, DURATION);
+        vm.prank(alice);
+        cf.createCampaign("Camp 2", "desc", GOAL, DURATION);
+        vm.prank(bob);
+        cf.contribute{value: CONTRIB}(1);
+        assertEq(cf.getContribution(1, bob), CONTRIB);
+        assertEq(cf.getContribution(2, bob), 0);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
