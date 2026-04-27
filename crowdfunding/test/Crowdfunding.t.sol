@@ -1153,6 +1153,20 @@ contract CrowdfundingTest is Test {
         assertEq(cf.getContribution(1, bob), CONTRIB);
     }
 
+
+    function test_Extend_ClaimAfterExtension_Succeeds() public {
+        _create();
+        vm.prank(alice);
+        cf.extendCampaign(1, 7 days);
+        vm.prank(bob);
+        cf.contribute{value: GOAL}(1);
+        skip(DURATION + 7 days + 1);
+        vm.prank(alice);
+        cf.claimFunds(1);
+        (,,,,,bool claimed,) = cf.getCampaign(1);
+        assertTrue(claimed);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
