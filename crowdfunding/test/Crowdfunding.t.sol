@@ -1176,6 +1176,15 @@ contract CrowdfundingTest is Test {
         cf.contributeWithReferral{value: GOAL}(1, dave);
     }
 
+
+    function test_ContributeWithReferral_EmitsContributed() public {
+        _create();
+        vm.expectEmit(true, true, false, true);
+        emit Contributed(1, bob, CONTRIB, CONTRIB);
+        vm.prank(bob);
+        cf.contributeWithReferral{value: CONTRIB}(1, dave);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
