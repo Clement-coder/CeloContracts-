@@ -108,7 +108,7 @@ contract Crowdfunding is ICrowdfunding {
 
     // ─── Constructor ───────────────────────────────────────────────────────────
 
-    /// @notice Deploy the crowdfunding platform. Deployer becomes owner.
+    /// @notice Deploy the crowdfunding platform. Deployer becomes owner. Referral rate defaults to 1%.
     constructor() {
         owner = msg.sender;
         referralRate = 100; // Default 1% referral reward
