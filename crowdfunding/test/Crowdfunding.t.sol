@@ -774,6 +774,15 @@ contract CrowdfundingTest is Test {
         assertEq(cf.referralRewards(dave), 0);
     }
 
+
+    function test_Extend_AfterDeadlinePassed_Reverts() public {
+        _create();
+        skip(DURATION + 1);
+        vm.prank(alice);
+        vm.expectRevert(ICrowdfunding.CampaignAlreadyEnded.selector);
+        cf.extendCampaign(1, 1 days);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
