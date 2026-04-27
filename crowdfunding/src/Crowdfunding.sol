@@ -175,7 +175,7 @@ contract Crowdfunding is ICrowdfunding {
         }
     }
 
-    /// @notice Contribute CELO to a campaign with optional referral.
+    /// @notice Contribute CELO to a campaign with an optional referral reward.
     /// @param id       Campaign ID to contribute to.
     /// @param referrer Optional referrer address for rewards.
     /// @dev   Emits {Contributed}. Emits {GoalReached} if goal is hit.
