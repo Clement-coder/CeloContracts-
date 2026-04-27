@@ -204,7 +204,7 @@ contract Crowdfunding is ICrowdfunding {
     }
 
     /// @notice Withdraw accumulated referral rewards.
-    /// @dev Emits {ReferralRewardsWithdrawn}.
+    /// @dev Emits {ReferralRewardsWithdrawn}. Uses pull-payment pattern to prevent reentrancy issues.
     function withdrawReferralRewards() external override nonReentrant {
         uint256 amount = referralRewards[msg.sender];
         if (amount == 0) revert NothingToRefund();
