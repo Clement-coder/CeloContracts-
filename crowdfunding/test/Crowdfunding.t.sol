@@ -935,6 +935,13 @@ contract CrowdfundingTest is Test {
         assertEq(cf.referralRate(), rate);
     }
 
+
+    function test_Fuzz_SetReferralRate_AboveMax_Reverts(uint256 rate) public {
+        rate = bound(rate, cf.MAX_REFERRAL_RATE() + 1, type(uint256).max);
+        vm.expectRevert(ICrowdfunding.ReferralRateTooHigh.selector);
+        cf.setReferralRate(rate);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
