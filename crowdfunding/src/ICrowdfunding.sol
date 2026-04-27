@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-/// @title ICrowdfunding
+/// @title  ICrowdfunding
+/// @author Celo Contracts
 /// @notice Interface for the CELO crowdfunding platform.
 interface ICrowdfunding {
     // ─── Errors ────────────────────────────────────────────────────────────────
