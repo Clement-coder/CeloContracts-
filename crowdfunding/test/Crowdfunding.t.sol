@@ -1228,6 +1228,16 @@ contract CrowdfundingTest is Test {
         assertEq(id, 1);
     }
 
+
+    function test_CampaignCount_IncrementsPerCreate() public {
+        assertEq(cf.campaignCount(), 0);
+        _create();
+        assertEq(cf.campaignCount(), 1);
+        vm.prank(bob);
+        cf.createCampaign("Camp 2", "desc", GOAL, DURATION);
+        assertEq(cf.campaignCount(), 2);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
