@@ -607,6 +607,19 @@ contract CrowdfundingTest is Test {
         assertEq(address(cf).balance, raised);
     }
 
+
+    // ─── Multiple Campaigns ────────────────────────────────────────────────────
+
+    function test_MultipleCampaigns_IndependentIds() public {
+        vm.prank(alice);
+        uint256 id1 = cf.createCampaign("Camp 1", "desc", GOAL, DURATION);
+        vm.prank(bob);
+        uint256 id2 = cf.createCampaign("Camp 2", "desc", GOAL * 2, DURATION);
+        assertEq(id1, 1);
+        assertEq(id2, 2);
+        assertEq(cf.campaignCount(), 2);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
