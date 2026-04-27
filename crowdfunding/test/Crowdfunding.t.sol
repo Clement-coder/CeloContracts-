@@ -928,6 +928,13 @@ contract CrowdfundingTest is Test {
         assertEq(newDeadline, oldDeadline + extra);
     }
 
+
+    function test_Fuzz_SetReferralRate(uint256 rate) public {
+        rate = bound(rate, 0, cf.MAX_REFERRAL_RATE());
+        cf.setReferralRate(rate);
+        assertEq(cf.referralRate(), rate);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
