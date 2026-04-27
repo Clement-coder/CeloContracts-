@@ -906,6 +906,16 @@ contract CrowdfundingTest is Test {
         assertEq(address(cf).balance, 0);
     }
 
+
+    function test_Invariant_ReferralRewardsNotExceedContributions() public {
+        _create();
+        vm.prank(bob);
+        cf.contributeWithReferral{value: 1 ether}(1, dave);
+        uint256 reward = cf.referralRewards(dave);
+        // reward (1%) must be <= contribution
+        assertLe(reward, 1 ether);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
