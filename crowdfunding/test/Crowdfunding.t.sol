@@ -746,6 +746,14 @@ contract CrowdfundingTest is Test {
         assertEq(cf.getContribution(999, bob), 0);
     }
 
+
+    function test_Unpause_RevertNotOwner() public {
+        cf.pause();
+        vm.prank(alice);
+        vm.expectRevert(ICrowdfunding.NotOwner.selector);
+        cf.unpause();
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
