@@ -347,7 +347,7 @@ contract Crowdfunding is ICrowdfunding {
     }
 
     /// @notice Set the referral reward rate. Only callable by owner.
-    /// @param newRate New referral rate in basis points (max 500 = 5%).
+    /// @param newRate New rate in basis points. 0 disables referrals. Max 500 (5%).
     function setReferralRate(uint256 newRate) external override onlyOwner {
         if (newRate > MAX_REFERRAL_RATE) revert ReferralRateTooHigh();
         emit ReferralRateUpdated(referralRate, newRate);
