@@ -319,7 +319,7 @@ contract Crowdfunding is ICrowdfunding {
 
     // ─── Admin ─────────────────────────────────────────────────────────────────
 
-    /// @notice Pause the contract — halts campaign creation and contributions.
+    /// @notice Pause the contract. Halts createCampaign, contribute, and contributeWithReferral.
     function pause() external override onlyOwner {
         paused = true;
         emit ContractPaused(msg.sender);
