@@ -783,6 +783,19 @@ contract CrowdfundingTest is Test {
         cf.extendCampaign(1, 1 days);
     }
 
+
+    function test_Extend_AlreadyClaimed_Reverts() public {
+        _create();
+        vm.prank(bob);
+        cf.contribute{value: GOAL}(1);
+        skip(DURATION + 1);
+        vm.prank(alice);
+        cf.claimFunds(1);
+        vm.prank(alice);
+        vm.expectRevert(ICrowdfunding.AlreadyClaimed.selector);
+        cf.extendCampaign(1, 1 days);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
