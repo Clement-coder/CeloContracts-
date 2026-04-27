@@ -1024,6 +1024,14 @@ contract CrowdfundingTest is Test {
         assertEq(cf.referralRate(), 200);
     }
 
+
+    function test_Create_DeadlineIsCorrect() public {
+        uint256 before = block.timestamp;
+        _create();
+        (,,,uint256 deadline,,,) = cf.getCampaign(1);
+        assertEq(deadline, before + DURATION);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
