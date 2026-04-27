@@ -1108,6 +1108,19 @@ contract CrowdfundingTest is Test {
         cf.refund(1);
     }
 
+
+    function test_Refund_CannotRefundTwice() public {
+        _create();
+        vm.prank(bob);
+        cf.contribute{value: CONTRIB}(1);
+        skip(DURATION + 1);
+        vm.prank(bob);
+        cf.refund(1);
+        vm.prank(bob);
+        vm.expectRevert(ICrowdfunding.NothingToRefund.selector);
+        cf.refund(1);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
