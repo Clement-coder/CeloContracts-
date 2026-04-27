@@ -609,3 +609,20 @@ contract CrowdfundingTest is Test {
 
     receive() external payable {}
 }
+
+    // ─── Receive ───────────────────────────────────────────────────────────────
+
+    function test_Receive_RevertDirectSend() public {
+        vm.expectRevert(ICrowdfunding.TransferFailed.selector);
+        (bool ok,) = address(cf).call{value: 1 ether}("");
+        assertFalse(ok);
+    
+    // ─── Receive ───────────────────────────────────────────────────────────────
+
+    function test_Receive_RevertDirectSend() public {
+        vm.deal(address(this), 1 ether);
+        vm.expectRevert();
+        payable(address(cf)).transfer(1 ether);
+    }
+
+}
