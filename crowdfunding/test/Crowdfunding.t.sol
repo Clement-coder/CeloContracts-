@@ -884,6 +884,17 @@ contract CrowdfundingTest is Test {
         assertEq(cf.referralRewards(dave), 0);
     }
 
+
+    function test_Invariant_ContractBalanceNeverNegative() public {
+        _create();
+        vm.prank(bob);
+        cf.contribute{value: 0.5 ether}(1);
+        skip(DURATION + 1);
+        vm.prank(bob);
+        cf.refund(1);
+        assertEq(address(cf).balance, 0);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
