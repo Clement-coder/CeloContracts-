@@ -3,7 +3,8 @@ pragma solidity 0.8.20;
 
 import {ICrowdfunding} from "./ICrowdfunding.sol";
 
-/// @title Crowdfunding
+/// @title  Crowdfunding
+/// @author Celo Contracts
 /// @notice A CELO crowdfunding platform. Creators launch campaigns with a goal and deadline.
 ///         Contributors send CELO. If goal is met by deadline, creator claims funds.
 ///         If goal is not met, contributors get full refunds.
