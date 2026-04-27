@@ -1005,6 +1005,15 @@ contract CrowdfundingTest is Test {
         assertTrue(cf.paused());
     }
 
+
+    function test_Ownership_OldOwnerCannotPauseAfterTransfer() public {
+        cf.transferOwnership(alice);
+        vm.prank(alice);
+        cf.acceptOwnership();
+        vm.expectRevert(ICrowdfunding.NotOwner.selector);
+        cf.pause();
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
