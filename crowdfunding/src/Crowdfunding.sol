@@ -279,7 +279,7 @@ contract Crowdfunding is ICrowdfunding {
     /// @notice Creator extends campaign deadline (only if goal not yet met).
     /// @param id             Campaign ID to extend.
     /// @param additionalTime Additional seconds to add to deadline.
-    /// @dev   Emits {CampaignExtended}. Total duration from start cannot exceed MAX_DURATION. Campaign must not be cancelled, claimed, or goal-met.
+    /// @dev   Emits {CampaignExtended}. Total duration from start cannot exceed MAX_DURATION. Campaign must be active (not cancelled, not past deadline, not claimed, goal not met).
     function extendCampaign(uint256 id, uint256 additionalTime)
         external override campaignExists(id)
     {
