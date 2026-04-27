@@ -10,6 +10,7 @@ import {ICrowdfunding} from "./ICrowdfunding.sol";
 ///         If goal is not met, contributors get full refunds.
 /// @dev    Production-grade: reentrancy guard, pause, two-step ownership, pull refunds,
 ///         custom errors, full NatSpec, locked pragma, optimizer config.
+/// @custom:security Referral rewards are stored separately and withdrawn via pull-payment to prevent reentrancy.
 contract Crowdfunding is ICrowdfunding {
 
     // ─── Constants ─────────────────────────────────────────────────────────────
