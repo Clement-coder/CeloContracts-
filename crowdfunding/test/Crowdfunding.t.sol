@@ -1201,6 +1201,14 @@ contract CrowdfundingTest is Test {
         cf.contributeWithReferral{value: CONTRIB}(1, dave);
     }
 
+
+    function test_Pause_CreateCampaign_Blocked() public {
+        cf.pause();
+        vm.prank(alice);
+        vm.expectRevert(ICrowdfunding.Paused.selector);
+        cf.createCampaign("title", "desc", GOAL, DURATION);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
