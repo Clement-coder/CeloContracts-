@@ -1238,6 +1238,16 @@ contract CrowdfundingTest is Test {
         assertEq(cf.campaignCount(), 2);
     }
 
+
+    function test_Fuzz_ContributeWithReferral(uint256 amount) public {
+        amount = bound(amount, cf.MIN_CONTRIBUTION(), 5 ether);
+        _create();
+        vm.deal(bob, amount);
+        vm.prank(bob);
+        cf.contributeWithReferral{value: amount}(1, dave);
+        assertEq(cf.getContribution(1, bob), amount);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
