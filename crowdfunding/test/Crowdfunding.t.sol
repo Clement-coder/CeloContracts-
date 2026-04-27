@@ -698,6 +698,16 @@ contract CrowdfundingTest is Test {
         assertEq(carol.balance, carolBefore + 0.4 ether);
     }
 
+
+    function test_Extend_CanExtendUpToMaxDuration() public {
+        _create();
+        // Campaign has 7 days; max is 90 days from start → can add exactly 83 days
+        vm.prank(alice);
+        cf.extendCampaign(1, 83 days);
+        (,,,uint256 newDeadline,,,) = cf.getCampaign(1);
+        assertEq(newDeadline, block.timestamp + 90 days);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
