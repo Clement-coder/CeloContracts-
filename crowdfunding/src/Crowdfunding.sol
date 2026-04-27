@@ -325,7 +325,7 @@ contract Crowdfunding is ICrowdfunding {
         emit ContractPaused(msg.sender);
     }
 
-    /// @notice Unpause the contract.
+    /// @notice Unpause the contract. Restores normal operation.
     function unpause() external override onlyOwner {
         paused = false;
         emit ContractUnpaused(msg.sender);
