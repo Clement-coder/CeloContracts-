@@ -1167,6 +1167,15 @@ contract CrowdfundingTest is Test {
         assertTrue(claimed);
     }
 
+
+    function test_ContributeWithReferral_GoalReached_EmitsEvent() public {
+        _create();
+        vm.expectEmit(true, false, false, true);
+        emit GoalReached(1, GOAL);
+        vm.prank(bob);
+        cf.contributeWithReferral{value: GOAL}(1, dave);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
