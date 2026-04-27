@@ -819,6 +819,18 @@ contract CrowdfundingTest is Test {
         assertTrue(claimed);
     }
 
+
+    function test_Refund_ExactlyAtDeadline_Succeeds() public {
+        _create();
+        vm.prank(bob);
+        cf.contribute{value: 0.5 ether}(1);
+        (,,,uint256 deadline,,,) = cf.getCampaign(1);
+        vm.warp(deadline);
+        vm.prank(bob);
+        cf.refund(1);
+        assertEq(cf.getContribution(1, bob), 0);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
