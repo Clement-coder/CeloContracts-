@@ -1121,6 +1121,18 @@ contract CrowdfundingTest is Test {
         cf.refund(1);
     }
 
+
+    function test_WithdrawReferralRewards_CannotWithdrawTwice() public {
+        _create();
+        vm.prank(bob);
+        cf.contributeWithReferral{value: 1 ether}(1, dave);
+        vm.prank(dave);
+        cf.withdrawReferralRewards();
+        vm.prank(dave);
+        vm.expectRevert(ICrowdfunding.NothingToRefund.selector);
+        cf.withdrawReferralRewards();
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
