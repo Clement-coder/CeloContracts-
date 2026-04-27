@@ -1083,6 +1083,18 @@ contract CrowdfundingTest is Test {
         assertEq(raised, GOAL * 2);
     }
 
+
+    function test_ClaimFunds_OverGoal_CreatorGetsAll() public {
+        _create();
+        vm.prank(bob);
+        cf.contribute{value: GOAL * 2}(1);
+        skip(DURATION + 1);
+        uint256 aliceBefore = alice.balance;
+        vm.prank(alice);
+        cf.claimFunds(1);
+        assertEq(alice.balance, aliceBefore + GOAL * 2);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
