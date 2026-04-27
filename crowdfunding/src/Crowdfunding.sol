@@ -301,7 +301,7 @@ contract Crowdfunding is ICrowdfunding {
 
     // ─── Views ─────────────────────────────────────────────────────────────────
 
-    /// @notice Returns full details of a campaign.
+    /// @notice Returns all stored fields for a campaign by ID.
     function getCampaign(uint256 id)
         external view override campaignExists(id)
         returns (address creator, string memory title, uint256 goal, uint256 deadline, uint256 raised, bool claimed, bool cancelled)
