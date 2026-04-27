@@ -630,6 +630,16 @@ contract CrowdfundingTest is Test {
         assertEq(cf.getContribution(1, bob), 0.5 ether);
     }
 
+
+    function test_Create_TitleAtMaxLength_Succeeds() public {
+        string memory maxTitle = new string(100);
+        bytes memory b = bytes(maxTitle);
+        for (uint i = 0; i < 100; i++) b[i] = 'a';
+        vm.prank(alice);
+        uint256 id = cf.createCampaign(string(b), "desc", GOAL, DURATION);
+        assertEq(id, 1);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
