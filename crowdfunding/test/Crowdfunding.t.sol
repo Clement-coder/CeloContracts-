@@ -734,6 +734,13 @@ contract CrowdfundingTest is Test {
         cf.claimFunds(1);
     }
 
+
+    function test_Contribute_ZeroCampaignId_Reverts() public {
+        vm.prank(bob);
+        vm.expectRevert(ICrowdfunding.InvalidCampaign.selector);
+        cf.contribute{value: CONTRIB}(0);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
