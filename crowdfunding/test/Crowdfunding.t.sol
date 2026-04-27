@@ -874,6 +874,16 @@ contract CrowdfundingTest is Test {
         cf.contributeWithReferral{value: CONTRIB}(1, dave);
     }
 
+
+    function test_WithdrawReferralRewards_ClearsBalance() public {
+        _create();
+        vm.prank(bob);
+        cf.contributeWithReferral{value: 1 ether}(1, dave);
+        vm.prank(dave);
+        cf.withdrawReferralRewards();
+        assertEq(cf.referralRewards(dave), 0);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
