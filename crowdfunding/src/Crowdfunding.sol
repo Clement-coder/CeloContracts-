@@ -116,7 +116,7 @@ contract Crowdfunding is ICrowdfunding {
 
     // ─── Core ──────────────────────────────────────────────────────────────────
 
-    /// @notice Create a new crowdfunding campaign.
+    /// @notice Create a new crowdfunding campaign. Returns the new campaign ID.
     /// @param title       Short campaign title. Max MAX_TITLE_LENGTH bytes.
     /// @param description Full campaign description.
     /// @param goal        Funding goal in wei. Must be >= MIN_GOAL.
