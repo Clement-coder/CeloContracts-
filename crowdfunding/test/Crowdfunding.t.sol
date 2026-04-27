@@ -708,6 +708,19 @@ contract CrowdfundingTest is Test {
         assertEq(newDeadline, block.timestamp + 90 days);
     }
 
+
+    function test_Cancel_AfterContribution_ContributorCanRefund() public {
+        _create();
+        vm.prank(bob);
+        cf.contribute{value: CONTRIB}(1);
+        vm.prank(alice);
+        cf.cancelCampaign(1);
+        uint256 bobBefore = bob.balance;
+        vm.prank(bob);
+        cf.refund(1);
+        assertEq(bob.balance, bobBefore + CONTRIB);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
