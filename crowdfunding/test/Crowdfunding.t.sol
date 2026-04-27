@@ -1248,6 +1248,20 @@ contract CrowdfundingTest is Test {
         assertEq(cf.getContribution(1, bob), amount);
     }
 
+
+    function test_Integration_FullCycle_Success() public {
+        // Create → Contribute → Claim
+        vm.prank(alice);
+        uint256 id = cf.createCampaign("Full Cycle", "desc", GOAL, DURATION);
+        vm.prank(bob);
+        cf.contribute{value: GOAL}(id);
+        skip(DURATION + 1);
+        uint256 aliceBefore = alice.balance;
+        vm.prank(alice);
+        cf.claimFunds(id);
+        assertGt(alice.balance, aliceBefore);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
