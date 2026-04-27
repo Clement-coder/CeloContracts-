@@ -354,7 +354,7 @@ contract Crowdfunding is ICrowdfunding {
         referralRate = newRate;
     }
 
-    /// @notice Reject accidental direct ETH sends.
+    /// @notice Rejects accidental direct CELO sends. All contributions must go through contribute().
     receive() external payable {
         revert TransferFailed();
     }
