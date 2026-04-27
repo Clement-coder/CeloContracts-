@@ -983,6 +983,18 @@ contract CrowdfundingTest is Test {
         assertEq(cf.getContribution(2, bob), 0);
     }
 
+
+    function test_MultipleCampaigns_CancelOneDoesNotAffectOther() public {
+        vm.prank(alice);
+        cf.createCampaign("Camp 1", "desc", GOAL, DURATION);
+        vm.prank(alice);
+        cf.createCampaign("Camp 2", "desc", GOAL, DURATION);
+        vm.prank(alice);
+        cf.cancelCampaign(1);
+        (,,,,,, bool cancelled2) = cf.getCampaign(2);
+        assertFalse(cancelled2);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
