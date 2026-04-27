@@ -238,7 +238,7 @@ contract Crowdfunding is ICrowdfunding {
         if (!ok) revert TransferFailed();
     }
 
-    /// @notice Contributor claims refund if campaign failed or was cancelled.
+    /// @notice Contributor reclaims their contribution if the campaign failed or was cancelled.
     /// @param id Campaign ID to refund from.
     /// @dev   Emits {Refunded}. Pull-payment pattern.
     function refund(uint256 id)
