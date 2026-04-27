@@ -1059,6 +1059,12 @@ contract CrowdfundingTest is Test {
         cf.getCampaign(0);
     }
 
+
+    function test_GetCampaign_RevertOutOfRange() public {
+        vm.expectRevert(ICrowdfunding.InvalidCampaign.selector);
+        cf.getCampaign(1);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
