@@ -956,6 +956,21 @@ contract CrowdfundingTest is Test {
         assertEq(bob.balance, bobBefore + amount);
     }
 
+
+    function test_Fuzz_ClaimFunds(uint256 amount) public {
+        amount = bound(amount, GOAL, 10 ether);
+        vm.prank(alice);
+        cf.createCampaign("title", "desc", GOAL, DURATION);
+        vm.deal(bob, amount);
+        vm.prank(bob);
+        cf.contribute{value: amount}(1);
+        skip(DURATION + 1);
+        uint256 aliceBefore = alice.balance;
+        vm.prank(alice);
+        cf.claimFunds(1);
+        assertEq(alice.balance, aliceBefore + amount);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
