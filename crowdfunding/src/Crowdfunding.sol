@@ -61,7 +61,7 @@ contract Crowdfunding is ICrowdfunding {
         string description;
         /// @dev Funding goal in wei.
         uint256 goal;
-        /// @dev Unix timestamp when campaign was created.
+        /// @dev Unix timestamp when the campaign was created (used for MAX_DURATION cap).
         uint256 start;
         /// @dev Unix timestamp of campaign deadline.
         uint256 deadline;
