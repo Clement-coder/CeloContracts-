@@ -945,7 +945,7 @@ contract CrowdfundingTest is Test {
 
     function test_Fuzz_Refund(uint256 amount) public {
         _create();
-        amount = bound(amount, cf.MIN_CONTRIBUTION(), 5 ether);
+        amount = bound(amount, cf.MIN_CONTRIBUTION(), GOAL - 1);
         vm.deal(bob, amount);
         vm.prank(bob);
         cf.contribute{value: amount}(1);
