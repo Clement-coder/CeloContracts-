@@ -864,6 +864,16 @@ contract CrowdfundingTest is Test {
         cf.contributeWithReferral{value: CONTRIB}(99, dave);
     }
 
+
+    function test_ContributeWithReferral_CancelledCampaign_Reverts() public {
+        _create();
+        vm.prank(alice);
+        cf.cancelCampaign(1);
+        vm.prank(bob);
+        vm.expectRevert(ICrowdfunding.CampaignAlreadyEnded.selector);
+        cf.contributeWithReferral{value: CONTRIB}(1, dave);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
