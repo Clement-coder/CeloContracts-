@@ -671,6 +671,13 @@ contract CrowdfundingTest is Test {
         assertEq(id, 1);
     }
 
+
+    function test_Create_AtMinDuration_Succeeds() public {
+        vm.prank(alice);
+        uint256 id = cf.createCampaign("title", "desc", GOAL, cf.MIN_DURATION());
+        assertEq(id, 1);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
