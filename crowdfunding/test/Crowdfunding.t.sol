@@ -607,22 +607,16 @@ contract CrowdfundingTest is Test {
         assertEq(address(cf).balance, raised);
     }
 
-    receive() external payable {}
-}
-
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
-        vm.expectRevert(ICrowdfunding.TransferFailed.selector);
-        (bool ok,) = address(cf).call{value: 1 ether}("");
+        // Direct CELO send hits receive() which reverts with TransferFailed
+        (bool ok, bytes memory data) = address(cf).call{value: 1 ether}("");
         assertFalse(ok);
-    
-    // ─── Receive ───────────────────────────────────────────────────────────────
-
-    function test_Receive_RevertDirectSend() public {
-        vm.deal(address(this), 1 ether);
-        vm.expectRevert();
-        payable(address(cf)).transfer(1 ether);
+        // Verify the revert reason is TransferFailed
+        bytes4 selector = bytes4(data);
+        assertEq(selector, ICrowdfunding.TransferFailed.selector);
     }
 
+    receive() external payable {}
 }
