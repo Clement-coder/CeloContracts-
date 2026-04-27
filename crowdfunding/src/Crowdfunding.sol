@@ -331,7 +331,7 @@ contract Crowdfunding is ICrowdfunding {
         emit ContractUnpaused(msg.sender);
     }
 
-    /// @notice Initiate two-step ownership transfer.
+    /// @notice Initiate a two-step ownership transfer. The new owner must call acceptOwnership.
     function transferOwnership(address newOwner) external override onlyOwner {
         if (newOwner == address(0)) revert ZeroAddress();
         pendingOwner = newOwner;
