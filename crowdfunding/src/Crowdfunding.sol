@@ -216,7 +216,7 @@ contract Crowdfunding is ICrowdfunding {
         if (!ok) revert TransferFailed();
     }
 
-    /// @notice Creator claims funds after campaign ends with goal met.
+    /// @notice Creator claims all raised funds after the deadline, provided the goal was met.
     /// @param id Campaign ID to claim.
     /// @dev   Emits {FundsClaimed}. Only callable by campaign creator after deadline.
     function claimFunds(uint256 id)
