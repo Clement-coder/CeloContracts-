@@ -649,6 +649,14 @@ contract CrowdfundingTest is Test {
         cf.createCampaign(string(b), "desc", GOAL, DURATION);
     }
 
+
+    function test_Contribute_AtExactMinimum_Succeeds() public {
+        _create();
+        vm.prank(bob);
+        cf.contribute{value: cf.MIN_CONTRIBUTION()}(1);
+        assertEq(cf.getContribution(1, bob), cf.MIN_CONTRIBUTION());
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
