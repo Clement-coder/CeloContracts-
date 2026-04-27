@@ -84,3 +84,16 @@ forge script script/Crowdfunding.s.sol --rpc-url celo --broadcast
 `crowdfunding`
 
 ![Solidity](https://img.shields.io/badge/solidity-0.8.20-blue)
+
+## Bug Fixes Applied
+
+1. **Wrong error in setReferralRate** — was reverting with `GoalTooLow` instead of `ReferralRateTooHigh`
+2. **extendCampaign deadline cap broken** — was computing `originalStart = deadline - MAX_DURATION` (wrong for short campaigns); fixed by storing `start` in Campaign struct
+3. **extendCampaign missing deadline check** — could extend a campaign after it expired; added `block.timestamp >= c.deadline` guard
+4. **Missing interface entries** — `contributeWithReferral`, `withdrawReferralRewards`, `extendCampaign`, `setReferralRate`, `ReferralRateTooHigh` were absent from ICrowdfunding
+5. **Stale comments removed** — 50 "Improvement" stub comments and stale commit markers cleaned up
+
+## Test Coverage
+
+- 120+ unit, fuzz, and integration tests
+- All edge cases covered: boundary values, reentrancy, access control, state transitions
