@@ -1133,6 +1133,15 @@ contract CrowdfundingTest is Test {
         cf.withdrawReferralRewards();
     }
 
+
+    function test_Extend_UpdatesDeadlineInStorage() public {
+        _create();
+        vm.prank(alice);
+        cf.extendCampaign(1, 2 days);
+        (,,,uint256 deadline,,,) = cf.getCampaign(1);
+        assertEq(deadline, block.timestamp + DURATION + 2 days);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
