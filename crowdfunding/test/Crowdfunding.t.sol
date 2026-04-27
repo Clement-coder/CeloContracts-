@@ -1095,6 +1095,19 @@ contract CrowdfundingTest is Test {
         assertEq(alice.balance, aliceBefore + GOAL * 2);
     }
 
+
+    function test_Refund_CannotRefundAfterClaim() public {
+        _create();
+        vm.prank(bob);
+        cf.contribute{value: GOAL}(1);
+        skip(DURATION + 1);
+        vm.prank(alice);
+        cf.claimFunds(1);
+        vm.prank(bob);
+        vm.expectRevert(ICrowdfunding.GoalAlreadyMet.selector);
+        cf.refund(1);
+    }
+
     // ─── Receive ───────────────────────────────────────────────────────────────
 
     function test_Receive_RevertDirectSend() public {
