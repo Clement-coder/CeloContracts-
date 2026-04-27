@@ -78,7 +78,7 @@ contract Crowdfunding is ICrowdfunding {
     /// @notice Campaigns by ID (1-indexed). ID 0 is always invalid.
     mapping(uint256 => Campaign) public campaigns;
 
-    /// @notice contributions[campaignId][contributor] = amount.
+    /// @notice contributions[campaignId][contributor] = total amount contributed. Zeroed on refund.
     mapping(uint256 => mapping(address => uint256)) public contributions;
 
     /// @notice Referral rewards: referrer => earned amount.
