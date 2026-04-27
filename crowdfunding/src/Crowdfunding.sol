@@ -154,7 +154,7 @@ contract Crowdfunding is ICrowdfunding {
         return id;
     }
 
-    /// @notice Contribute CELO to a campaign.
+    /// @notice Contribute CELO to an active campaign. Emits GoalReached if the goal is hit.
     /// @param id Campaign ID to contribute to.
     /// @dev   Emits {Contributed}. Emits {GoalReached} if goal is hit.
     function contribute(uint256 id)
